@@ -22,7 +22,7 @@ import {
 export default function BlogCategoriesPage() {
   return (
     <>
-      <Input type="search" />
+      <Input type="search" placeholder="Search categories ..." />
       <Table>
         <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>
