@@ -18,8 +18,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { getBlogs } from "@/services/blogServices";
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const blogs = await getBlogs();
+
+  console.log(blogs);
+
   return (
     <>
       <Input id="search" type="search" placeholder="Search blog ..." />
@@ -32,6 +37,19 @@ export default function BlogPage() {
             <TableHead>Createt At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
+          {blogs.map((blog) => {
+            return (
+              <TableRow key={blog.id}>
+                <TableCell className="font-medium">{blog.id}</TableCell>
+                <TableCell>{blog.title}</TableCell>
+                <TableCell>{blog.userId}</TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline">Edit</Button>
+                  <Button variant="destructive">Delete</Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableHeader>
         <TableBody></TableBody>
       </Table>

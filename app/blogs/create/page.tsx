@@ -15,7 +15,7 @@ import {
   createBlogFormSchema,
   CreateBlogFormSchema,
 } from "@/schema/createBlogFormSchema";
-import { useForm } from "react-hook-form";
+import { useForm, useFormState } from "react-hook-form";
 
 // UI component
 import {
@@ -43,16 +43,31 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateBlogPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [error, setError] = React.useState<string | undefined>(undefined);
+  const { toast } = useToast();
 
   const form = useForm<CreateBlogFormSchema>({
     resolver: zodResolver(createBlogFormSchema),
@@ -87,14 +102,15 @@ export default function CreateBlogPage() {
 
   async function onSubmit(values: CreateBlogFormSchema) {
     const { title, content, mainImageId, categoryId, tags } = values;
+
     console.log(values);
 
     const formData = {
       title,
       content,
-      userId: "9f593ec8-0025-465b-b6fa-d15ede8a83ed",
+      userId: "cm2x0th0b00008kcwlrfti706",
       mainImageId,
-      categoryId: "d86430ea-6571-4a5c-b9d2-09d979ff82ea",
+      categoryId: "cm2x0xuci00048kcwnrz5mtho",
       tags,
       createdAt: date ? date.toISOString() : null,
     };
@@ -110,6 +126,7 @@ export default function CreateBlogPage() {
         console.error("Unexpected error:", error);
       }
     }
+    form.reset();
   }
 
   return (
@@ -126,6 +143,7 @@ export default function CreateBlogPage() {
                 <FormControl>
                   <Input id="title" placeholder="Title" {...field} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -258,7 +276,32 @@ export default function CreateBlogPage() {
             </div>
           </div>
 
-          <Button type="submit">Submit</Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="submit"
+                onClick={() => {
+                  toast({ title: "Data Berhasil Terkirim" });
+                }}
+              >
+                Submit
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           <Button variant="outline">Save To Draft</Button>
         </section>
       </form>

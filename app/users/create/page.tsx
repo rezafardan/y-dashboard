@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useState } from "react";
-import CKEditorComponent from "@/components/CKEditorComponent";
 
 export default function CreateUserPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());

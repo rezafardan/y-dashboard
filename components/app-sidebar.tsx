@@ -25,7 +25,7 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/",
       icon: Home,
       isActive: true,
     },
@@ -36,15 +36,15 @@ const data = {
       items: [
         {
           title: "Add New Blog",
-          url: "/dashboard/blogs/create",
+          url: "/blogs/create",
         },
         {
           title: "Blog Lists",
-          url: "/dashboard/blogs",
+          url: "/blogs",
         },
         {
           title: "Blog Categories Lists",
-          url: "/dashboard/blogs/categories",
+          url: "/blogs/categories",
         },
       ],
     },
@@ -55,11 +55,11 @@ const data = {
       items: [
         {
           title: "Add New User",
-          url: "/dashboard/users/create",
+          url: "/users/create",
         },
         {
           title: "User Lists",
-          url: "/dashboard/users",
+          url: "/users",
         },
       ],
     },
@@ -90,7 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Yukti ID</span>
+                  <span className="truncate font-semibold">Title</span>
                   <span className="truncate text-xs">Prototype</span>
                 </div>
               </a>
