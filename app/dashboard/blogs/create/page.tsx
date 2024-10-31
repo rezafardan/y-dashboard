@@ -1,10 +1,23 @@
 "use client";
 
 import React, { useMemo } from "react";
+
+// Fetching api
+import axios from "axios";
+
+// React quill rich text editor
 import dynamic from "next/dynamic";
-import { z } from "zod";
+import "react-quill-new/dist/quill.snow.css";
+
+// Form handler
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createBlogFormSchema,
+  CreateBlogFormSchema,
+} from "@/schema/createBlogFormSchema";
 import { useForm } from "react-hook-form";
+
+// UI component
 import {
   Form,
   FormControl,
@@ -30,35 +43,33 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import "react-quill-new/dist/quill.snow.css";
-
-const createBlogFormSchema = z.object({
-  title: z.string().min(3, {
-    message: "Judul harus lebih dari 3 karakter!",
-  }),
-  content: z.string().min(10, {
-    message: "Content harus lebih dari 10 karakter!",
-  }),
-  picture: z.string().optional(),
-  category: z.string(),
-  tags: z.string().optional(),
-  date: z.date().optional(),
-});
-
-type CreateBlogFormSchema = z.infer<typeof createBlogFormSchema>;
+import { cn } from "@/lib/utils";
 
 export default function CreateBlogPage() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [error, setError] = React.useState<string | undefined>(undefined);
 
+  const form = useForm<CreateBlogFormSchema>({
+    resolver: zodResolver(createBlogFormSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      userId: "9f593ec8-0025-465b-b6fa-d15ede8a83ed",
+      categoryId: "d86430ea-6571-4a5c-b9d2-09d979ff82ea",
+      tags: "",
+      mainImageId: "",
+      createdAt: date,
+    },
+  });
+
   // initialize quill
-  const ReactQuill = useMemo(
+
+  const DynamicQuill = useMemo(
     () => dynamic(() => import("react-quill-new"), { ssr: false }),
     []
   );
@@ -74,21 +85,31 @@ export default function CreateBlogPage() {
     ],
   };
 
-  const form = useForm<CreateBlogFormSchema>({
-    resolver: zodResolver(createBlogFormSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-      category: "",
-      tags: "",
-      picture: "",
-      date: date,
-    },
-  });
-
   async function onSubmit(values: CreateBlogFormSchema) {
-    const { title, content, picture, category, tags } = values;
+    const { title, content, mainImageId, categoryId, tags } = values;
     console.log(values);
+
+    const formData = {
+      title,
+      content,
+      userId: "9f593ec8-0025-465b-b6fa-d15ede8a83ed",
+      mainImageId,
+      categoryId: "d86430ea-6571-4a5c-b9d2-09d979ff82ea",
+      tags,
+      createdAt: date ? date.toISOString() : null,
+    };
+
+    try {
+      const response = await axios.post("http://localhost:3001/blog", formData);
+
+      console.log("Blog created:", response.data); // Cek respons
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error submitting form:", error.response?.data); // Log kesalahan dari server
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
   }
 
   return (
@@ -117,13 +138,7 @@ export default function CreateBlogPage() {
               <FormItem>
                 <span>Contents</span>
                 <FormControl>
-                  <ReactQuill
-                    modules={modules}
-                    style={{
-                      height: "80%",
-                    }}
-                    {...field}
-                  />
+                  <DynamicQuill modules={modules} {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -134,7 +149,7 @@ export default function CreateBlogPage() {
               {/* ===IMAGE=== */}
               <FormField
                 control={form.control}
-                name="picture"
+                name="mainImageId"
                 render={({ field }) => (
                   <FormItem>
                     <span>Main Picture</span>
@@ -158,7 +173,7 @@ export default function CreateBlogPage() {
               {/* ===CATEGORY=== */}
               <FormField
                 control={form.control}
-                name="category"
+                name="categoryId"
                 render={({ field }) => (
                   <FormItem>
                     <span>Categories</span>
@@ -169,13 +184,16 @@ export default function CreateBlogPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="politic">Politic</SelectItem>
-                        <SelectItem value="music">Music</SelectItem>
-                        <SelectItem value="sport">Sport</SelectItem>
-                        <SelectItem value="foord">Food</SelectItem>
-                        <SelectItem value="culture">Culture</SelectItem>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="automotif">Automotif</SelectItem>
+                        <SelectItem value="d86430ea-6571-4a5c-b9d2-09d979ff82ea">
+                          Category 1
+                        </SelectItem>
+                        <SelectItem value="category2">Category 2</SelectItem>
+                        <SelectItem value="category3">Category 3</SelectItem>
+                        <SelectItem value="category4">Category 4</SelectItem>
+                        <SelectItem value="category5">Category 5</SelectItem>
+                        <SelectItem value="category6">Category 6</SelectItem>
+                        <SelectItem value="category7">Category 7</SelectItem>
+                        <SelectItem value="category8">Category 8</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -200,7 +218,7 @@ export default function CreateBlogPage() {
               {/* ===DATE=== */}
               <FormField
                 control={form.control}
-                name="date"
+                name="createdAt"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex flex-col gap-2">

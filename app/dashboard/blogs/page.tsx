@@ -22,7 +22,7 @@ import {
 export default function BlogPage() {
   return (
     <>
-      <Input type="search" placeholder="Search blog ..." />
+      <Input id="search" type="search" placeholder="Search blog ..." />
       <Table>
         <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>
@@ -33,26 +33,7 @@ export default function BlogPage() {
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell className="font-medium">1</TableCell>
-            <TableCell>Some Title</TableCell>
-            <TableCell>27 November 2024</TableCell>
-            <TableCell className="text-right">
-              <Button variant="outline">Edit</Button>
-              <Button variant="destructive">Delete</Button>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-medium">2</TableCell>
-            <TableCell>Some Title</TableCell>
-            <TableCell>27 November 2024</TableCell>
-            <TableCell className="text-right">
-              <Button variant="outline">Edit</Button>
-              <Button variant="destructive">Delete</Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
+        <TableBody></TableBody>
       </Table>
       <Pagination>
         <PaginationContent>
