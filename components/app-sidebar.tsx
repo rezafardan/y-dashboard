@@ -43,6 +43,10 @@ const data = {
           url: "/blogs",
         },
         {
+          title: "Add New Category",
+          url: "/blogs/categories/create",
+        },
+        {
           title: "Blog Categories Lists",
           url: "/blogs/categories",
         },

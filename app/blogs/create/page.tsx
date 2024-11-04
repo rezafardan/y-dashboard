@@ -1,30 +1,22 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 
-// Fetching api
-import axios from "axios";
-
-// React quill rich text editor
-import dynamic from "next/dynamic";
-import "react-quill-new/dist/quill.snow.css";
-
-// Form handler
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  createBlogFormSchema,
-  CreateBlogFormSchema,
-} from "@/schema/createBlogFormSchema";
-import { useForm, useFormState } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
-// UI component
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -32,278 +24,236 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { id } from "date-fns/locale";
+import { Checkbox } from "@/components/ui/checkbox";
+import { createBlogService } from "@/services/blogServices";
 
-export default function CreateBlogPage() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
-  const [error, setError] = React.useState<string | undefined>(undefined);
-  const { toast } = useToast();
+// {
+//   id: 'cm31sujsr0006zw0x8dpd7j31',
+//   title: 'blog 1',
+//   content: 'content 1',
+//   status: 'DRAFT',
+//   viewCount: 0,
+//   likeCount: 0,
+//   allowComment: true, /
+//   publishedAt: 2024-11-03T16:21:17.880Z,
+//   createdAt: 2024-11-03T16:21:17.880Z,
+//   updatedAt: 2024-11-03T16:21:17.883Z,
+//   deletedAt: null,
+//   mainImageId: null,
+//   userId: 'cm31sst3m0002zw0xn7p6c7ua',
+//   categoryId: 'cm31stt5w0004zw0xyqj9n6if'
+// }
 
-  const form = useForm<CreateBlogFormSchema>({
-    resolver: zodResolver(createBlogFormSchema),
+// enum for status blog
+enum BlogStatus {
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED",
+  ARCHIVED = "ARCHIVED",
+}
+
+const newBlogSchema = z.object({
+  title: z.string().min(3, { message: "Input with minimum 3 character" }),
+  content: z.string().min(10, { message: "Content minimum 10 character" }),
+  categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
+  tag: z.string().min(3, { message: "Input tag with minimun 3 character" }),
+  publishedAt: z.date().optional(),
+  status: z.nativeEnum(BlogStatus).optional(),
+  allowComment: z.boolean().default(false).optional(),
+  userId: z.string().optional(),
+});
+
+export default function CreateNewBlog() {
+  const [loading, setLoading] = React.useState(false);
+
+  // define isi form
+  const form = useForm<z.infer<typeof newBlogSchema>>({
+    resolver: zodResolver(newBlogSchema),
     defaultValues: {
       title: "",
       content: "",
-      userId: "9f593ec8-0025-465b-b6fa-d15ede8a83ed",
-      categoryId: "d86430ea-6571-4a5c-b9d2-09d979ff82ea",
-      tags: "",
-      mainImageId: "",
-      createdAt: date,
+      categoryId: "",
+      tag: "",
+      publishedAt: undefined,
+      status: BlogStatus.PUBLISHED,
+      allowComment: true,
+      userId: "cm31sst3m0002zw0xn7p6c7ua",
     },
   });
 
-  // initialize quill
-
-  const DynamicQuill = useMemo(
-    () => dynamic(() => import("react-quill-new"), { ssr: false }),
-    []
-  );
-
-  // module for quill toolbar
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      ["bold", "italic", "underline", "strike", "blockquote"],
-      [{ align: ["right", "center", "justify"] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image"],
-    ],
-  };
-
-  async function onSubmit(values: CreateBlogFormSchema) {
-    const { title, content, mainImageId, categoryId, tags } = values;
-
-    console.log(values);
-
-    const formData = {
-      title,
-      content,
-      userId: "cm2x0th0b00008kcwlrfti706",
-      mainImageId,
-      categoryId: "cm2x0xuci00048kcwnrz5mtho",
-      tags,
-      createdAt: date ? date.toISOString() : null,
-    };
-
+  // define submit handler
+  const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     try {
-      const response = await axios.post("http://localhost:3001/blog", formData);
-
-      console.log("Blog created:", response.data); // Cek respons
+      setLoading(true);
+      const result = await createBlogService(values);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error submitting form:", error.response?.data); // Log kesalahan dari server
-      } else {
-        console.error("Unexpected error:", error);
-      }
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-    form.reset();
-  }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <section className="flex flex-col gap-4">
-          {/* ===INPUT=== */}
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <span>Title</span>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* TITLE */}
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Input your blog title here..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* CONTENT */}
+        <FormField
+          control={form.control}
+          name="content"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Content</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Input your blog title here..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* CATEGORY */}
+        <FormField
+          control={form.control}
+          name="categoryId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <Input id="title" placeholder="Title" {...field} />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <SelectContent>
+                  <SelectItem value="cm31stt5w0004zw0xyqj9n6if">
+                    Category 1
+                  </SelectItem>
+                  <SelectItem value="category2">Category 2</SelectItem>
+                  <SelectItem value="category3">Category 3</SelectItem>
+                  <SelectItem value="category4">Category 4</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {/* ===CONTENT=== */}
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <span>Contents</span>
+        {/* TAG */}
+        <FormField
+          control={form.control}
+          name="tag"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tag</FormLabel>
+              <FormControl>
+                <Input placeholder="Input your blog tag here..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* DATE PICKER */}
+        <FormField
+          control={form.control}
+          name="publishedAt"
+          render={({ field }) => (
+            <FormItem className="flex w-72 flex-col gap-2">
+              <FormLabel htmlFor="datetime">Date Publish</FormLabel>
+              <FormControl>
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  displayFormat={{ hour24: "PPP HH:mm" }}
+                  locale={id}
+                  granularity="minute"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* STATUS */}
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <DynamicQuill modules={modules} {...field} />
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder="Select Status"
+                      defaultValue={"PUBLISHED"}
+                    />
+                  </SelectTrigger>
                 </FormControl>
-              </FormItem>
-            )}
-          />
+                <SelectContent>
+                  <SelectItem value={BlogStatus.DRAFT}>
+                    {BlogStatus.DRAFT}
+                  </SelectItem>
+                  <SelectItem value={BlogStatus.PUBLISHED}>
+                    {BlogStatus.PUBLISHED}
+                  </SelectItem>
+                  <SelectItem value={BlogStatus.ARCHIVED}>
+                    {BlogStatus.ARCHIVED}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="flex gap-4">
-            <div className="flex flex-col gap-4 grow">
-              {/* ===IMAGE=== */}
-              <FormField
-                control={form.control}
-                name="mainImageId"
-                render={({ field }) => (
-                  <FormItem>
-                    <span>Main Picture</span>
-                    <FormControl>
-                      <Input id="picture" type="file" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+        {/* ALLOW COMMENT */}
+        <FormField
+          control={form.control}
+          name="allowComment"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Allow users to comment</FormLabel>
+                <FormDescription>
+                  check if users are allowed to comment on this blog or uncheck
+                  if users are not allowed to comment
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
 
-              {/* ===IMAGE PREVIEW */}
-              <Card className="h-full">
-                <CardHeader>
-                  <CardDescription>Main Image Preview</CardDescription>
-                </CardHeader>
-                <CardContent>Image</CardContent>
-              </Card>
-            </div>
-
-            <div className="flex flex-col gap-4 ">
-              {/* ===CATEGORY=== */}
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <span>Categories</span>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a categories" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="d86430ea-6571-4a5c-b9d2-09d979ff82ea">
-                          Category 1
-                        </SelectItem>
-                        <SelectItem value="category2">Category 2</SelectItem>
-                        <SelectItem value="category3">Category 3</SelectItem>
-                        <SelectItem value="category4">Category 4</SelectItem>
-                        <SelectItem value="category5">Category 5</SelectItem>
-                        <SelectItem value="category6">Category 6</SelectItem>
-                        <SelectItem value="category7">Category 7</SelectItem>
-                        <SelectItem value="category8">Category 8</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* ===TAGS=== */}
-              <FormField
-                control={form.control}
-                name="tags"
-                render={({ field }) => (
-                  <FormItem>
-                    <span>Tags</span>
-                    <FormControl>
-                      <Input id="tags" placeholder="Tags" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* ===DATE=== */}
-              <FormField
-                control={form.control}
-                name="createdAt"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex flex-col gap-2">
-                      <span>Choose Date Publish</span>
-                      <FormControl>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-[280px] justify-start text-left font-normal",
-                                !date && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon />
-                              {date ? (
-                                format(date, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={date}
-                              onSelect={setDate}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </FormControl>
-                    </div>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                type="submit"
-                onClick={() => {
-                  toast({ title: "Data Berhasil Terkirim" });
-                }}
-              >
-                Submit
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account and remove your data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <Button variant="outline">Save To Draft</Button>
-        </section>
+        {/* SUBMIT */}
+        <LoadingButton loading={loading} type="submit">
+          Submit
+        </LoadingButton>
       </form>
     </Form>
   );
