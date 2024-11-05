@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,7 +19,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { deleteBlogService, getBlogsService } from "@/services/blogServices";
+import { getAllBlogsService } from "@/services/blogServices";
+import useSWR from "swr";
+import axios from "axios";
+import { getBlogData } from "@/schema/dataSchema";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // {
 //   id: 'cm31sujsr0006zw0x8dpd7j31',
@@ -36,18 +42,12 @@ import { deleteBlogService, getBlogsService } from "@/services/blogServices";
 //   categoryId: 'cm31stt5w0004zw0xyqj9n6if'
 // }
 
-export default async function BlogPage() {
-  const blogs = await getBlogsService();
+export default function BlogPage() {
+  const fetcher = () => getAllBlogsService();
+  const { data, error, isLoading } = useSWR("/blog", fetcher);
 
-  const deleteBlogs = async (data: string) => {
-    try {
-      await deleteBlogService(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  console.log(blogs);
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading data</p>;
 
   return (
     <>
@@ -64,7 +64,7 @@ export default async function BlogPage() {
             <TableHead>Date Created</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
-          {blogs.map((blog) => {
+          {data!.map((blog: any) => {
             return (
               <TableRow key={blog.id}>
                 <TableCell>IMAGE</TableCell>
@@ -82,7 +82,7 @@ export default async function BlogPage() {
                   <Button variant="outline" className="mr-4">
                     Edit
                   </Button>
-                  <Button variant="destructive">Delete</Button>
+                  <LoadingButton variant="destructive">Delete</LoadingButton>
                 </TableCell>
               </TableRow>
             );

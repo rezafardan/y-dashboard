@@ -1,8 +1,7 @@
-// blogServices.ts
 import axiosInstance from "@/lib/axiosInstance";
-import { getBlogData, editBlogData } from "@/schema/blogsSchema";
+import { getBlogData, editBlogData } from "@/schema/dataSchema";
 
-export const getBlogsService = async (): Promise<getBlogData[]> => {
+export const getAllBlogsService = async (): Promise<getBlogData[]> => {
   const result = await axiosInstance.get("blog");
   return result.data.data;
 };

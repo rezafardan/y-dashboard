@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -18,41 +17,71 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { deleteBlogService, getBlogsService } from "@/services/blogServices";
+import { getAllCategoriesService } from "@/services/categoryServices";
 
-export default function BlogCategoriesPage() {
+// {
+//   id: 'cm33w5vzf0007385xvdd6r9xz',
+//   name: 'Tes',
+//   description: 'adasdasdasdasdasd',
+//   createdAt: 2024-11-05T03:29:38.090Z,
+//   updatedAt: 2024-11-05T03:29:38.090Z,
+//   userId: 'cm31sst3m0002zw0xn7p6c7ua'
+// }
+
+export default async function BlogPage() {
+  const blogs = await getAllCategoriesService();
+
+  const deleteBlogs = async (data: string) => {
+    try {
+      await deleteBlogService(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  console.log(blogs);
+
   return (
     <>
-      <Input type="search" placeholder="Search categories ..." />
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
+        <TableCaption>A list of blog recent</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">#</TableHead>
+            <TableHead>Image</TableHead>
             <TableHead>Title</TableHead>
-            <TableHead>Createt At</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Author</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Date Published</TableHead>
+            <TableHead>Date Created</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
+          {blogs.map((blog) => {
+            return (
+              <TableRow key={blog.id}>
+                <TableCell>IMAGE</TableCell>
+                <TableCell>{blog.title}</TableCell>
+                <TableCell>{blog.user.username}</TableCell>
+                <TableCell>{blog.status}</TableCell>
+                <TableCell>{blog.category.name}</TableCell>
+                <TableCell>
+                  {new Date(blog.publishedAt).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  {new Date(blog.createdAt).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  <Button variant="outline" className="mr-4">
+                    Edit
+                  </Button>
+                  <Button variant="destructive">Delete</Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell className="font-medium">1</TableCell>
-            <TableCell>Some Title</TableCell>
-            <TableCell>27 November 2024</TableCell>
-            <TableCell className="text-right">
-              <Button variant="outline">Edit</Button>
-              <Button variant="destructive">Delete</Button>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-medium">2</TableCell>
-            <TableCell>Some Title</TableCell>
-            <TableCell>27 November 2024</TableCell>
-            <TableCell className="text-right">
-              <Button variant="outline">Edit</Button>
-              <Button variant="destructive">Delete</Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
+        <TableBody></TableBody>
       </Table>
       <Pagination>
         <PaginationContent>
