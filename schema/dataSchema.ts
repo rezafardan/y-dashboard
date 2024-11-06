@@ -1,4 +1,3 @@
-// Interface untuk Kategori
 export interface Category {
   id: string;
   name: string;
@@ -33,9 +32,15 @@ export interface getBlogData {
   status: string;
 }
 
-export interface GetBlogsResponse {
-  data: getBlogData[];
-  message: string;
+export interface createBlogData {
+  id: string;
+  title: string;
+  content: string;
+  category: Category;
+  user: User;
+  publishedAt: Date;
+  mainImageId: string;
+  status: string;
 }
 
 export interface editBlogData {
@@ -44,9 +49,63 @@ export interface editBlogData {
   mainImageId?: string;
 }
 
+export interface deleteBlogData {
+  id: string;
+}
+
 export interface getCategoriesData {
   id: string;
   name: string;
   description: string;
+  createdAt: Date;
   user: User;
+}
+
+export interface createCategoryData {
+  id: string;
+  name: string;
+  description: string;
+  user: User;
+}
+
+export interface editCategoryData {
+  name: string;
+  description: string;
+}
+
+export interface deleteCategoryData {
+  id: string;
+}
+
+export interface getUsersData {
+  id: string;
+  username: string;
+  email: string;
+  passwordHash: string;
+  role: string;
+  profileImage: string;
+  createdAt: Date;
+}
+
+export interface createUserData {
+  id: string;
+  username: string;
+  email: string;
+  passwordHash: string;
+  role: string;
+  profileImage: string;
+}
+
+export interface editUserData {
+  id: string;
+  username: string;
+  email: string;
+  passwordHash: string;
+  role: string;
+  profileImage: string;
+  createdAt: Date;
+}
+
+export interface deleteUserData {
+  id: string;
 }

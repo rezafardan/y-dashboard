@@ -1,5 +1,8 @@
 "use client";
 
+import React from "react";
+
+// COMPONENT
 import {
   Form,
   FormControl,
@@ -10,24 +13,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
-import { useForm } from "react-hook-form";
+
+// FORM HANDLER
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { createCategoryService } from "@/services/categoryServices";
 
-// {
-//   "data": [
-//       {
-//           "id": "cm31stt5w0004zw0xyqj9n6if",
-//           "name": "category 1",
-//           "description": "description 1",
-//           "userId": "cm31sst3m0002zw0xn7p6c7ua"
-//       }
-//   ],
-//   "message": "Get all categories success!"
-// }
-
+// CATEGORY SCHEMA
 const newCategorySchmea = z.object({
   name: z
     .string()
@@ -56,17 +49,20 @@ export default function CreateCategoryPage() {
     try {
       setLoading(true);
       const result = await createCategoryService(values);
-      console.log(result);
     } catch (error) {
       console.log(error);
     } finally {
+      form.reset();
       setLoading(false);
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-4"
+      >
         {/* CATEGORY NAME */}
         <FormField
           control={form.control}

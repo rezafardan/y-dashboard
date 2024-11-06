@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,8 +19,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { deleteBlogService, getBlogsService } from "@/services/blogServices";
 import { getAllCategoriesService } from "@/services/categoryServices";
+import useSWR from "swr";
 
 // {
 //   id: 'cm33w5vzf0007385xvdd6r9xz',
@@ -29,48 +31,34 @@ import { getAllCategoriesService } from "@/services/categoryServices";
 //   userId: 'cm31sst3m0002zw0xn7p6c7ua'
 // }
 
-export default async function BlogPage() {
-  const blogs = await getAllCategoriesService();
+export default function CategoriesPage() {
+  const fetcher = () => getAllCategoriesService();
+  const { data, error, isLoading } = useSWR("/category", fetcher);
 
-  const deleteBlogs = async (data: string) => {
-    try {
-      await deleteBlogService(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  console.log(blogs);
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading data</p>;
 
   return (
     <>
       <Table>
-        <TableCaption>A list of blog recent</TableCaption>
+        <TableCaption>A list of categories recent</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Image</TableHead>
-            <TableHead>Title</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Created At</TableHead>
             <TableHead>Author</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Date Published</TableHead>
-            <TableHead>Date Created</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
-          {blogs.map((blog) => {
+          {data!.map((item) => {
             return (
-              <TableRow key={blog.id}>
-                <TableCell>IMAGE</TableCell>
-                <TableCell>{blog.title}</TableCell>
-                <TableCell>{blog.user.username}</TableCell>
-                <TableCell>{blog.status}</TableCell>
-                <TableCell>{blog.category.name}</TableCell>
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.description}</TableCell>
                 <TableCell>
-                  {new Date(blog.publishedAt).toLocaleString()}
+                  {new Date(item.createdAt).toLocaleString()}
                 </TableCell>
-                <TableCell>
-                  {new Date(blog.createdAt).toLocaleString()}
-                </TableCell>
+                <TableCell>{item.user.username}</TableCell>
                 <TableCell>
                   <Button variant="outline" className="mr-4">
                     Edit
