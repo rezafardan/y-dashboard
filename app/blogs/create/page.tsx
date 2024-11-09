@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { LoadingButton } from "@/components/ui/loading-button";
 
 // FORM HANDLER
@@ -36,50 +36,103 @@ import { id } from "date-fns/locale";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
 
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
+
+import { AxiosError } from "axios";
+
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
   DRAFT = "DRAFT",
-  PUBLISHED = "PUBLISHED",
-  ARCHIVED = "ARCHIVED",
+  SCHEDULE = "SCHEDULE",
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  PUBLISH = "PUBLSIH",
+  ARCHIVE = "ARCHIVE",
+}
+
+// === BLOG SCHEMA ===
+// id                      String             @id @default(cuid())
+// title                   String             @db.VarChar(255)
+// content                 String             @db.Text
+// status                  BlogStatus         @default(DRAFT)
+// viewCount               Int                @default(0) @map("view_count")
+// likeCount               Int                @default(0) @map("like_count")
+// allowComment            Boolean            @map("allow_comment")
+// schedulePulblishedAt    DateTime?          @map("schedule_published_at")
+// publishedAt             DateTime?          @map("published_at")
+// createdAt               DateTime           @default(now()) @map("created_at")
+// updatedAt               DateTime           @updatedAt @map("edited_at")
+// deletedAt               DateTime?          @map("deleted_at")
+// mainImageId             String?            @map("main_image_id")
+// userId                  String             @map("user_id")
+// categoryId              String             @map("category_id")
+// isUserActive            Boolean?           @default(true) @map("is_user_active")
+
+interface ErrorResponse {
+  message: string;
 }
 
 // BLOG SCHEMA
 const newBlogSchema = z.object({
   title: z.string().min(3, { message: "Input with minimum 3 character" }),
   content: z.string().min(10, { message: "Content minimum 10 character" }),
-  categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
-  tag: z.string().min(3, { message: "Input tag with minimun 3 character" }),
-  publishedAt: z.date().optional(),
+  mainImageId: z.string().default("path://image.jpg"),
   status: z.nativeEnum(BlogStatus).optional(),
-  allowComment: z.boolean().default(false).optional(),
+  allowComment: z.boolean().default(true).optional(),
+  publishedAt: z.date().optional(),
+  tag: z.string().min(3, { message: "Input tag with minimun 3 character" }),
   userId: z.string().optional(),
+  categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
 });
 
 export default function CreateNewBlog() {
+  const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
+
+  const defaultValues = {
+    title: "Lorem Ipsum ea Tempuribud Sint Quis",
+    content:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elitdolor ut aliquip pulvinar sit nulla elit adipiscing.",
+    mainImageId: "path://image.jpg",
+    status: BlogStatus.DRAFT,
+    allowComment: true,
+    publishedAt: undefined,
+    tag: "Lorem Ipsum ea",
+    userId: "cm38l6bah0000kyxi0jqe2l9c",
+    categoryId: "",
+  };
 
   const form = useForm<z.infer<typeof newBlogSchema>>({
     resolver: zodResolver(newBlogSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-      categoryId: "",
-      tag: "",
-      publishedAt: undefined,
-      status: BlogStatus.PUBLISHED,
-      allowComment: true,
-      userId: "cm31sst3m0002zw0xn7p6c7ua",
-    },
+    defaultValues,
   });
 
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     try {
       setLoading(true);
+
       const result = await createBlogService(values);
+      const successMessage = result.message;
+
+      toast({
+        description: successMessage,
+        action: <ToastClose />,
+        duration: 4000,
+      });
     } catch (error) {
-      console.log(error);
+      const errorA = error as AxiosError<ErrorResponse>;
+      const errorMessage = errorA?.response?.data?.message;
+
+      toast({
+        description: errorMessage,
+        action: <ToastClose />,
+        duration: 4000,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+      form.reset(defaultValues);
     }
   };
 
@@ -158,7 +211,6 @@ export default function CreateNewBlog() {
               </FormItem>
             )}
           />
-
           {/* TAG */}
           <FormField
             control={form.control}
@@ -173,7 +225,6 @@ export default function CreateNewBlog() {
               </FormItem>
             )}
           />
-
           {/* DATE PICKER */}
           <FormField
             control={form.control}
@@ -194,7 +245,6 @@ export default function CreateNewBlog() {
               </FormItem>
             )}
           />
-
           {/* STATUS */}
           <FormField
             control={form.control}
@@ -207,7 +257,7 @@ export default function CreateNewBlog() {
                     <SelectTrigger>
                       <SelectValue
                         placeholder="Select Status"
-                        defaultValue={"PUBLISHED"}
+                        defaultValue={"DRAFT"}
                       />
                     </SelectTrigger>
                   </FormControl>
@@ -215,11 +265,17 @@ export default function CreateNewBlog() {
                     <SelectItem value={BlogStatus.DRAFT}>
                       {BlogStatus.DRAFT}
                     </SelectItem>
-                    <SelectItem value={BlogStatus.PUBLISHED}>
-                      {BlogStatus.PUBLISHED}
+                    <SelectItem value={BlogStatus.SCHEDULE}>
+                      {BlogStatus.SCHEDULE}
                     </SelectItem>
-                    <SelectItem value={BlogStatus.ARCHIVED}>
-                      {BlogStatus.ARCHIVED}
+                    <SelectItem value={BlogStatus.PENDING}>
+                      {BlogStatus.PENDING}
+                    </SelectItem>
+                    <SelectItem value={BlogStatus.APPROVED}>
+                      {BlogStatus.APPROVED}
+                    </SelectItem>
+                    <SelectItem value={BlogStatus.PUBLISH}>
+                      {BlogStatus.PUBLISH}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -227,31 +283,32 @@ export default function CreateNewBlog() {
               </FormItem>
             )}
           />
-
           {/* ALLOW COMMENT */}
           <FormField
             control={form.control}
             name="allowComment"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Allow users to comment</FormLabel>
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">
+                    Allow users to comment
+                  </FormLabel>
                   <FormDescription>
                     check if users are allowed to comment on this blog or
                     uncheck if users are not allowed to comment
                   </FormDescription>
                 </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
               </FormItem>
             )}
           />
-
           {/* SUBMIT */}
+
           <LoadingButton loading={loading} type="submit">
             Submit
           </LoadingButton>

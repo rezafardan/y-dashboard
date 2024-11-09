@@ -19,11 +19,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { getAllBlogsService } from "@/services/blogServices";
+import { deleteBlogService, getAllBlogsService } from "@/services/blogServices";
 import useSWR from "swr";
-import axios from "axios";
-import { getBlogData } from "@/schema/dataSchema";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
+import { AxiosError } from "axios";
 
 // {
 //   id: 'cm31sujsr0006zw0x8dpd7j31',
@@ -42,9 +43,37 @@ import { LoadingButton } from "@/components/ui/loading-button";
 //   categoryId: 'cm31stt5w0004zw0xyqj9n6if'
 // }
 
+interface ErrorResponse {
+  message: string;
+}
+
 export default function BlogPage() {
+  const { toast } = useToast();
   const fetcher = () => getAllBlogsService();
   const { data, error, isLoading } = useSWR("/blog", fetcher);
+
+  const handleDeleteBlog = async (id: string) => {
+    const blogId = id;
+    try {
+      const result = await deleteBlogService(blogId);
+
+      toast({
+        description: result || "Blog has been deleted successfully.",
+        action: <ToastClose />,
+        duration: 4000,
+      });
+    } catch (error) {
+      const errorA = error as AxiosError<ErrorResponse>;
+      const errorMessage = errorA?.response?.data?.message;
+
+      toast({
+        description: errorMessage,
+        action: <ToastClose />,
+        duration: 4000,
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading data</p>;
@@ -82,7 +111,14 @@ export default function BlogPage() {
                   <Button variant="outline" className="mr-4">
                     Edit
                   </Button>
-                  <LoadingButton variant="destructive">Delete</LoadingButton>
+                  <LoadingButton
+                    variant="destructive"
+                    onClick={() => {
+                      handleDeleteBlog(blog.id);
+                    }}
+                  >
+                    Delete
+                  </LoadingButton>
                 </TableCell>
               </TableRow>
             );

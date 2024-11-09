@@ -59,7 +59,7 @@ const newUserSchema = z.object({
     .email()
     .min(4, { message: "Description minimum 4 character" })
     .max(28, { message: "Description maximum 28 character" }),
-  passwordHash: z.string().optional(),
+  password: z.string().optional(),
   role: z.nativeEnum(UserRole).optional(),
   profileImage: z.string().optional(),
 });
@@ -72,7 +72,7 @@ export default function CreateUserPage() {
     defaultValues: {
       username: "",
       email: "",
-      passwordHash: "",
+      password: "",
       role: UserRole.AUTHOR,
       profileImage: "",
     },
@@ -82,6 +82,7 @@ export default function CreateUserPage() {
     try {
       setLoading(true);
       const result = await createUserService(values);
+      console.log(result);
     } catch (error) {
       console.log(error);
     } finally {
@@ -122,13 +123,11 @@ export default function CreateUserPage() {
               </FormItem>
             )}
           />
-        </div>
 
-        <div className="w-full p-2 flex flex-col gap-4">
           {/* PASSWORD */}
           <FormField
             control={form.control}
-            name="passwordHash"
+            name="password"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Password</FormLabel>
@@ -139,25 +138,9 @@ export default function CreateUserPage() {
               </FormItem>
             )}
           />
+        </div>
 
-          <FormField
-            control={form.control}
-            name="passwordHash"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Confirm password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+        <div className="w-full p-2 flex flex-col gap-4 justify-between">
           {/* ROLE */}
           <FormField
             control={form.control}

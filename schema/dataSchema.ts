@@ -32,15 +32,36 @@ export interface getBlogData {
   status: string;
 }
 
+// === BLOG SCHEMA ===
+// id                      String             @id @default(cuid())
+// title                   String             @db.VarChar(255)
+// content                 String             @db.Text
+// status                  BlogStatus         @default(DRAFT)
+// viewCount               Int                @default(0) @map("view_count")
+// likeCount               Int                @default(0) @map("like_count")
+// allowComment            Boolean            @map("allow_comment")
+// schedulePulblishedAt    DateTime?          @map("schedule_published_at")
+// publishedAt             DateTime?          @map("published_at")
+// createdAt               DateTime           @default(now()) @map("created_at")
+// updatedAt               DateTime           @updatedAt @map("edited_at")
+// deletedAt               DateTime?          @map("deleted_at")
+// mainImageId             String?            @map("main_image_id")
+// userId                  String             @map("user_id")
+// categoryId              String             @map("category_id")
+// isUserActive            Boolean?           @default(true) @map("is_user_active")
+
 export interface createBlogData {
   id: string;
   title: string;
   content: string;
-  category: Category;
-  user: User;
+  status: string;
+  allowComment: boolean;
+  schedulePulblishedAt: Date;
   publishedAt: Date;
   mainImageId: string;
-  status: string;
+  category: Category;
+  user: User;
+  message: any;
 }
 
 export interface editBlogData {
@@ -78,6 +99,7 @@ export interface deleteCategoryData {
 }
 
 export interface getUsersData {
+  message: any;
   id: string;
   username: string;
   email: string;
