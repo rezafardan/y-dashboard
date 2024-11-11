@@ -20,7 +20,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { deleteBlogService, getAllBlogsService } from "@/services/blogServices";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
@@ -53,18 +53,18 @@ export default function BlogPage() {
   const { data, error, isLoading } = useSWR("/blog", fetcher);
 
   const handleDeleteBlog = async (id: string) => {
-    const blogId = id;
     try {
-      const result = await deleteBlogService(blogId);
+      const result = await deleteBlogService(id);
 
       toast({
         description: result || "Blog has been deleted successfully.",
         action: <ToastClose />,
         duration: 4000,
       });
-    } catch (error) {
-      const errorA = error as AxiosError<ErrorResponse>;
-      const errorMessage = errorA?.response?.data?.message;
+
+      mutate((data: any) => data?.filter((item: any) => item.id !== id), false);
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message;
 
       toast({
         description: errorMessage,

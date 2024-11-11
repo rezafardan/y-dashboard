@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
-
 import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+// COMPONENT
 import {
   Card,
   CardContent,
@@ -10,10 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -22,12 +20,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
+
+// FORM HANDLER
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// API SERVICE
 import { loginService } from "@/services/authServices";
-import { useRouter } from "next/navigation";
+
+// TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
 
+// LOGIN SCHEMA
 const loginSchema = z.object({
   username: z.string(),
   password: z.string(),
@@ -52,24 +60,28 @@ export default function LoginFormPage() {
     try {
       setLoading(true);
       const result = await loginService(values);
-
       const successMessage = result.message;
+
       toast({
         description: successMessage,
         action: <ToastClose />,
-        duration: 1200,
+        duration: 2000,
       });
+
+      // REDIRECT TO HOMEPAGE
       router.push("/");
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message;
+
       toast({
         description: errorMessage,
         action: <ToastClose />,
-        duration: 2600,
+        duration: 4000,
         variant: "destructive",
       });
     } finally {
       form.reset(defaultValues);
+
       setLoading(false);
     }
   };
@@ -152,7 +164,7 @@ export default function LoginFormPage() {
           </div>
 
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account? Please contact{" "}
+            Don't have an account ? Please contact{" "}
             <Link href="#" className="underline">
               Administrator
             </Link>

@@ -22,13 +22,40 @@ import {
 import { getAllUserService } from "@/services/userServices";
 import useSWR from "swr";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@radix-ui/react-toast";
+import { useEffect } from "react";
 
 export default function UsersPage() {
+  const { toast } = useToast();
   const fetcher = () => getAllUserService();
-  const { data, error, isLoading } = useSWR("/user", fetcher);
+  const { data, error, isLoading } = useSWR("/user", fetcher, {
+    revalidateOnFocus: false, // Prevent re-fetching when the window regains focus
+    revalidateOnReconnect: false, // Prevent re-fetching when reconnecting
+    onErrorRetry: () => {}, // Disable retries on error
+  });
 
+  useEffect(() => {
+    if (error?.response?.status === 403) {
+      const errorMessage = error?.response?.data?.message;
+      toast({
+        description:
+          errorMessage || "You do not have permission to perform this action.",
+        action: <ToastClose />,
+        duration: 8000,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]); // Only trigger when `error` changes
+
+  // Error handling and loading state
   if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error loading data</p>;
+
+  if (error) {
+    const errorMessage =
+      error?.response?.data?.message || "An unexpected error occurred.";
+    return <p>{errorMessage}</p>;
+  }
 
   return (
     <>

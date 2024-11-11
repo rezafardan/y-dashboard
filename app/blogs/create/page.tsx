@@ -36,10 +36,9 @@ import { id } from "date-fns/locale";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
 
+// TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
-
-import { AxiosError } from "axios";
 
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
@@ -69,10 +68,6 @@ enum BlogStatus {
 // categoryId              String             @map("category_id")
 // isUserActive            Boolean?           @default(true) @map("is_user_active")
 
-interface ErrorResponse {
-  message: string;
-}
-
 // BLOG SCHEMA
 const newBlogSchema = z.object({
   title: z.string().min(3, { message: "Input with minimum 3 character" }),
@@ -95,7 +90,7 @@ export default function CreateNewBlog() {
     content:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elitdolor ut aliquip pulvinar sit nulla elit adipiscing.",
     mainImageId: "path://image.jpg",
-    status: BlogStatus.DRAFT,
+    status: undefined,
     allowComment: true,
     publishedAt: undefined,
     tag: "Lorem Ipsum ea",
@@ -120,9 +115,8 @@ export default function CreateNewBlog() {
         action: <ToastClose />,
         duration: 4000,
       });
-    } catch (error) {
-      const errorA = error as AxiosError<ErrorResponse>;
-      const errorMessage = errorA?.response?.data?.message;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message;
 
       toast({
         description: errorMessage,
@@ -160,6 +154,10 @@ export default function CreateNewBlog() {
                   />
                 </FormControl>
                 <FormMessage />
+                <FormDescription>
+                  Enter the title of your blog here. Minimum of 3 characters for
+                  better descriptiveness and appeal
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -178,6 +176,10 @@ export default function CreateNewBlog() {
                   />
                 </FormControl>
                 <FormMessage />
+                <FormDescription>
+                  Add the main content of your blog here. At least 10 characters
+                  are required to provide more information to readers
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -208,6 +210,10 @@ export default function CreateNewBlog() {
                   </SelectContent>
                 </Select>
                 <FormMessage />
+                <FormDescription>
+                  Select an appropriate category for this blog. You must choose
+                  at least one category
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -222,16 +228,21 @@ export default function CreateNewBlog() {
                   <Input placeholder="Input your blog tag here..." {...field} />
                 </FormControl>
                 <FormMessage />
+                <FormDescription>
+                  Add a tag related to your blog to make it easier to find.
+                  Minimum of 3 characters
+                </FormDescription>
               </FormItem>
             )}
           />
+
           {/* DATE PICKER */}
           <FormField
             control={form.control}
             name="publishedAt"
             render={({ field }) => (
               <FormItem className="flex w-72 flex-col gap-2">
-                <FormLabel htmlFor="datetime">Date Publish</FormLabel>
+                <FormLabel>Date Publish</FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -242,9 +253,14 @@ export default function CreateNewBlog() {
                   />
                 </FormControl>
                 <FormMessage />
+                <FormDescription>
+                  Choose the desired date and time to publish this blog. Adjust
+                  according to your schedule
+                </FormDescription>
               </FormItem>
             )}
           />
+
           {/* STATUS */}
           <FormField
             control={form.control}
@@ -280,6 +296,10 @@ export default function CreateNewBlog() {
                   </SelectContent>
                 </Select>
                 <FormMessage />
+                <FormDescription>
+                  Select the publication status: DRAFT for draft, SCHEDULE to
+                  schedule, or PUBLISH to publish immediately
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -294,8 +314,8 @@ export default function CreateNewBlog() {
                     Allow users to comment
                   </FormLabel>
                   <FormDescription>
-                    check if users are allowed to comment on this blog or
-                    uncheck if users are not allowed to comment
+                    Check this box to allow users to comment on this blog, or
+                    leave it unchecked to disable comments.
                   </FormDescription>
                 </div>
                 <FormControl>

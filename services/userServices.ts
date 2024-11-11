@@ -4,6 +4,7 @@ import {
   deleteUserData,
   editUserData,
   getUsersData,
+  checkUsernameData,
 } from "@/schema/dataSchema";
 
 export const getAllUserService = async (): Promise<getUsersData[]> => {
@@ -17,7 +18,7 @@ export const createUserService = async (data: any): Promise<createUserData> => {
   const result = await axiosInstance.post("user", data, {
     withCredentials: true,
   });
-  return result.data.data;
+  return result.data;
 };
 
 export const editUserService = async (
@@ -37,4 +38,25 @@ export const deleteUserService = async (
     withCredentials: true,
   });
   return result.data.data;
+};
+
+export const checkUsernameAvailability = async (
+  username: string
+): Promise<boolean> => {
+  try {
+    const result = await axiosInstance.post(
+      "user/check-username",
+      { username },
+      { withCredentials: true }
+    );
+
+    if (result.status === 200) {
+      return result.data.isAvailable;
+    }
+
+    throw new Error("Unexpected response status");
+  } catch (error) {
+    console.error("Error checking username availability:", error);
+    return false;
+  }
 };

@@ -110,6 +110,7 @@ export interface getUsersData {
 }
 
 export interface createUserData {
+  message: any;
   id: string;
   username: string;
   email: string;
@@ -130,4 +131,8 @@ export interface editUserData {
 
 export interface deleteUserData {
   id: string;
+}
+
+export interface checkUsernameData {
+  username: string;
 }
