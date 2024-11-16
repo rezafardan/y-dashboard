@@ -42,10 +42,9 @@ import debounce from "lodash/debounce";
 
 // ENUM FOR USER ROLE
 enum UserRole {
-  ADMIN = "ADMIN",
   AUTHOR = "AUTHOR",
   EDITOR = "EDITOR",
-  READER = "READER",
+  SUBSCRIBER = "SUBSCRIBER",
 }
 
 // USER SCHEMA
@@ -105,7 +104,7 @@ const newUserSchema = z
 
   .refine(
     (data) => {
-      const bannedUsernames = ["admin", "root", "system", "author", "editor"];
+      const bannedUsernames = ["administrator", "author", "editor"];
       return !bannedUsernames.includes(data.username.toLowerCase());
     },
     {
@@ -122,6 +121,7 @@ const newUserSchema = z
 export default function CreateUserPage() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
+  const [usernameStatus, setUsernameStatus] = React.useState<string>("");
 
   const defaultValues = {
     username: "",
@@ -135,6 +135,7 @@ export default function CreateUserPage() {
   const form = useForm<z.infer<typeof newUserSchema>>({
     resolver: zodResolver(newUserSchema),
     defaultValues,
+    shouldFocusError: false,
   });
 
   const debouncedUsernameCheck = useCallback(
@@ -147,8 +148,10 @@ export default function CreateUserPage() {
               type: "manual",
               message: "Username is already taken",
             });
+            setUsernameStatus("Username is already taken");
           } else {
             form.clearErrors("username");
+            setUsernameStatus("Username is available");
           }
         } catch (error) {
           console.error("Error checking username availability:", error);
@@ -156,7 +159,10 @@ export default function CreateUserPage() {
             type: "manual",
             message: "Error checking username availability",
           });
+          setUsernameStatus("Error checking username availability");
         }
+      } else {
+        setUsernameStatus("");
       }
     }, 500),
     [form]
@@ -176,6 +182,7 @@ export default function CreateUserPage() {
           debouncedUsernameCheck(username);
         } else {
           form.clearErrors("username");
+          setUsernameStatus(""); // Clear status if username is empty
         }
       }
     });
@@ -216,7 +223,7 @@ export default function CreateUserPage() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="md:w-1/2 w-full flex flex-col gap-4"
+        className="w-full flex flex-col gap-4"
       >
         {/* USERNAME */}
         <FormField
@@ -230,6 +237,10 @@ export default function CreateUserPage() {
                   placeholder="Username"
                   autoComplete="username"
                   {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    form.trigger("username");
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -254,6 +265,10 @@ export default function CreateUserPage() {
                   placeholder="Email"
                   autoComplete="email"
                   {...field}
+                  onChange={(e) => {
+                    field.onChange(e); // Update nilai form
+                    form.trigger("email"); // Validasi langsung
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -278,6 +293,10 @@ export default function CreateUserPage() {
                   placeholder="Password"
                   autoComplete="new-password"
                   {...field}
+                  onChange={(e) => {
+                    field.onChange(e); // Update nilai form
+                    form.trigger("password"); // Validasi langsung
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -302,6 +321,10 @@ export default function CreateUserPage() {
                   placeholder="Confirm your password"
                   autoComplete="new-password"
                   {...field}
+                  onChange={(e) => {
+                    field.onChange(e); // Update nilai form
+                    form.trigger("confirmPassword"); // Validasi langsung
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -327,10 +350,11 @@ export default function CreateUserPage() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value={UserRole.ADMIN}>ADMIN</SelectItem>
                   <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
                   <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
-                  <SelectItem value={UserRole.READER}>READER</SelectItem>
+                  <SelectItem value={UserRole.SUBSCRIBER}>
+                    SUBSCRIBER
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

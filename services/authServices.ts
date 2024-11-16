@@ -7,3 +7,10 @@ export const loginService = async (data: any): Promise<getUsersData> => {
   });
   return result.data;
 };
+
+export const logoutService = async () => {
+  const result = await axiosInstance.post("logout", {
+    withCredentials: true,
+  });
+  return result.data;
+};

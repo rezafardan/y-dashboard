@@ -50,6 +50,8 @@ export const checkUsernameAvailability = async (
       { withCredentials: true }
     );
 
+    console.log(result.data);
+
     if (result.status === 200) {
       return result.data.isAvailable;
     }
