@@ -9,18 +9,14 @@ import {
 export const getAllCategoriesService = async (): Promise<
   getCategoriesData[]
 > => {
-  const result = await axiosInstance.get("category", {
-    withCredentials: true,
-  });
+  const result = await axiosInstance.get("category");
   return result.data.data;
 };
 
 export const createCategoryService = async (
   data: any
 ): Promise<createCategoryData> => {
-  const result = await axiosInstance.post("category", data, {
-    withCredentials: true,
-  });
+  const result = await axiosInstance.post("category", data);
   return result.data.data;
 };
 
@@ -28,17 +24,13 @@ export const editCategoryService = async (
   id: string,
   formEditCategory: any
 ): Promise<editCategoryData[]> => {
-  const result = await axiosInstance.patch(`category/${id}`, formEditCategory, {
-    withCredentials: true,
-  });
+  const result = await axiosInstance.patch(`category/${id}`, formEditCategory);
   return result.data.data;
 };
 
 export const deleteCategoryService = async (
   id: string
 ): Promise<deleteCategoryData> => {
-  const result = await axiosInstance.delete(`category/${id}`, {
-    withCredentials: true,
-  });
+  const result = await axiosInstance.delete(`category/${id}`);
   return result.data.data;
 };

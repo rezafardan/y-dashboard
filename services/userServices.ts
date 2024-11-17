@@ -3,21 +3,17 @@ import {
   createUserData,
   deleteUserData,
   editUserData,
-  getUsersData,
+  userDataResponseApi,
   checkUsernameData,
 } from "@/schema/dataSchema";
 
-export const getAllUserService = async (): Promise<getUsersData[]> => {
-  const result = await axiosInstance.get("user", {
-    withCredentials: true,
-  });
-  return result.data.data;
+export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
+  const result = await axiosInstance.get("user");
+  return result.data.user;
 };
 
 export const createUserService = async (data: any): Promise<createUserData> => {
-  const result = await axiosInstance.post("user", data, {
-    withCredentials: true,
-  });
+  const result = await axiosInstance.post("user", data);
   return result.data;
 };
 
@@ -25,18 +21,12 @@ export const editUserService = async (
   id: string,
   formEditCategory: any
 ): Promise<editUserData[]> => {
-  const result = await axiosInstance.patch(`user/${id}`, formEditCategory, {
-    withCredentials: true,
-  });
+  const result = await axiosInstance.patch(`user/${id}`, formEditCategory);
   return result.data.data;
 };
 
-export const deleteUserService = async (
-  id: string
-): Promise<deleteUserData> => {
-  const result = await axiosInstance.delete(`user/${id}`, {
-    withCredentials: true,
-  });
+export const deleteUserService = async (id: string): Promise<void> => {
+  const result = await axiosInstance.delete(`user/${id}`);
   return result.data.data;
 };
 
@@ -44,13 +34,9 @@ export const checkUsernameAvailability = async (
   username: string
 ): Promise<boolean> => {
   try {
-    const result = await axiosInstance.post(
-      "user/check-username",
-      { username },
-      { withCredentials: true }
-    );
-
-    console.log(result.data);
+    const result = await axiosInstance.post("user/check-username", {
+      username,
+    });
 
     if (result.status === 200) {
       return result.data.isAvailable;

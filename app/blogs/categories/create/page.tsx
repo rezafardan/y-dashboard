@@ -49,6 +49,7 @@ export default function CreateCategoryPage() {
     try {
       setLoading(true);
       const result = await createCategoryService(values);
+      console.log(result);
     } catch (error) {
       console.log(error);
     } finally {

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -41,10 +42,10 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
-export default function LoginFormPage() {
+export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
   const defaultValues = {
     username: "",
@@ -81,7 +82,6 @@ export default function LoginFormPage() {
       });
     } finally {
       form.reset(defaultValues);
-
       setLoading(false);
     }
   };
@@ -89,10 +89,13 @@ export default function LoginFormPage() {
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
       <Card className="mx-auto max-w-sm">
+        <div className="w-full pr-4 pt-4 flex justify-end">
+          <ModeToggle />
+        </div>
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your username below to login to your account
+            Enter your username and password below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -102,8 +105,8 @@ export default function LoginFormPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="grid gap-2"
               >
+                {/* USERNAME */}
                 <div className="grid gap-4">
-                  {/* TITLE */}
                   <FormField
                     control={form.control}
                     name="username"
@@ -115,6 +118,7 @@ export default function LoginFormPage() {
                             id="username"
                             type="text"
                             placeholder="Username"
+                            autoComplete="username"
                             required
                             {...field}
                           />
@@ -124,6 +128,7 @@ export default function LoginFormPage() {
                     )}
                   />
 
+                  {/* PASSWORD */}
                   <FormField
                     control={form.control}
                     name="password"
@@ -131,12 +136,6 @@ export default function LoginFormPage() {
                       <FormItem>
                         <div className="flex items-center">
                           <FormLabel htmlFor="password">Password</FormLabel>
-                          {/* <Link
-                            href="#"
-                            className="ml-auto inline-block text-sm underline"
-                          >
-                            Forgot your password?
-                          </Link> */}
                         </div>
                         <FormControl>
                           <Input
@@ -153,8 +152,15 @@ export default function LoginFormPage() {
                     )}
                   />
 
-                  {/* SUBMIT */}
+                  {/* FORGOT PASSWORD */}
+                  <Link
+                    href="#"
+                    className="ml-auto inline-block text-sm underline"
+                  >
+                    Forgot your password?
+                  </Link>
 
+                  {/* SUBMIT */}
                   <LoadingButton loading={loading} type="submit">
                     Login
                   </LoadingButton>
@@ -166,7 +172,7 @@ export default function LoginFormPage() {
           <div className="mt-4 text-center text-sm">
             Don't have an account ? Please contact{" "}
             <Link href="#" className="underline">
-              Administrator
+              administrator
             </Link>
           </div>
         </CardContent>

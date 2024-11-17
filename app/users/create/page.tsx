@@ -50,6 +50,7 @@ enum UserRole {
 // USER SCHEMA
 const newUserSchema = z
   .object({
+    // SCHEMA FOR USERNAME VALIDATION
     username: z
       .string()
       .min(4, { message: "Username minimum 4 characters" })
@@ -65,6 +66,7 @@ const newUserSchema = z
           "Username can only contain lowercase letters, numbers and underscore",
       }),
 
+    // SCHEMA FOR EMAIL VALIDATION
     email: z
       .string()
       .email({ message: "Invalid email format" })
@@ -77,6 +79,7 @@ const newUserSchema = z
         message: "This email domain is not allowed",
       }),
 
+    // SCHEMA FOR PASSWORD VALIDATION
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" })
@@ -90,8 +93,10 @@ const newUserSchema = z
         message: "Password must contain a special character (!@#$%^&*)",
       }),
 
+    // SCHEMA FOR PASSWORD CONFIRM VALIDATION
     confirmPassword: z.string(),
 
+    // SCHEMA FOR ROLE VALIDATION
     role: z
       .nativeEnum(UserRole)
       .optional()
@@ -99,9 +104,11 @@ const newUserSchema = z
         message: "Role selection is required",
       }),
 
+    // SCHEMA FOR PROFILE IMAGE VALIDATION
     profileImage: z.string().optional(),
   })
 
+  // SCHEMA FOR BANNED USER VALIDATION
   .refine(
     (data) => {
       const bannedUsernames = ["administrator", "author", "editor"];
@@ -112,7 +119,7 @@ const newUserSchema = z
       path: ["username"],
     }
   )
-
+  // SCHEMA FOR PASSWORD CONFIRM VALIDATION
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
@@ -121,6 +128,7 @@ const newUserSchema = z
 export default function CreateUserPage() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [usernameStatus, setUsernameStatus] = React.useState<string>("");
 
   const defaultValues = {
@@ -193,6 +201,7 @@ export default function CreateUserPage() {
   const onSubmit = async (values: z.infer<typeof newUserSchema>) => {
     try {
       setLoading(true);
+      setError(null);
 
       const { confirmPassword, ...submitData } = values;
       const result = await createUserService(submitData);
@@ -207,12 +216,16 @@ export default function CreateUserPage() {
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message;
 
-      toast({
-        description: errorMessage,
-        action: <ToastClose />,
-        duration: 4000,
-        variant: "destructive",
-      });
+      if (error?.response?.status === 403) {
+        toast({
+          description: errorMessage,
+          action: <ToastClose />,
+          duration: 4000,
+          variant: "destructive",
+        });
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
       form.reset(defaultValues);
@@ -220,156 +233,159 @@ export default function CreateUserPage() {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="w-full flex flex-col gap-4"
-      >
-        {/* USERNAME */}
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Username"
-                  autoComplete="username"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    form.trigger("username");
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-              <FormDescription>
-                Username must be lowercase, contain no spaces, and only include
-                letters, numbers, or underscores.
-              </FormDescription>
-            </FormItem>
-          )}
-        />
-
-        {/* EMAIL */}
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  autoComplete="email"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e); // Update nilai form
-                    form.trigger("email"); // Validasi langsung
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-              <FormDescription>
-                Ensure your email is in the correct format and avoid using
-                temporary email domains (e.g., tempmail.com).
-              </FormDescription>
-            </FormItem>
-          )}
-        />
-
-        {/* PASSWORD */}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  autoComplete="new-password"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e); // Update nilai form
-                    form.trigger("password"); // Validasi langsung
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-              <FormDescription>
-                Password must be at least 6 characters long and contain at least
-                one uppercase letter, one number, and one special character
-                (!@#$%^&*).
-              </FormDescription>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Confirm your password"
-                  autoComplete="new-password"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e); // Update nilai form
-                    form.trigger("confirmPassword"); // Validasi langsung
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-              <FormDescription>
-                Make sure the confirmation password matches the one you entered
-                above.
-              </FormDescription>
-            </FormItem>
-          )}
-        />
-
-        {/* ROLE */}
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+    <div>
+      {error && <p>{error}</p>}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full flex flex-col gap-4"
+        >
+          {/* USERNAME */}
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
+                  <Input
+                    placeholder="Username"
+                    autoComplete="username"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      form.trigger("username");
+                    }}
+                  />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
-                  <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
-                  <SelectItem value={UserRole.SUBSCRIBER}>
-                    SUBSCRIBER
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-              <FormDescription>
-                Select a role for the user. Role selection is required.
-              </FormDescription>
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+                <FormDescription>
+                  Username must be lowercase, contain no spaces, and only
+                  include letters, numbers, or underscores.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
 
-        {/* SUBMIT */}
-        <LoadingButton loading={loading} type="submit">
-          Submit
-        </LoadingButton>
-      </form>
-    </Form>
+          {/* EMAIL */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    autoComplete="email"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e); // Update nilai form
+                      form.trigger("email"); // Validasi langsung
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+                <FormDescription>
+                  Ensure your email is in the correct format and avoid using
+                  temporary email domains (e.g., tempmail.com).
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+
+          {/* PASSWORD */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="new-password"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e); // Update nilai form
+                      form.trigger("password"); // Validasi langsung
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+                <FormDescription>
+                  Password must be at least 6 characters long and contain at
+                  least one uppercase letter, one number, and one special
+                  character (!@#$%^&*).
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Confirm your password"
+                    autoComplete="new-password"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e); // Update nilai form
+                      form.trigger("confirmPassword"); // Validasi langsung
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+                <FormDescription>
+                  Make sure the confirmation password matches the one you
+                  entered above.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+
+          {/* ROLE */}
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
+                    <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
+                    <SelectItem value={UserRole.SUBSCRIBER}>
+                      SUBSCRIBER
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+                <FormDescription>
+                  Select a role for the user. Role selection is required.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+
+          {/* SUBMIT */}
+          <LoadingButton loading={loading} type="submit">
+            Submit
+          </LoadingButton>
+        </form>
+      </Form>
+    </div>
   );
 }

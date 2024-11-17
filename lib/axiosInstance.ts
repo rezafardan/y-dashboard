@@ -4,6 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
@@ -11,7 +12,6 @@ axiosInstance.interceptors.request.use(
     return request;
   },
   (error) => {
-    console.log("Kesalahan API : ", error);
     return Promise.reject(error);
   }
 );
@@ -21,7 +21,6 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log("Response Error : ", error);
     return Promise.reject(error);
   }
 );

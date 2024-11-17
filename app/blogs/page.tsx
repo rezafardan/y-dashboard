@@ -56,8 +56,13 @@ export default function BlogPage() {
     try {
       const result = await deleteBlogService(id);
 
+      const resultMessage =
+        typeof result === "string"
+          ? result
+          : "Blog has been deleted successfully.";
+
       toast({
-        description: result || "Blog has been deleted successfully.",
+        description: resultMessage || "Blog has been deleted successfully.",
         action: <ToastClose />,
         duration: 4000,
       });

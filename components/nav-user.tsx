@@ -25,7 +25,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+
+import { useRouter } from "next/navigation";
 import { logoutService } from "@/services/authServices";
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "./ui/toast";
 
 export function NavUser({
   user,
@@ -36,6 +40,38 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      const response = await logoutService();
+      const successMessage = response.message;
+
+      toast({
+        description: successMessage,
+        action: <ToastClose />,
+        duration: 2000,
+      });
+
+      if (response.message === "Logout successfully") {
+        router.push("/login");
+      } else {
+        console.error("Logout failed: ", response.message);
+      }
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message;
+
+      toast({
+        description: errorMessage,
+        action: <ToastClose />,
+        duration: 4000,
+        variant: "destructive",
+      });
+
+      console.error("An error occured during logout: ", error);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -98,8 +134,8 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut onClick={() => logoutService()} />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

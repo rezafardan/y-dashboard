@@ -98,15 +98,34 @@ export interface deleteCategoryData {
   id: string;
 }
 
-export interface getUsersData {
+// LOGIN INTERFACE
+export interface userLoginResponseApi {
+  id: string;
+  username: string;
+  role: string;
+  profileImage: string;
+  deletedAt: Date | null;
+}
+
+export interface loginResponseApi {
   message: any;
+  user: userLoginResponseApi;
+}
+
+export interface userDataResponseApi {
   id: string;
   username: string;
   email: string;
-  passwordHash: string;
   role: string;
   profileImage: string;
-  createdAt: Date;
+  createdAt: string;
+  // updatedAt: string;
+  // deletedAt: string | null;
+}
+
+export interface getUsersDataResponseApi {
+  message: any;
+  user: userDataResponseApi[];
 }
 
 export interface createUserData {
