@@ -6,7 +6,6 @@ import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -15,7 +14,6 @@ import {
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,47 +24,44 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 import { userDataResponseApi } from "@/schema/dataSchema";
 import { getAllUserService, deleteUserService } from "@/services/userServices";
 import useSWR from "swr";
+import { MainTable } from "@/components/main-table/main-table";
 
 const columns: ColumnDef<userDataResponseApi>[] = [
+  // PROFILE IMAGE
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    accessorKey: "profileImage", // Pastikan field ini ada pada data user
+    header: "Profile Image",
+    cell: ({ row }) => {
+      const profileImage = row.getValue("profileImage");
+      return (
+        <div>
+          {profileImage ? (
+            <img
+              src={profileImage as string} // URL gambar profil
+              alt="Profile"
+              width={40} // Lebar gambar
+              height={40} // Tinggi gambar
+              className="rounded-full" // Mengatur sudut gambar menjadi bulat
+            />
+          ) : (
+            <span>No Profile Image</span>
+          )}
+        </div>
+      );
+    },
   },
+  // USERNAME
   {
     accessorKey: "username",
     header: "Username",
     cell: ({ row }) => <div>{row.getValue("username")}</div>,
   },
+
+  // EMAIL
   {
     accessorKey: "email",
     header: ({ column }) => (
@@ -80,21 +75,56 @@ const columns: ColumnDef<userDataResponseApi>[] = [
     ),
     cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
   },
+
+  // ROLE
   {
     accessorKey: "role",
-    header: "Role",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Role
+        <ArrowUpDown />
+      </Button>
+    ),
     cell: ({ row }) => <div>{row.getValue("role")}</div>,
   },
+
+  // CREATED AT
   {
     accessorKey: "createdAt",
-    header: "Created At",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Created At
+        <ArrowUpDown />
+      </Button>
+    ),
     cell: ({ row }) => {
       const createdAt = new Date(row.getValue("createdAt"));
-      return <div>{createdAt.toLocaleString()}</div>;
+      return (
+        <div>
+          {createdAt.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}{" "}
+          {createdAt.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
+      );
     },
   },
+
+  // ACTIONS
   {
     id: "actions",
+    header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
       const user = row.original;
@@ -103,7 +133,6 @@ const columns: ColumnDef<userDataResponseApi>[] = [
         if (window.confirm("Are you sure you want to delete this user?")) {
           try {
             await deleteUserService(user.id);
-            // Setelah berhasil menghapus, SWR akan melakukan re-fetch data
             alert("User deleted successfully!");
           } catch (error) {
             alert("Error deleting user.");
@@ -144,10 +173,7 @@ export default function DataTableDemo() {
     data: users,
     error,
     mutate,
-  } = useSWR<userDataResponseApi[]>(
-    "/api/users", // ganti dengan endpoint API yang sesuai
-    getAllUserService
-  );
+  } = useSWR<userDataResponseApi[]>("/api/users", getAllUserService);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -155,7 +181,6 @@ export default function DataTableDemo() {
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data: users ?? [],
@@ -167,16 +192,30 @@ export default function DataTableDemo() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
 
-  if (error) return <div>Failed to load users</div>;
+  if (error) {
+    // Ambil pesan error
+    let errorMessage = "An unexpected error occurred";
+
+    // Cek jika error adalah instance dari AxiosError
+    if (error?.response) {
+      // Jika error.response ada, kita coba akses message dari response API
+      errorMessage =
+        error.response.data?.message ||
+        "An error occurred while fetching data.";
+    } else if (error instanceof Error) {
+      // Jika bukan axios, kita gunakan message dari error object
+      errorMessage = error.message;
+    }
+
+    return <div className="text-red-500 text-center mt-20">{errorMessage}</div>;
+  }
 
   return (
     <div className="w-full">
@@ -212,56 +251,7 @@ export default function DataTableDemo() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <MainTable table={table} columns={columns.length} />
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}

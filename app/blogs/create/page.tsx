@@ -39,6 +39,13 @@ import useSWR from "swr";
 // TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
@@ -137,203 +144,223 @@ export default function CreateNewBlog() {
   if (error) return <p>Error loading data</p>;
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-4">
-        <div className="w-full p-2 flex flex-col gap-4">
-          {/* TITLE */}
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Input your blog title here..."
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Enter the title of your blog here. Minimum of 3 characters for
-                  better descriptiveness and appeal
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+    <Card>
+      <CardHeader>
+        <CardTitle>Create A New Blog</CardTitle>
+        <CardDescription>
+          Share your ideas, stories or interesting information with the world!
+          Fill in each section below with relevant details to create an engaging
+          and informative blog. Make sure all input meets the requirements so
+          that your blog is ready to be published.
+        </CardDescription>
+      </CardHeader>
 
-          {/* CONTENT */}
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Input your blog title here..."
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Add the main content of your blog here. At least 10 characters
-                  are required to provide more information to readers
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="p-2 max-w-min flex flex-col gap-4">
-          {/* CATEGORY */}
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {data!.map((item, index) => {
-                      return (
-                        <Fragment key={index}>
-                          <SelectItem value={item.id}>{item.name}</SelectItem>
-                        </Fragment>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-                <FormDescription>
-                  Select an appropriate category for this blog. You must choose
-                  at least one category
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-          {/* TAG */}
-          <FormField
-            control={form.control}
-            name="tag"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tag</FormLabel>
-                <FormControl>
-                  <Input placeholder="Input your blog tag here..." {...field} />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Add a tag related to your blog to make it easier to find.
-                  Minimum of 3 characters
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-
-          {/* DATE PICKER */}
-          <FormField
-            control={form.control}
-            name="publishedAt"
-            render={({ field }) => (
-              <FormItem className="flex w-72 flex-col gap-2">
-                <FormLabel>Date Publish</FormLabel>
-                <FormControl>
-                  <DateTimePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    displayFormat={{ hour24: "PPP HH:mm" }}
-                    locale={id}
-                    granularity="minute"
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Choose the desired date and time to publish this blog. Adjust
-                  according to your schedule
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-
-          {/* STATUS */}
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder="Select Status"
-                        defaultValue={"DRAFT"}
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-4">
+            <div className="w-full flex flex-col gap-4">
+              {/* TITLE */}
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Input your blog title here..."
+                        {...field}
                       />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value={BlogStatus.DRAFT}>
-                      {BlogStatus.DRAFT}
-                    </SelectItem>
-                    <SelectItem value={BlogStatus.SCHEDULE}>
-                      {BlogStatus.SCHEDULE}
-                    </SelectItem>
-                    <SelectItem value={BlogStatus.PENDING}>
-                      {BlogStatus.PENDING}
-                    </SelectItem>
-                    <SelectItem value={BlogStatus.APPROVED}>
-                      {BlogStatus.APPROVED}
-                    </SelectItem>
-                    <SelectItem value={BlogStatus.PUBLISH}>
-                      {BlogStatus.PUBLISH}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-                <FormDescription>
-                  Select the publication status: DRAFT for draft, SCHEDULE to
-                  schedule, or PUBLISH to publish immediately
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-          {/* ALLOW COMMENT */}
-          <FormField
-            control={form.control}
-            name="allowComment"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">
-                    Allow users to comment
-                  </FormLabel>
-                  <FormDescription>
-                    Check this box to allow users to comment on this blog, or
-                    leave it unchecked to disable comments.
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          {/* SUBMIT */}
+                    </FormControl>
+                    <FormMessage />
+                    <FormDescription>
+                      Enter the title of your blog here. Minimum of 3 characters
+                      for better descriptiveness and appeal
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
 
-          <LoadingButton loading={loading} type="submit">
-            Submit
-          </LoadingButton>
-        </div>
-      </form>
-    </Form>
+              {/* CONTENT */}
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Input your blog title here..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <FormDescription>
+                      Add the main content of your blog here. At least 10
+                      characters are required to provide more information to
+                      readers
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="max-w-min flex flex-col gap-4">
+              {/* CATEGORY */}
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {data!.map((item, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <SelectItem value={item.id}>
+                                {item.name}
+                              </SelectItem>
+                            </Fragment>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    <FormDescription>
+                      Select an appropriate category for this blog. You must
+                      choose at least one category
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+              {/* TAG */}
+              <FormField
+                control={form.control}
+                name="tag"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tag</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Input your blog tag here..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <FormDescription>
+                      Add a tag related to your blog to make it easier to find.
+                      Minimum of 3 characters
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              {/* DATE PICKER */}
+              <FormField
+                control={form.control}
+                name="publishedAt"
+                render={({ field }) => (
+                  <FormItem className="flex w-72 flex-col gap-2">
+                    <FormLabel>Date Publish</FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        displayFormat={{ hour24: "PPP HH:mm" }}
+                        locale={id}
+                        granularity="minute"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <FormDescription>
+                      Choose the desired date and time to publish this blog.
+                      Adjust according to your schedule
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              {/* STATUS */}
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder="Select Status"
+                            defaultValue={"DRAFT"}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={BlogStatus.DRAFT}>
+                          {BlogStatus.DRAFT}
+                        </SelectItem>
+                        <SelectItem value={BlogStatus.SCHEDULE}>
+                          {BlogStatus.SCHEDULE}
+                        </SelectItem>
+                        <SelectItem value={BlogStatus.PENDING}>
+                          {BlogStatus.PENDING}
+                        </SelectItem>
+                        <SelectItem value={BlogStatus.APPROVED}>
+                          {BlogStatus.APPROVED}
+                        </SelectItem>
+                        <SelectItem value={BlogStatus.PUBLISH}>
+                          {BlogStatus.PUBLISH}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    <FormDescription>
+                      Select the publication status: DRAFT for draft, SCHEDULE
+                      to schedule, or PUBLISH to publish immediately
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+              {/* ALLOW COMMENT */}
+              <FormField
+                control={form.control}
+                name="allowComment"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Allow users to comment
+                      </FormLabel>
+                      <FormDescription>
+                        Check this box to allow users to comment on this blog,
+                        or leave it unchecked to disable comments.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {/* SUBMIT */}
+
+              <LoadingButton loading={loading} type="submit">
+                Submit
+              </LoadingButton>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

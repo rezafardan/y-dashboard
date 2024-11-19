@@ -1,12 +1,12 @@
 import axiosInstance from "@/lib/axiosInstance";
 import {
-  getBlogData,
+  blogDataResponseApi,
   editBlogData,
   createBlogData,
   deleteBlogData,
 } from "@/schema/dataSchema";
 
-export const getAllBlogsService = async (): Promise<getBlogData[]> => {
+export const getAllBlogsService = async (): Promise<blogDataResponseApi[]> => {
   const result = await axiosInstance.get("blog");
   return result.data.data;
 };

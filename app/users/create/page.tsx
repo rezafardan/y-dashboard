@@ -21,6 +21,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
+import Image from "next/image";
+
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -39,6 +42,13 @@ import { ToastClose } from "@/components/ui/toast";
 
 // DEBOUNCE
 import debounce from "lodash/debounce";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 // ENUM FOR USER ROLE
 enum UserRole {
@@ -105,7 +115,7 @@ const newUserSchema = z
       }),
 
     // SCHEMA FOR PROFILE IMAGE VALIDATION
-    profileImage: z.string().optional(),
+    profileImage: z.instanceof(File).optional(),
   })
 
   // SCHEMA FOR BANNED USER VALIDATION
@@ -137,7 +147,7 @@ export default function CreateUserPage() {
     password: "",
     confirmPassword: "",
     role: undefined,
-    profileImage: "",
+    profileImage: undefined,
   };
 
   const form = useForm<z.infer<typeof newUserSchema>>({
@@ -203,8 +213,24 @@ export default function CreateUserPage() {
       setLoading(true);
       setError(null);
 
+      // Buat FormData untuk mengirimkan data
+      const formData = new FormData();
+
+      // Hapus confirmPassword dari values
       const { confirmPassword, ...submitData } = values;
-      const result = await createUserService(submitData);
+
+      // Masukkan data ke dalam FormData
+      Object.entries(submitData).forEach(([key, value]) => {
+        if (key === "profileImage" && value instanceof File) {
+          // Jika profileImage adalah file, tambahkan ke FormData
+          formData.append(key, value);
+        } else if (value) {
+          // Tambahkan data lainnya ke FormData
+          formData.append(key, value as string);
+        }
+      });
+
+      const result = await createUserService(formData);
 
       const successMessage = result.message;
 
@@ -213,6 +239,9 @@ export default function CreateUserPage() {
         action: <ToastClose />,
         duration: 4000,
       });
+
+      console.log(values);
+      console.log(result);
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message;
 
@@ -234,158 +263,219 @@ export default function CreateUserPage() {
 
   return (
     <div>
-      {error && <p>{error}</p>}
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full flex flex-col gap-4"
-        >
-          {/* USERNAME */}
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Username"
-                    autoComplete="username"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      form.trigger("username");
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Username must be lowercase, contain no spaces, and only
-                  include letters, numbers, or underscores.
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+      <Card>
+        <CardHeader>
+          <CardTitle>Create A New User</CardTitle>
+          <CardDescription>
+            Share your ideas, stories or interesting information with the world!
+            Fill in each section below with relevant details to create an
+            engaging and informative blog. Make sure all input meets the
+            requirements so that your blog is ready to be published.
+          </CardDescription>
+        </CardHeader>
+        {error && <p>{error}</p>}
+        <CardContent>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="w-full flex gap-4"
+            >
+              <div>
+                {/* USERNAME */}
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Username"
+                          autoComplete="username"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            form.trigger("username");
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <FormDescription>
+                        Username must be lowercase, contain no spaces, and only
+                        include letters, numbers, or underscores.
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
 
-          {/* EMAIL */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    autoComplete="email"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e); // Update nilai form
-                      form.trigger("email"); // Validasi langsung
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Ensure your email is in the correct format and avoid using
-                  temporary email domains (e.g., tempmail.com).
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+                {/* EMAIL */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          autoComplete="email"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e); // Update nilai form
+                            form.trigger("email"); // Validasi langsung
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <FormDescription>
+                        Ensure your email is in the correct format and avoid
+                        using temporary email domains (e.g., tempmail.com).
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
 
-          {/* PASSWORD */}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    autoComplete="new-password"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e); // Update nilai form
-                      form.trigger("password"); // Validasi langsung
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Password must be at least 6 characters long and contain at
-                  least one uppercase letter, one number, and one special
-                  character (!@#$%^&*).
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+                {/* PASSWORD */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          autoComplete="new-password"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e); // Update nilai form
+                            form.trigger("password"); // Validasi langsung
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <FormDescription>
+                        Password must be at least 6 characters long and contain
+                        at least one uppercase letter, one number, and one
+                        special character (!@#$%^&*).
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Confirm your password"
-                    autoComplete="new-password"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e); // Update nilai form
-                      form.trigger("confirmPassword"); // Validasi langsung
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Make sure the confirmation password matches the one you
-                  entered above.
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Confirm your password"
+                          autoComplete="new-password"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e); // Update nilai form
+                            form.trigger("confirmPassword"); // Validasi langsung
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <FormDescription>
+                        Make sure the confirmation password matches the one you
+                        entered above.
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
 
-          {/* ROLE */}
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Role</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
-                    <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
-                    <SelectItem value={UserRole.SUBSCRIBER}>
-                      SUBSCRIBER
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-                <FormDescription>
-                  Select a role for the user. Role selection is required.
-                </FormDescription>
-              </FormItem>
-            )}
-          />
+                {/* ROLE */}
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role (required)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value={UserRole.AUTHOR}>
+                            AUTHOR
+                          </SelectItem>
+                          <SelectItem value={UserRole.EDITOR}>
+                            EDITOR
+                          </SelectItem>
+                          <SelectItem value={UserRole.SUBSCRIBER}>
+                            SUBSCRIBER
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                      <FormDescription>
+                        Select a role for the user. Role selection is required.
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-          {/* SUBMIT */}
-          <LoadingButton loading={loading} type="submit">
-            Submit
-          </LoadingButton>
-        </form>
-      </Form>
+              <div>
+                {/* PROFILE PICTURE */}
+                <FormField
+                  control={form.control}
+                  name="profileImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select profile picture</FormLabel>
+                      <AspectRatio ratio={1 / 1} className="bg-muted">
+                        {field.value && (
+                          <Image
+                            src={URL.createObjectURL(field.value)}
+                            alt="Selected Profile Picture"
+                            fill
+                            className="h-full w-full rounded-md object-cover"
+                          />
+                        )}
+                      </AspectRatio>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          placeholder="Select your profile picture"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            field.onChange(file); // Gabungkan `onChange` milik `react-hook-form`
+                          }}
+                          ref={field.ref} // Tetap gunakan `ref` dari `react-hook-form`
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <FormDescription>
+                        Make sure the confirmation password matches the one you
+                        entered above.
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+
+                {/* SUBMIT */}
+                <LoadingButton loading={loading} type="submit">
+                  Submit
+                </LoadingButton>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

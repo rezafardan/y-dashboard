@@ -22,11 +22,11 @@ const chartData = [{ month: "january", desktop: 1260, mobile: 570 }];
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--chart-4))",
   },
   mobile: {
     label: "Mobile",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--chart-5))",
   },
 } satisfies ChartConfig;
 
@@ -34,7 +34,7 @@ export function TotalBlogChart() {
   const totalVisitors = chartData[0].desktop + chartData[0].mobile;
 
   return (
-    <Card className="flex flex-col">
+    <Card className="w-1/4">
       <CardHeader className="items-center pb-0">
         <CardTitle>Radial Chart - Stacked</CardTitle>
         <CardDescription>January - June 2024</CardDescription>

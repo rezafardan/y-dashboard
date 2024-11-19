@@ -1,0 +1,13 @@
+.bg-gradient-blur {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at 0% 0%,
+      rgba(8, 51, 68, 0.5),
+      transparent
+    ),
+    radial-gradient(circle at 0% 0%, rgba(148, 163, 184, 0.5), transparent),
+    radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.5), transparent);
+  filter: blur(120px);
+  z-index: -1;
+}

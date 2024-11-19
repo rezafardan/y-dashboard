@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Home, FileText, Users, Command, LifeBuoy, Send } from "lucide-react";
+import { Home, FileText, Users, Command } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -23,7 +23,7 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
+      title: "Home",
       url: "/",
       icon: Home,
       isActive: true,
@@ -71,17 +71,17 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="sidebar" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+              <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Title</span>
+                  <span className="truncate font-semibold">Dashboard</span>
                   <span className="truncate text-xs">Prototype</span>
                 </div>
               </Link>

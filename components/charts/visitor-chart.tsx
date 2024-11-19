@@ -125,15 +125,15 @@ const chartConfig = {
   },
   desktop: {
     label: "Desktop",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--chart-4))",
   },
   mobile: {
     label: "Mobile",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--chart-5))",
   },
 } satisfies ChartConfig;
 
-export function MainChart() {
+export function VisitorChart() {
   const [timeRange, setTimeRange] = React.useState("90d");
 
   const filteredData = chartData.filter((item) => {
@@ -151,10 +151,10 @@ export function MainChart() {
   });
 
   return (
-    <Card className="w-full">
+    <Card className="w-8/12">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1 text-center sm:text-left">
-          <CardTitle>Area Chart - Interactive</CardTitle>
+          <CardTitle>Visitor Data Realtime</CardTitle>
           <CardDescription>
             Showing total visitors for the last 3 months
           </CardDescription>
@@ -220,7 +220,7 @@ export function MainChart() {
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString("en-US", {
+                return date.toLocaleDateString("id-ID", {
                   month: "short",
                   day: "numeric",
                 });
@@ -231,7 +231,7 @@ export function MainChart() {
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(value).toLocaleDateString("id-ID", {
                       month: "short",
                       day: "numeric",
                     });

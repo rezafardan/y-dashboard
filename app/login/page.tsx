@@ -1,5 +1,7 @@
 "use client";
 
+import "./background.css";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -88,6 +90,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
+      <div className="bg-gradient-blur" />
       <Card className="mx-auto max-w-sm">
         <div className="w-full pr-4 pt-4 flex justify-end">
           <ModeToggle />
@@ -170,7 +173,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-4 text-center text-sm">
-            Don't have an account ? Please contact{" "}
+            Don&apos;t have an account ? Please contact{" "}
             <Link href="#" className="underline">
               administrator
             </Link>

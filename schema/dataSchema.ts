@@ -1,17 +1,74 @@
+// {
+//   "id": "cm3kxdcny0002wa56xxf59rcb",
+//   "status": "DRAFT",
+//   "title": "Lorem Ipsum ea Tempuribud Sint Quis",
+//   "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elitdolor ut aliquip pulvinar sit nulla elit adipiscing.",
+//   "mainImageId": null,
+//   "allowComment": true,
+//   "likeCount": 0,
+//   "viewCount": 0,
+//   "publishedAt": null,
+//   "createdAt": "2024-11-17T01:35:30.911Z",
+//   "updatedAt": "2024-11-17T01:35:30.911Z",
+//   "deletedAt": null,
+//   "isUserActive": true,
+//   "tags": [],
+//   "category": {
+//       "id": "cm3jg9y2z0003o20f0leezvi3",
+//       "name": "MUSIC",
+//       "description": "DESCRIPTION OF MUSIC CATEGORY",
+//       "createdAt": "2024-11-16T00:49:12.393Z",
+//       "updatedAt": "2024-11-16T00:49:12.393Z",
+//       "deleteAt": null,
+//       "userId": "cm3jb3f36000055qq6fckrve1",
+//       "isUserActive": true
+//   },
+//   "user": {
+//       "id": "cm3jb3f36000055qq6fckrve1",
+//       "username": "administrator",
+//       "email": "administrator@email.com",
+//       "passwordHash": "$2b$10$23gm2HZrtBOY1Kj8P4vZJOeeX4mMSNhfnKRgCKYk61o1Git1rKjZy",
+//       "role": "ADMINISTRATOR",
+//       "profileImage": "profileImageAdministrator.jpg",
+//       "createdAt": "2024-11-15T22:24:09.762Z",
+//       "updatedAt": "2024-11-15T22:24:09.762Z",
+//       "deletedAt": null
+//   }
+// },
+
+// "id": "cm3jg9y2z0003o20f0leezvi3",
+// "name": "MUSIC",
+// "description": "DESCRIPTION OF MUSIC CATEGORY",
+// "user": {
+//     "id": "cm3jb3f36000055qq6fckrve1",
+//     "username": "administrator",
+//     "email": "administrator@email.com",
+//     "passwordHash": "$2b$10$23gm2HZrtBOY1Kj8P4vZJOeeX4mMSNhfnKRgCKYk61o1Git1rKjZy",
+//     "role": "ADMINISTRATOR",
+//     "profileImage": "profileImageAdministrator.jpg",
+//     "createdAt": "2024-11-15T22:24:09.762Z",
+//     "updatedAt": "2024-11-15T22:24:09.762Z",
+//     "deletedAt": null
+// },
+// "createdAt": "2024-11-16T00:49:12.393Z",
+// "updatedAt": "2024-11-16T00:49:12.393Z",
+// "isUserActive": true
+
 export interface Category {
   id: string;
   name: string;
   description: string;
+  user: User;
   createdAt: Date;
   updatedAt: Date;
-  userId: string;
+  deletedAt: Date | null;
+  isUserActive: boolean;
 }
 
 export interface User {
   id: string;
   username: string;
   email: string;
-  passwordHash: string;
   role: string;
   profileImage: string;
   createdAt: Date;
@@ -19,36 +76,32 @@ export interface User {
   deletedAt: Date | null;
 }
 
-export interface getBlogData {
-  id: string;
-  title: string;
-  content: string;
-  category: Category;
-  user: User;
-  publishedAt: Date;
-  createdAt: Date;
-  mainImageId: string | null;
-  updatedAt: Date;
-  status: string;
+export enum blogStatus {
+  DRAFT,
+  PENDING,
+  REJECT,
+  PUBLISH,
+  SCHEDULE,
 }
 
-// === BLOG SCHEMA ===
-// id                      String             @id @default(cuid())
-// title                   String             @db.VarChar(255)
-// content                 String             @db.Text
-// status                  BlogStatus         @default(DRAFT)
-// viewCount               Int                @default(0) @map("view_count")
-// likeCount               Int                @default(0) @map("like_count")
-// allowComment            Boolean            @map("allow_comment")
-// schedulePulblishedAt    DateTime?          @map("schedule_published_at")
-// publishedAt             DateTime?          @map("published_at")
-// createdAt               DateTime           @default(now()) @map("created_at")
-// updatedAt               DateTime           @updatedAt @map("edited_at")
-// deletedAt               DateTime?          @map("deleted_at")
-// mainImageId             String?            @map("main_image_id")
-// userId                  String             @map("user_id")
-// categoryId              String             @map("category_id")
-// isUserActive            Boolean?           @default(true) @map("is_user_active")
+export interface blogDataResponseApi {
+  id: string;
+  status: blogStatus;
+  title: string;
+  content: string;
+  mainImageId: string;
+  allowComment: boolean;
+  likeCount: Number;
+  viewCount: Number;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  isUserActive: boolean;
+  tags: null;
+  category: Category;
+  user: User;
+}
 
 export interface createBlogData {
   id: string;
@@ -74,7 +127,8 @@ export interface deleteBlogData {
   id: string;
 }
 
-export interface getCategoriesData {
+// CATEGORY LIST INTEFACE > FOR /BLOGS/CATEGORY
+export interface categoriesDataResponseApi {
   id: string;
   name: string;
   description: string;
@@ -98,7 +152,7 @@ export interface deleteCategoryData {
   id: string;
 }
 
-// LOGIN INTERFACE
+// LOGIN INTERFACE > FOR /LOGIN
 export interface userLoginResponseApi {
   id: string;
   username: string;
@@ -112,6 +166,7 @@ export interface loginResponseApi {
   user: userLoginResponseApi;
 }
 
+// USER LIST INTERFACE > FOR /USERS
 export interface userDataResponseApi {
   id: string;
   username: string;

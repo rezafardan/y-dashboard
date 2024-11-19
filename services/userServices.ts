@@ -12,7 +12,9 @@ export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
   return result.data.user;
 };
 
-export const createUserService = async (data: any): Promise<createUserData> => {
+export const createUserService = async (
+  data: FormData
+): Promise<createUserData> => {
   const result = await axiosInstance.post("user", data);
   return result.data;
 };
