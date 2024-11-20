@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import type { Viewport } from "next";
 
 import React from "react";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import ThemeProviderWrapper from "@/components/theme/theme-provider-wrapper";
+import Head from "next/head";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,6 +22,15 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Testing Learn Next JS Build A Dashboard Blog",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  // Also supported by less commonly used
+  // interactiveWidget: 'resizes-visual',
 };
 
 export default function RootLayout({

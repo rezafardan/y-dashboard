@@ -14,7 +14,7 @@ export default function LayoutDashboard({
     <SidebarProvider>
       <AppSidebar />
 
-      <SidebarInset>
+      <SidebarInset className="overflow-x-hidden transition-[margin] md:overflow-y-hidden md:pt-0 h-full">
         <header className="flex gap-2 justify-between px-4 py-2">
           <div className="flex gap-2 items-center">
             <SidebarTrigger />

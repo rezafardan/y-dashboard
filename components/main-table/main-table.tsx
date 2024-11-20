@@ -21,7 +21,7 @@ export function MainTable<TData>({
   columns,
 }: TableComponentProps<TData>) {
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-md border">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -55,7 +55,7 @@ export function MainTable<TData>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns} className="h-24 text-start">
+              <TableCell colSpan={columns} className="text-start">
                 No results.
               </TableCell>
             </TableRow>

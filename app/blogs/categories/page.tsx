@@ -76,7 +76,7 @@ const columns: ColumnDef<Category>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Name
+        Category
         <ArrowUpDown />
       </Button>
     ),
@@ -106,7 +106,7 @@ const columns: ColumnDef<Category>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Category
+        Description
         <ArrowUpDown />
       </Button>
     ),
@@ -295,6 +295,7 @@ const columns: ColumnDef<Category>[] = [
             await deleteCategoryService(category.id);
             alert("Category deleted successfully!");
           } catch (error) {
+            console.error(error);
             alert("Error deleting category.");
           }
         }
@@ -331,7 +332,7 @@ export default function CategorysListPage() {
   const {
     data: category,
     error,
-    mutate,
+    // mutate,
   } = useSWR<Category[]>("/api/category", getAllCategoriesService);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);

@@ -1,6 +1,8 @@
 "use client";
 
+import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
 import { MainTable } from "@/components/main-table/main-table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,43 +35,31 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Title
-        <ArrowUpDown />
-      </Button>
+      <DataTableColumnHeader column={column} title="Title" />
     ),
-    cell: ({ row }) => <div>{row.getValue("title")}</div>,
+    cell: ({ row }) => (
+      <div className="max-w-32 truncate sm:max-w-72 md:max-w-[31rem]">
+        {row.getValue("title")}
+      </div>
+    ),
   },
 
   // Status
-  // {
-  //   accessorKey: "status",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Status
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("status")}</div>,
-  // },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => (
+      <Badge variant="outline">{row.getValue("status")}</Badge>
+    ),
+  },
 
   // Category Name
   {
     accessorKey: "category.name",
     header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Category
-        <ArrowUpDown />
-      </Button>
+      <DataTableColumnHeader column={column} title="Category" />
     ),
     cell: ({ row }) => {
       const category = row.original.category?.name || "No Category";
@@ -123,36 +113,6 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
   //   },
   // },
 
-  // Created At
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Created At
-        <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const createdAt = new Date(row.getValue("createdAt"));
-      return (
-        <div>
-          {createdAt.toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          })}{" "}
-          {createdAt.toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </div>
-      );
-    },
-  },
-
   // Updated At
   // {
   //   accessorKey: "updatedAt",
@@ -193,51 +153,57 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
   //   },
   // },
 
-  // User ID
-  // {
-  //   accessorKey: "user.username", // Mengakses username dari objek user
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Username Creator
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => {
-  //     const username = row.original.user?.username || "No Username";
-  //     return <div>{username}</div>;
-  //   },
-  // },
-
   // isUserActive
   // {
   //   accessorKey: "isUserActive",
   //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       User Active
-  //       <ArrowUpDown />
-  //     </Button>
+  //     <DataTableColumnHeader column={column} title="Creator Status" />
   //   ),
   //   cell: ({ row }) => (
   //     <div>{row.getValue("isUserActive") ? "Active" : "Inactive"}</div>
   //   ),
   // },
 
+  // User ID
+  {
+    accessorKey: "user.username", // Mengakses username dari objek user
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Username Creator" />
+    ),
+    cell: ({ row }) => {
+      const username = row.original.user?.username || "No Username";
+      return <div>{username}</div>;
+    },
+  },
+
+  // Created At
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created At" />
+    ),
+    cell: ({ row }) => {
+      const createdAt = new Date(row.getValue("createdAt"));
+      return (
+        <div>
+          {createdAt.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}{" "}
+          {createdAt.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
+      );
+    },
+  },
+
   {
     accessorKey: "viewCount",
     header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Views
-        <ArrowUpDown />
-      </Button>
+      <DataTableColumnHeader column={column} title="Views" />
     ),
     cell: ({ row }) => <div>{row.getValue("viewCount")}</div>,
   },
@@ -245,7 +211,6 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
   // ACTIONS
   {
     id: "actions",
-    header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
       const blog = row.original;
@@ -256,6 +221,7 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
             await deleteBlogService(blog.id);
             alert("Blog deleted successfully!");
           } catch (error) {
+            console.error(error);
             alert("Error deleting blog.");
           }
         }
@@ -292,7 +258,7 @@ export default function BlogsListPage() {
   const {
     data: blogs,
     error,
-    mutate,
+    // mutate,
   } = useSWR<blogDataResponseApi[]>("/api/blog", getAllBlogsService);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -364,7 +330,11 @@ export default function BlogsListPage() {
         </DropdownMenu>
       </div>
 
-      <MainTable table={table} columns={columns.length} />
+      <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
+        <div className="space-y-4">
+          <MainTable table={table} columns={columns.length} />
+        </div>
+      </div>
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">

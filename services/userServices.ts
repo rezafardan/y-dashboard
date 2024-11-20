@@ -1,10 +1,8 @@
 import axiosInstance from "@/lib/axiosInstance";
 import {
   createUserData,
-  deleteUserData,
   editUserData,
   userDataResponseApi,
-  checkUsernameData,
 } from "@/schema/dataSchema";
 
 export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
@@ -27,9 +25,19 @@ export const editUserService = async (
   return result.data.data;
 };
 
-export const deleteUserService = async (id: string): Promise<void> => {
+export const permanentDeleteUserService = async (id: string) => {
   const result = await axiosInstance.delete(`user/${id}`);
-  return result.data.data;
+  return result.data;
+};
+
+export const softDeleteUserService = async (id: string) => {
+  const result = await axiosInstance.patch(`user/softdelete/${id}`);
+  return result.data;
+};
+
+export const restoreSoftDeleteUserService = async (id: string) => {
+  const result = await axiosInstance.patch(`user/restore/${id}`);
+  return result.data;
 };
 
 export const checkUsernameAvailability = async (

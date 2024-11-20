@@ -36,7 +36,7 @@ export function TotalBlogChart() {
   return (
     <Card className="w-1/4">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Radial Chart - Stacked</CardTitle>
+        <CardTitle>Total Visitor (Dummy Data)</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 items-center pb-0">

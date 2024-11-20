@@ -174,8 +174,8 @@ export interface userDataResponseApi {
   role: string;
   profileImage: string;
   createdAt: string;
-  // updatedAt: string;
-  // deletedAt: string | null;
+  updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface getUsersDataResponseApi {

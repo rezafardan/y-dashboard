@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // COMPONENT
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Form,
   FormControl,
@@ -19,11 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { LoadingButton } from "@/components/ui/loading-button";
-import Image from "next/image";
-
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -49,6 +47,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+// IMAGE CROPPER
+import { Cropper } from "react-cropper";
+import "cropperjs/dist/cropper.css";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ENUM FOR USER ROLE
 enum UserRole {
@@ -136,11 +149,28 @@ const newUserSchema = z
   });
 
 export default function CreateUserPage() {
+  // TOAST
   const { toast } = useToast();
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [usernameStatus, setUsernameStatus] = React.useState<string>("");
 
+  // LOADING BUTTON
+  const [loading, setLoading] = useState(false);
+
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // ERROR HANDLER
+  const [error, setError] = useState<string | null>(null);
+
+  // DEBOUNCE USERNAME
+  const [usernameStatus, setUsernameStatus] = useState<string>("");
+
+  // CROPPER
+  const cropperRef = useRef<HTMLImageElement & { cropper?: Cropper }>(null);
+  const [image, setImage] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [isCropped, setIsCropped] = useState(false);
+  const [croppedFile, setCroppedFile] = useState<File | null>(null);
+
+  // FORM HANDLER
   const defaultValues = {
     username: "",
     email: "",
@@ -156,6 +186,7 @@ export default function CreateUserPage() {
     shouldFocusError: false,
   });
 
+  // DEBOUNCE
   const debouncedUsernameCheck = useCallback(
     debounce(async (username: string) => {
       if (username.length >= 4) {
@@ -200,7 +231,7 @@ export default function CreateUserPage() {
           debouncedUsernameCheck(username);
         } else {
           form.clearErrors("username");
-          setUsernameStatus(""); // Clear status if username is empty
+          setUsernameStatus("");
         }
       }
     });
@@ -208,56 +239,131 @@ export default function CreateUserPage() {
     return () => subscription.unsubscribe();
   }, [form, debouncedUsernameCheck]);
 
+  // CROP IMAGE
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result as string);
+        setCroppedImage(null);
+        setIsCropped(false);
+        setCroppedFile(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const cropImage = () => {
+    const cropper = cropperRef.current?.cropper;
+    if (cropper) {
+      cropper.getCroppedCanvas().toBlob(
+        (blob: any) => {
+          if (blob) {
+            // Create a proper filename with timestamp to avoid cache issues
+            const timestamp = new Date().getTime();
+            const croppedFile = new File(
+              [blob],
+              `cropped-image-${timestamp}.png`,
+              {
+                type: "image/png",
+                lastModified: timestamp,
+              }
+            );
+
+            // Store both the preview URL and the File object
+            setCroppedImage(URL.createObjectURL(blob));
+            setCroppedFile(croppedFile);
+            form.setValue("profileImage", croppedFile);
+            setIsCropped(true);
+          }
+        },
+        "image/png",
+        1
+      );
+    }
+  };
+
+  const resetCrop = () => {
+    setCroppedImage(null);
+    setCroppedFile(null);
+    setIsCropped(false);
+    form.setValue("profileImage", undefined);
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmDialog(false);
+  };
+
+  const handleSubmitButtonClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
+  };
+
+  // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newUserSchema>) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Buat FormData untuk mengirimkan data
+      // ERROR IF IMAGE NOT CROPPING
+      if (!croppedFile && image) {
+        toast({
+          description: "Please crop the image before submitting",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const formData = new FormData();
 
-      // Hapus confirmPassword dari values
-      const { confirmPassword, ...submitData } = values;
+      // ADD THE CROPPED IMAGE TO FORM DATA IF IT EXISTS
+      if (croppedFile) {
+        formData.append("profileImage", croppedFile);
+      }
 
-      // Masukkan data ke dalam FormData
-      Object.entries(submitData).forEach(([key, value]) => {
-        if (key === "profileImage" && value instanceof File) {
-          // Jika profileImage adalah file, tambahkan ke FormData
+      // REMOVE CONFIRM PASSWORD AND ADD OTHER FIELD TO FORM DATA
+      const { confirmPassword, profileImage, ...otherData } = values;
+      Object.entries(otherData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
           formData.append(key, value);
-        } else if (value) {
-          // Tambahkan data lainnya ke FormData
-          formData.append(key, value as string);
         }
       });
 
+      // SEND TO API
       const result = await createUserService(formData);
 
-      const successMessage = result.message;
-
+      // TOAST MESSAGE FROM API
       toast({
-        description: successMessage,
+        description: result.message,
         action: <ToastClose />,
         duration: 4000,
       });
 
-      console.log(values);
-      console.log(result);
+      // RESET FORM AND IMAGE STATES ON SUCCESS
+      form.reset();
+      setImage(null);
+      setCroppedImage(null);
+      setCroppedFile(null);
+      setIsCropped(false);
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message;
+      // ERROR HANDLER
+      const errorMessage =
+        error?.response?.data?.message || "An error occurred";
 
-      if (error?.response?.status === 403) {
-        toast({
-          description: errorMessage,
-          action: <ToastClose />,
-          duration: 4000,
-          variant: "destructive",
-        });
-      } else {
-        setError(errorMessage);
-      }
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        action: <ToastClose />,
+        duration: 4000,
+      });
     } finally {
       setLoading(false);
-      form.reset(defaultValues);
     }
   };
 
@@ -267,27 +373,24 @@ export default function CreateUserPage() {
         <CardHeader>
           <CardTitle>Create A New User</CardTitle>
           <CardDescription>
-            Share your ideas, stories or interesting information with the world!
-            Fill in each section below with relevant details to create an
-            engaging and informative blog. Make sure all input meets the
-            requirements so that your blog is ready to be published.
+            Fill in the required fields to create a new user. Provide a unique
+            username, a secure password, a valid email address, assign a role,
+            and optionally upload a profile photo to complete the registration.
           </CardDescription>
+          <Separator />
         </CardHeader>
-        {error && <p>{error}</p>}
+
         <CardContent>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-full flex gap-4"
-            >
-              <div>
+            <form className="w-full flex gap-4">
+              <div className="flex flex-col gap-4 w-9/12">
                 {/* USERNAME */}
                 <FormField
                   control={form.control}
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>*Username</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Username"
@@ -299,11 +402,11 @@ export default function CreateUserPage() {
                           }}
                         />
                       </FormControl>
-                      <FormMessage />
                       <FormDescription>
                         Username must be lowercase, contain no spaces, and only
                         include letters, numbers, or underscores.
                       </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -314,7 +417,7 @@ export default function CreateUserPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>*Email</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -322,16 +425,16 @@ export default function CreateUserPage() {
                           autoComplete="email"
                           {...field}
                           onChange={(e) => {
-                            field.onChange(e); // Update nilai form
-                            form.trigger("email"); // Validasi langsung
+                            field.onChange(e);
+                            form.trigger("email");
                           }}
                         />
                       </FormControl>
-                      <FormMessage />
                       <FormDescription>
                         Ensure your email is in the correct format and avoid
                         using temporary email domains (e.g., tempmail.com).
                       </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -342,7 +445,7 @@ export default function CreateUserPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>*Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -350,27 +453,28 @@ export default function CreateUserPage() {
                           autoComplete="new-password"
                           {...field}
                           onChange={(e) => {
-                            field.onChange(e); // Update nilai form
-                            form.trigger("password"); // Validasi langsung
+                            field.onChange(e);
+                            form.trigger("password");
                           }}
                         />
                       </FormControl>
-                      <FormMessage />
                       <FormDescription>
                         Password must be at least 6 characters long and contain
                         at least one uppercase letter, one number, and one
                         special character (!@#$%^&*).
                       </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                {/* CONFIRM PASSWORD */}
                 <FormField
                   control={form.control}
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>*Confirm Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -378,16 +482,16 @@ export default function CreateUserPage() {
                           autoComplete="new-password"
                           {...field}
                           onChange={(e) => {
-                            field.onChange(e); // Update nilai form
-                            form.trigger("confirmPassword"); // Validasi langsung
+                            field.onChange(e);
+                            form.trigger("confirmPassword");
                           }}
                         />
                       </FormControl>
-                      <FormMessage />
                       <FormDescription>
                         Make sure the confirmation password matches the one you
                         entered above.
                       </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -398,7 +502,7 @@ export default function CreateUserPage() {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role</FormLabel>
+                      <FormLabel>*Role</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -420,57 +524,114 @@ export default function CreateUserPage() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
                       <FormDescription>
                         Select a role for the user. Role selection is required.
                       </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
 
-              <div>
+              <div className="flex flex-col gap-4 w-3/12 justify-between">
                 {/* PROFILE PICTURE */}
                 <FormField
                   control={form.control}
                   name="profileImage"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Select profile picture</FormLabel>
-                      <AspectRatio ratio={1 / 1} className="bg-muted">
-                        {field.value && (
-                          <Image
-                            src={URL.createObjectURL(field.value)}
-                            alt="Selected Profile Picture"
-                            fill
-                            className="h-full w-full rounded-md object-cover"
+                      <FormLabel>Profile Image</FormLabel>
+                      <div className="relative bg-muted w-full h-64 flex items-center justify-center dark:bg-background rounded-md">
+                        {!image && <p className="text-sm">Upload an image</p>}
+                        {image && !isCropped && (
+                          <Cropper
+                            src={image}
+                            style={{ height: "100%", width: "100%" }}
+                            initialAspectRatio={1}
+                            aspectRatio={1}
+                            guides={false}
+                            ref={cropperRef}
                           />
                         )}
-                      </AspectRatio>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          placeholder="Select your profile picture"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            field.onChange(file); // Gabungkan `onChange` milik `react-hook-form`
-                          }}
-                          ref={field.ref} // Tetap gunakan `ref` dari `react-hook-form`
-                        />
-                      </FormControl>
-                      <FormMessage />
+                        {isCropped && croppedImage && (
+                          <img
+                            src={croppedImage}
+                            alt="Cropped"
+                            className="w-full h-full rounded-full p-2"
+                          />
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          handleImageChange(e);
+                          field.onChange(e.target.files?.[0]);
+                        }}
+                        className="mt-4"
+                      />
+                      {image && !isCropped && (
+                        <Button
+                          type="button"
+                          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
+                          onClick={cropImage}
+                        >
+                          Crop Image
+                        </Button>
+                      )}
+                      {isCropped && (
+                        <Button
+                          type="button"
+                          className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
+                          onClick={resetCrop}
+                        >
+                          Reset Crop
+                        </Button>
+                      )}
                       <FormDescription>
-                        Make sure the confirmation password matches the one you
-                        entered above.
+                        Upload an image file (PNG, JPG, JPEG, or GIF) with a
+                        maximum size of 2MB.
                       </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
                 {/* SUBMIT */}
-                <LoadingButton loading={loading} type="submit">
+                <LoadingButton
+                  loading={loading}
+                  type="button"
+                  className="mb-6"
+                  onClick={handleSubmitButtonClick}
+                  disabled={
+                    !form.formState.isValid || form.formState.isSubmitting
+                  }
+                >
                   Submit
                 </LoadingButton>
+
+                <AlertDialog
+                  open={showConfirmDialog}
+                  onOpenChange={setShowConfirmDialog}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Please confirm if you want to create a new user with the
+                        details provided.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={handleConfirmCancel}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction onClick={handleConfirmSubmit}>
+                        Confirm Create
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </form>
           </Form>

@@ -29,6 +29,8 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+
+// SERVICE
 import { createBlogService } from "@/services/blogServices";
 
 // DATE SETTER
@@ -101,7 +103,7 @@ export default function CreateNewBlog() {
     allowComment: true,
     publishedAt: undefined,
     tag: "Lorem Ipsum ea",
-    userId: "cm3jb3f36000055qq6fckrve1",
+    userId: "cm3obp2l400066cxcyclqg89k",
     categoryId: "",
   };
 
