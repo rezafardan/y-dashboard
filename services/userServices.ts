@@ -5,7 +5,9 @@ import {
   userDataResponseApi,
 } from "@/schema/dataSchema";
 
-export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
+export const getAllUserService = async (
+  userId?: string
+): Promise<userDataResponseApi[]> => {
   const result = await axiosInstance.get("user");
   return result.data.user;
 };

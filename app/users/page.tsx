@@ -286,6 +286,7 @@ const columns: ColumnDef<userDataResponseApi>[] = [
                 Restore User
               </DropdownMenuItem>
             )}
+
             <DropdownMenuItem onClick={() => handleSoftDeleteClick(user)}>
               Soft Delete User
             </DropdownMenuItem>

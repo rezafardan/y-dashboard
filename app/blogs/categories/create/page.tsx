@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 // COMPONENT
+import { Input } from "@/components/ui/input";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Form,
   FormControl,
@@ -12,8 +14,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { LoadingButton } from "@/components/ui/loading-button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -27,6 +37,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
 
 // CATEGORY SCHEMA
 const newCategorySchmea = z.object({
@@ -54,7 +69,13 @@ const newCategorySchmea = z.object({
 });
 
 export default function CreateCategoryPage() {
-  const [loading, setLoading] = React.useState(false);
+  const { toast } = useToast();
+
+  // LOADING BUTTON
+  const [loading, setLoading] = useState(false);
+
+  // ALERT DIALOG
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const form = useForm<z.infer<typeof newCategorySchmea>>({
     resolver: zodResolver(newCategorySchmea),
@@ -65,13 +86,42 @@ export default function CreateCategoryPage() {
     },
   });
 
+  const handleConfirmCancel = () => {
+    setShowConfirmDialog(false);
+  };
+
+  const handleSubmitButtonClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
+  };
+
   const onSubmit = async (values: z.infer<typeof newCategorySchmea>) => {
     try {
       setLoading(true);
       const result = await createCategoryService(values);
+
+      toast({
+        description: result.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
       console.log(result);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      // ERROR HANDLER
+      const errorMessage =
+        error?.response?.data?.message || "An error occurred";
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        action: <ToastClose />,
+        duration: 4000,
+      });
     } finally {
       form.reset();
       setLoading(false);
@@ -88,14 +138,12 @@ export default function CreateCategoryPage() {
           clear and descriptive name for your category to ensure it is intuitive
           and aligns with the content it represents.
         </CardDescription>
+        <Separator />
       </CardHeader>
 
       <CardContent>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
+          <form className="flex flex-col gap-4">
             {/* CATEGORY NAME */}
             <FormField
               control={form.control}
@@ -106,12 +154,12 @@ export default function CreateCategoryPage() {
                   <FormControl>
                     <Input placeholder="Category name" {...field} />
                   </FormControl>
-                  <FormMessage />
                   <FormDescription>
                     Provide a name for the category. Use 3-30 characters, and
                     make sure it&apos;s clear and descriptive. Only letters,
                     numbers, and spaces are allowed.
                   </FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -126,20 +174,48 @@ export default function CreateCategoryPage() {
                   <FormControl>
                     <Input placeholder="Description of category" {...field} />
                   </FormControl>
-                  <FormMessage />
                   <FormDescription>
                     Write a description for the category. It should be 10-100
                     characters long, providing readers with an idea of what this
                     category is about.
                   </FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
             {/* SUBMIT */}
-            <LoadingButton loading={loading} type="submit">
+            <LoadingButton
+              loading={loading}
+              type="button"
+              onClick={handleSubmitButtonClick}
+              disabled={!form.formState.isValid || form.formState.isSubmitting}
+            >
               Submit
             </LoadingButton>
+
+            <AlertDialog
+              open={showConfirmDialog}
+              onOpenChange={setShowConfirmDialog}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Please confirm if you want to create a new user with the
+                    details provided.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={handleConfirmCancel}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmSubmit}>
+                    Confirm Create
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </form>
         </Form>
       </CardContent>

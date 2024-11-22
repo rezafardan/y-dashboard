@@ -1,59 +1,3 @@
-// {
-//   "id": "cm3kxdcny0002wa56xxf59rcb",
-//   "status": "DRAFT",
-//   "title": "Lorem Ipsum ea Tempuribud Sint Quis",
-//   "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elitdolor ut aliquip pulvinar sit nulla elit adipiscing.",
-//   "mainImageId": null,
-//   "allowComment": true,
-//   "likeCount": 0,
-//   "viewCount": 0,
-//   "publishedAt": null,
-//   "createdAt": "2024-11-17T01:35:30.911Z",
-//   "updatedAt": "2024-11-17T01:35:30.911Z",
-//   "deletedAt": null,
-//   "isUserActive": true,
-//   "tags": [],
-//   "category": {
-//       "id": "cm3jg9y2z0003o20f0leezvi3",
-//       "name": "MUSIC",
-//       "description": "DESCRIPTION OF MUSIC CATEGORY",
-//       "createdAt": "2024-11-16T00:49:12.393Z",
-//       "updatedAt": "2024-11-16T00:49:12.393Z",
-//       "deleteAt": null,
-//       "userId": "cm3jb3f36000055qq6fckrve1",
-//       "isUserActive": true
-//   },
-//   "user": {
-//       "id": "cm3jb3f36000055qq6fckrve1",
-//       "username": "administrator",
-//       "email": "administrator@email.com",
-//       "passwordHash": "$2b$10$23gm2HZrtBOY1Kj8P4vZJOeeX4mMSNhfnKRgCKYk61o1Git1rKjZy",
-//       "role": "ADMINISTRATOR",
-//       "profileImage": "profileImageAdministrator.jpg",
-//       "createdAt": "2024-11-15T22:24:09.762Z",
-//       "updatedAt": "2024-11-15T22:24:09.762Z",
-//       "deletedAt": null
-//   }
-// },
-
-// "id": "cm3jg9y2z0003o20f0leezvi3",
-// "name": "MUSIC",
-// "description": "DESCRIPTION OF MUSIC CATEGORY",
-// "user": {
-//     "id": "cm3jb3f36000055qq6fckrve1",
-//     "username": "administrator",
-//     "email": "administrator@email.com",
-//     "passwordHash": "$2b$10$23gm2HZrtBOY1Kj8P4vZJOeeX4mMSNhfnKRgCKYk61o1Git1rKjZy",
-//     "role": "ADMINISTRATOR",
-//     "profileImage": "profileImageAdministrator.jpg",
-//     "createdAt": "2024-11-15T22:24:09.762Z",
-//     "updatedAt": "2024-11-15T22:24:09.762Z",
-//     "deletedAt": null
-// },
-// "createdAt": "2024-11-16T00:49:12.393Z",
-// "updatedAt": "2024-11-16T00:49:12.393Z",
-// "isUserActive": true
-
 export interface Category {
   id: string;
   name: string;
@@ -137,6 +81,7 @@ export interface categoriesDataResponseApi {
 }
 
 export interface createCategoryData {
+  message: any;
   id: string;
   name: string;
   description: string;

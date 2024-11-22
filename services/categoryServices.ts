@@ -17,7 +17,7 @@ export const createCategoryService = async (
   data: any
 ): Promise<createCategoryData> => {
   const result = await axiosInstance.post("category", data);
-  return result.data.data;
+  return result.data;
 };
 
 export const editCategoryService = async (
