@@ -5,6 +5,14 @@ import React, { useState } from "react";
 // COMPONENT
 import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -29,15 +37,9 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+
+// API SERVICE
 import { createCategoryService } from "@/services/categoryServices";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -45,30 +47,29 @@ import { ToastClose } from "@/components/ui/toast";
 
 // CATEGORY SCHEMA
 const newCategorySchmea = z.object({
+  // SCHEMA FOR TITLE VALIDATION
   name: z
     .string()
-    .trim() // Menghapus spasi di awal/akhir
+    .trim()
     .min(3, { message: "Name must be at least 3 characters." })
-    .max(30, { message: "Name must not exceed 30 characters." })
-    .regex(/^[A-Za-z0-9\s]+$/, {
-      message: "Name should only contain letters, numbers, and spaces.",
-    }) // Membatasi pada huruf, angka, dan spasi
-    .transform((name) =>
-      name
-        .toLowerCase()
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    ), // Transformasi kapitalisasi awal setiap kata
+    .max(12, { message: "Name must not exceed 12 characters." })
+    .regex(/^[A-Za-z]+$/, {
+      message:
+        "Name should only contain letters and must not contain spaces or numbers.",
+    })
+    .transform((name) => name.toUpperCase()),
+
+  // SCHEMA FOR DESCRIPTION VALIDATION
   description: z
     .string()
-    .trim() // Menghapus spasi di awal/akhir
+    .trim()
     .min(10, { message: "Description must be at least 10 characters." })
     .max(100, { message: "Description must not exceed 100 characters." }),
-  userId: z.string().optional(), // Optional untuk mendukung fleksibilitas
+  userId: z.string().optional(),
 });
 
 export default function CreateCategoryPage() {
+  // TOAST
   const { toast } = useToast();
 
   // LOADING BUTTON
@@ -77,13 +78,17 @@ export default function CreateCategoryPage() {
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // FORM HANDLER
+  const defaultValues = {
+    name: "",
+    description: "",
+    userId: "cm31sst3m0002zw0xn7p6c7ua",
+  };
   const form = useForm<z.infer<typeof newCategorySchmea>>({
     resolver: zodResolver(newCategorySchmea),
-    defaultValues: {
-      name: "",
-      description: "",
-      userId: "cm31sst3m0002zw0xn7p6c7ua",
-    },
+    defaultValues,
+    shouldFocusError: false,
+    mode: "all",
   });
 
   const handleConfirmCancel = () => {
@@ -99,17 +104,22 @@ export default function CreateCategoryPage() {
     setShowConfirmDialog(false);
   };
 
+  // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newCategorySchmea>) => {
     try {
       setLoading(true);
+
+      // SEND TO API
       const result = await createCategoryService(values);
 
+      // TOAST MESSAGE FROM API
       toast({
         description: result.message,
         action: <ToastClose />,
         duration: 4000,
       });
-      console.log(result);
+
+      form.reset();
     } catch (error: any) {
       // ERROR HANDLER
       const errorMessage =
@@ -123,7 +133,6 @@ export default function CreateCategoryPage() {
         duration: 4000,
       });
     } finally {
-      form.reset();
       setLoading(false);
     }
   };
@@ -155,9 +164,9 @@ export default function CreateCategoryPage() {
                     <Input placeholder="Category name" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Provide a name for the category. Use 3-30 characters, and
-                    make sure it&apos;s clear and descriptive. Only letters,
-                    numbers, and spaces are allowed.
+                    Provide a name for the category. Use 3-12 characters, and
+                    make sure it&apos;s clear and descriptive. Only letters, are
+                    allowed.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -200,10 +209,11 @@ export default function CreateCategoryPage() {
             >
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
+                  <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Please confirm if you want to create a new user with the
-                    details provided.
+                    Once the category is created, you can manage it by visiting
+                    the blog categories list in the menu. Use this list to edit
+                    or delete categories as needed.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

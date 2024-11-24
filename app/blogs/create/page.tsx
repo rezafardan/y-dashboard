@@ -103,7 +103,7 @@ export default function CreateNewBlog() {
     allowComment: true,
     publishedAt: undefined,
     tag: "Lorem Ipsum ea",
-    userId: "cm3obp2l400066cxcyclqg89k",
+    userId: "cm3tnpafy0000yyevdqzmosni",
     categoryId: "",
   };
 

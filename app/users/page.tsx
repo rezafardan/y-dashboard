@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import React, { useState } from "react";
 
 // COMPONENT
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +46,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
 
 // SERVICE
 import {
@@ -57,7 +58,6 @@ import {
 
 // SCHEMA
 import { userDataResponseApi } from "@/schema/dataSchema";
-import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
 
 // TABLE HEADER
 const columns: ColumnDef<userDataResponseApi>[] = [
@@ -169,8 +169,8 @@ const columns: ColumnDef<userDataResponseApi>[] = [
       const user = row.original;
 
       const { toast } = useToast();
-      const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-      const [deleteType, setDeleteType] = React.useState<"soft" | "permanent">(
+      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+      const [deleteType, setDeleteType] = useState<"soft" | "permanent">(
         "soft"
       );
       const [userToDelete, setUserToDelete] =
@@ -186,6 +186,10 @@ const columns: ColumnDef<userDataResponseApi>[] = [
         setUserToDelete(user);
         setDeleteType("permanent");
         setShowDeleteDialog(true);
+      };
+
+      const handleDeleteCancel = () => {
+        setShowDeleteDialog(false);
       };
 
       const handleRestoreClick = async (user: userDataResponseApi) => {
@@ -248,6 +252,7 @@ const columns: ColumnDef<userDataResponseApi>[] = [
               return [];
             });
           } catch (error) {
+            console.log(error);
             toast({
               description: `Error performing ${deleteType} delete`,
               action: <ToastClose />,
@@ -258,10 +263,6 @@ const columns: ColumnDef<userDataResponseApi>[] = [
             setShowDeleteDialog(false);
           }
         }
-      };
-
-      const handleDeleteCancel = () => {
-        setShowDeleteDialog(false);
       };
 
       return (
@@ -287,9 +288,12 @@ const columns: ColumnDef<userDataResponseApi>[] = [
               </DropdownMenuItem>
             )}
 
-            <DropdownMenuItem onClick={() => handleSoftDeleteClick(user)}>
-              Soft Delete User
-            </DropdownMenuItem>
+            {user.deletedAt !== null ? null : (
+              <DropdownMenuItem onClick={() => handleSoftDeleteClick(user)}>
+                Soft Delete User
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem onClick={() => handlePermanentDeleteClick(user)}>
               Permanent Delete User
             </DropdownMenuItem>
@@ -335,12 +339,11 @@ const columns: ColumnDef<userDataResponseApi>[] = [
   },
 ];
 
-export default function DataTableDemo() {
-  const {
-    data: users,
-    error,
-    mutate,
-  } = useSWR<userDataResponseApi[]>("/api/users", getAllUserService);
+export default function UsersPage() {
+  const { data: users, error } = useSWR<userDataResponseApi[]>(
+    "/api/users",
+    getAllUserService
+  );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -384,10 +387,12 @@ export default function DataTableDemo() {
     <div className="w-full">
       <div className="flex items-center mb-4">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter username..."
+          value={
+            (table.getColumn("username")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("username")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

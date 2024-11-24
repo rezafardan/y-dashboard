@@ -5,11 +5,16 @@ import {
   userDataResponseApi,
 } from "@/schema/dataSchema";
 
-export const getAllUserService = async (
-  userId?: string
-): Promise<userDataResponseApi[]> => {
+export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
   const result = await axiosInstance.get("user");
   return result.data.user;
+};
+
+export const getUserByIdService = async (
+  id: string
+): Promise<userDataResponseApi[]> => {
+  const result = await axiosInstance.get(`user/${id}`);
+  return result.data.data;
 };
 
 export const createUserService = async (
@@ -21,15 +26,10 @@ export const createUserService = async (
 
 export const editUserService = async (
   id: string,
-  formEditCategory: any
+  formEditUser: editUserData
 ): Promise<editUserData[]> => {
-  const result = await axiosInstance.patch(`user/${id}`, formEditCategory);
+  const result = await axiosInstance.patch(`user/${id}`, formEditUser);
   return result.data.data;
-};
-
-export const permanentDeleteUserService = async (id: string) => {
-  const result = await axiosInstance.delete(`user/${id}`);
-  return result.data;
 };
 
 export const softDeleteUserService = async (id: string) => {
@@ -39,6 +39,11 @@ export const softDeleteUserService = async (id: string) => {
 
 export const restoreSoftDeleteUserService = async (id: string) => {
   const result = await axiosInstance.patch(`user/restore/${id}`);
+  return result.data;
+};
+
+export const permanentDeleteUserService = async (id: string) => {
+  const result = await axiosInstance.delete(`user/${id}`);
   return result.data;
 };
 

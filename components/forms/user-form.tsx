@@ -60,7 +60,7 @@ const userSchema = z
       .optional(),
     confirmPassword: z.string().optional(),
     role: z.nativeEnum(UserRole),
-    profileImage: z.instanceof(File).optional(),
+    profileImage: z.union([z.instanceof(File), z.string()]).optional(),
   })
   .refine((data) => !data.username.includes(" "), {
     message: "Username cannot contain spaces",
@@ -90,7 +90,7 @@ export const UserForm: React.FC<UserFormProps> = ({
       password: "",
       confirmPassword: "",
       role: initialValues?.role || undefined,
-      profileImage: undefined,
+      profileImage: initialValues?.profileImage || undefined,
     },
   });
 
@@ -99,6 +99,7 @@ export const UserForm: React.FC<UserFormProps> = ({
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const cropperRef = useRef<HTMLImageElement & { cropper?: Cropper }>(null);
 
+  console.log(initialValues?.profileImage);
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -148,6 +149,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                     placeholder="Enter username"
                     autoComplete="username"
                     value={initialValues ? initialValues?.username : ""}
+                    disabled={initialValues?.username !== null}
                   />
                 </FormControl>
                 <FormMessage />
@@ -224,10 +226,10 @@ export const UserForm: React.FC<UserFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={UserRole.AUTHOR}>Author</SelectItem>
-                    <SelectItem value={UserRole.EDITOR}>Editor</SelectItem>
+                    <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
+                    <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
                     <SelectItem value={UserRole.SUBSCRIBER}>
-                      Subscriber
+                      SUBSCRIBER
                     </SelectItem>
                   </SelectContent>
                 </Select>

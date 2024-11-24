@@ -22,6 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -40,13 +47,6 @@ import { ToastClose } from "@/components/ui/toast";
 
 // DEBOUNCE
 import debounce from "lodash/debounce";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 // IMAGE CROPPER
 import { Cropper } from "react-cropper";
@@ -185,6 +185,7 @@ export default function CreateUserPage() {
     resolver: zodResolver(newUserSchema),
     defaultValues,
     shouldFocusError: false,
+    mode: "all",
   });
 
   // DEBOUNCE
@@ -397,10 +398,6 @@ export default function CreateUserPage() {
                           placeholder="Username"
                           autoComplete="username"
                           {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            form.trigger("username");
-                          }}
                         />
                       </FormControl>
                       <FormDescription>
@@ -425,10 +422,6 @@ export default function CreateUserPage() {
                           placeholder="Email"
                           autoComplete="email"
                           {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            form.trigger("email");
-                          }}
                         />
                       </FormControl>
                       <FormDescription>
@@ -453,10 +446,6 @@ export default function CreateUserPage() {
                           placeholder="Password"
                           autoComplete="new-password"
                           {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            form.trigger("password");
-                          }}
                         />
                       </FormControl>
                       <FormDescription>
@@ -482,10 +471,6 @@ export default function CreateUserPage() {
                           placeholder="Confirm your password"
                           autoComplete="new-password"
                           {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            form.trigger("confirmPassword");
-                          }}
                         />
                       </FormControl>
                       <FormDescription>

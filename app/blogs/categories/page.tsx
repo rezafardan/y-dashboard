@@ -1,25 +1,10 @@
-// "id": "cm3jg9y2z0003o20f0leezvi3",
-// "name": "MUSIC",
-// "description": "DESCRIPTION OF MUSIC CATEGORY",
-// "user": {
-//     "id": "cm3jb3f36000055qq6fckrve1",
-//     "username": "administrator",
-//     "email": "administrator@email.com",
-//     "passwordHash": "$2b$10$23gm2HZrtBOY1Kj8P4vZJOeeX4mMSNhfnKRgCKYk61o1Git1rKjZy",
-//     "role": "ADMINISTRATOR",
-//     "profileImage": "profileImageAdministrator.jpg",
-//     "createdAt": "2024-11-15T22:24:09.762Z",
-//     "updatedAt": "2024-11-15T22:24:09.762Z",
-//     "deletedAt": null
-// },
-// "createdAt": "2024-11-16T00:49:12.393Z",
-// "updatedAt": "2024-11-16T00:49:12.393Z",
-// "isUserActive": true
-
 "use client";
 
-import { MainTable } from "@/components/main-table/main-table";
+import React from "react";
+
+// COMPONENT
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -29,12 +14,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Category } from "@/schema/dataSchema";
-import {
-  deleteCategoryService,
-  getAllCategoriesService,
-} from "@/services/categoryServices";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+
+// DATA TABLE
+import useSWR from "swr";
+import { MainTable } from "@/components/main-table/main-table";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -45,9 +29,17 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import React from "react";
-import useSWR from "swr";
+import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
+
+// SERVICE
+import {
+  deleteCategoryService,
+  getAllCategoriesService,
+} from "@/services/categoryServices";
+
+// SCHEMA
+import { Category } from "@/schema/dataSchema";
+import { useToast } from "@/hooks/use-toast";
 
 // "id": "cm3jg9y2z0003o20f0leezvi3",
 // "name": "MUSIC",
@@ -72,13 +64,7 @@ const columns: ColumnDef<Category>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Category
-        <ArrowUpDown />
-      </Button>
+      <DataTableColumnHeader column={column} title="Category" />
     ),
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
@@ -102,13 +88,7 @@ const columns: ColumnDef<Category>[] = [
   {
     accessorKey: "description",
     header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Description
-        <ArrowUpDown />
-      </Button>
+      <DataTableColumnHeader column={column} title="Description" />
     ),
     cell: ({ row }) => {
       const description = row.original.description || "No Description";
@@ -166,13 +146,7 @@ const columns: ColumnDef<Category>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Created At
-        <ArrowUpDown />
-      </Button>
+      <DataTableColumnHeader column={column} title="Created At" />
     ),
     cell: ({ row }) => {
       const createdAt = new Date(row.getValue("createdAt"));
@@ -284,10 +258,11 @@ const columns: ColumnDef<Category>[] = [
   // ACTIONS
   {
     id: "actions",
-    header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
       const category = row.original;
+
+      const { toast } = useToast();
 
       const handleDelete = async () => {
         if (window.confirm("Are you sure yo want to delete this category ?")) {
