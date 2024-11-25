@@ -115,7 +115,6 @@ const columns: ColumnDef<CategoriesDataResponse>[] = [
   // ACTIONS
   {
     id: "actions",
-    enableHiding: false,
     cell: ({ row }) => {
       const category = row.original;
 
@@ -185,6 +184,7 @@ const columns: ColumnDef<CategoriesDataResponse>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
 
+          {/* ALERT DIALOG */}
           <AlertDialog
             open={showDeleteDialog}
             onOpenChange={setShowDeleteDialog}
@@ -217,7 +217,7 @@ const columns: ColumnDef<CategoriesDataResponse>[] = [
 
 export default function CategorysListPage() {
   // DATA FETCHING
-  const { data: category, error } = useSWR<CategoriesDataResponse[]>(
+  const { data: categories, error } = useSWR<CategoriesDataResponse[]>(
     "/api/category",
     getAllCategoriesService
   );
@@ -231,7 +231,7 @@ export default function CategorysListPage() {
   );
 
   const table = useReactTable({
-    data: category ?? [],
+    data: categories ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

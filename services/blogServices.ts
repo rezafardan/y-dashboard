@@ -1,12 +1,12 @@
 import axiosInstance from "@/lib/axiosInstance";
 import {
-  blogDataResponseApi,
+  BlogDataResponse,
   editBlogData,
   createBlogData,
   deleteBlogData,
 } from "@/schema/dataSchema";
 
-export const getAllBlogsService = async (): Promise<blogDataResponseApi[]> => {
+export const getAllBlogsService = async (): Promise<BlogDataResponse[]> => {
   const result = await axiosInstance.get("blog");
   return result.data.data;
 };
@@ -24,9 +24,7 @@ export const editBlogService = async (
   return result.data.data;
 };
 
-export const deleteBlogService = async (
-  id: string
-): Promise<deleteBlogData> => {
+export const deleteBlogService = async (id: string) => {
   const result = await axiosInstance.delete(`blog/${id}`);
-  return result.data.data;
+  return result.data;
 };

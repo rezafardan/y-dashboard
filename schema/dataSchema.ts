@@ -71,6 +71,26 @@ export interface editCategoryData {
   description: string;
 }
 
+// BLOG LIST INTEFACE > FOR /BLOGS
+export interface BlogDataResponse {
+  id: string;
+  status: blogStatus;
+  title: string;
+  content: string;
+  mainImageId: string;
+  allowComment: boolean;
+  likeCount: Number;
+  viewCount: Number;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  isUserActive: boolean;
+  tags: null;
+  category: Category;
+  user: User;
+}
+
 // CATEGORY DATA GLOBAL
 export interface Category {
   id: string;
@@ -104,24 +124,6 @@ export enum blogStatus {
 }
 
 // BLOG DATA GLOBAL
-export interface blogDataResponseApi {
-  id: string;
-  status: blogStatus;
-  title: string;
-  content: string;
-  mainImageId: string;
-  allowComment: boolean;
-  likeCount: Number;
-  viewCount: Number;
-  publishedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  isUserActive: boolean;
-  tags: null;
-  category: Category;
-  user: User;
-}
 
 export interface createBlogData {
   id: string;

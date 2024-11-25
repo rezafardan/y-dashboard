@@ -314,6 +314,7 @@ const columns: ColumnDef<UserDataResponse>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
 
+          {/* ALERT DIALOG */}
           <AlertDialog
             open={showDeleteDialog}
             onOpenChange={setShowDeleteDialog}
@@ -357,7 +358,7 @@ const columns: ColumnDef<UserDataResponse>[] = [
 export default function UsersPage() {
   // DATA FECTHING
   const { data: users, error } = useSWR<UserDataResponse[]>(
-    "/api/users",
+    "/api/user",
     getAllUserService
   );
 

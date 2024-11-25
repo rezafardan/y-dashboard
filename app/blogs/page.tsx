@@ -1,37 +1,59 @@
 "use client";
 
-import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
-import { MainTable } from "@/components/main-table/main-table";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
+
+// COMPONENT
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { blogDataResponseApi } from "@/schema/dataSchema";
-import { deleteBlogService, getAllBlogsService } from "@/services/blogServices";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { MoreHorizontal } from "lucide-react";
+
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
+
+// DATA TABLE
+import useSWR, { mutate } from "swr";
+import { MainTable } from "@/components/main-table/main-table";
+import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
 import {
   ColumnDef,
   ColumnFiltersState,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import React from "react";
-import useSWR from "swr";
 
-const columns: ColumnDef<blogDataResponseApi>[] = [
-  // Title
+// SERVICE
+import { deleteBlogService, getAllBlogsService } from "@/services/blogServices";
+
+// SCHEMA
+import { BlogDataResponse, User } from "@/schema/dataSchema";
+
+// TABLE HEADER
+const columns: ColumnDef<BlogDataResponse>[] = [
+  // TITLE
   {
     accessorKey: "title",
     header: ({ column }) => (
@@ -44,7 +66,7 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
     ),
   },
 
-  // Status
+  // STATUS
   {
     accessorKey: "status",
     header: ({ column }) => (
@@ -55,7 +77,7 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
     ),
   },
 
-  // Category Name
+  // CATEGORY NAME
   {
     accessorKey: "category.name",
     header: ({ column }) => (
@@ -67,116 +89,19 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
     },
   },
 
-  // Allow Comment
-  // {
-  //   accessorKey: "allowComment",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Allow Comment
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("allowComment") ? "Yes" : "No"}</div>,
-  // },
-
-  // Like Count
-  // {
-  //   accessorKey: "likeCount",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Likes
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("likeCount")}</div>,
-  // },
-
-  // View Count
-
-  // Published At
-  // {
-  //   accessorKey: "publishedAt",
-  //   header: "Published At",
-  //   cell: ({ row }) => {
-  //     const publishedAt = row.getValue("publishedAt");
-  //     return (
-  //       <div>
-  //         {publishedAt ? new Date(publishedAt).toLocaleString() : "Draft"}
-  //       </div>
-  //     );
-  //   },
-  // },
-
-  // Updated At
-  // {
-  //   accessorKey: "updatedAt",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Updated At
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => {
-  //     const updatedAt = new Date(row.getValue("updatedAt"));
-  //     return (
-  //       <div>
-  //         {updatedAt.toLocaleDateString("id-ID", {
-  //           day: "2-digit",
-  //           month: "long",
-  //           year: "numeric",
-  //         })}{" "}
-  //         {updatedAt.toLocaleTimeString("id-ID", {
-  //           hour: "2-digit",
-  //           minute: "2-digit",
-  //         })}
-  //       </div>
-  //     );
-  //   },
-  // },
-
-  // Tags (Array)
-  // {
-  //   accessorKey: "tags",
-  //   header: "Tags",
-  //   cell: ({ row }) => {
-  //     const tags = row.getValue("tags");
-  //     return <div>{tags.length ? tags.join(", ") : "No Tags"}</div>;
-  //   },
-  // },
-
-  // isUserActive
-  // {
-  //   accessorKey: "isUserActive",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Creator Status" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div>{row.getValue("isUserActive") ? "Active" : "Inactive"}</div>
-  //   ),
-  // },
-
-  // User ID
+  // CREATOR
   {
-    accessorKey: "user.username", // Mengakses username dari objek user
+    accessorKey: "user",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Username Creator" />
+      <DataTableColumnHeader column={column} title="Creator" />
     ),
     cell: ({ row }) => {
-      const username = row.original.user?.username || "No Username";
-      return <div>{username}</div>;
+      const user = row.getValue("user") as User;
+      return <div>{user.username}</div>;
     },
   },
 
-  // Created At
+  // CREATED AT
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -200,6 +125,7 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
     },
   },
 
+  // VIEW COUNT
   {
     accessorKey: "viewCount",
     header: ({ column }) => (
@@ -211,19 +137,56 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
   // ACTIONS
   {
     id: "actions",
-    enableHiding: false,
     cell: ({ row }) => {
       const blog = row.original;
 
-      const handleDelete = async () => {
-        if (window.confirm("Are you sure yo want to delete this blog ?")) {
-          try {
-            await deleteBlogService(blog.id);
-            alert("Blog deleted successfully!");
-          } catch (error) {
-            console.error(error);
-            alert("Error deleting blog.");
-          }
+      // TOAST
+      const { toast } = useToast();
+
+      // STATE ALERT DIALOG
+      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+      // FUNC DELETE BUTTON
+      const handleDeleteClick = () => {
+        setShowDeleteDialog(true);
+      };
+
+      // CANCEL BUTTON
+      const handleDeleteCancel = () => {
+        setShowDeleteDialog(false);
+      };
+
+      // FUNC CONFIRM DELETE AFTER ALERT DIALOG
+      const handleDeleteConfirm = async () => {
+        try {
+          // SERVICE API
+          const response = await deleteBlogService(blog.id);
+
+          // TOAST
+          toast({
+            description: response.message,
+            action: <ToastClose />,
+            duration: 4000,
+          });
+
+          // REFRESH TABLE
+          mutate((prevBlogs: BlogDataResponse[] | undefined) => {
+            if (Array.isArray(prevBlogs)) {
+              return prevBlogs.filter((item) => item.id !== blog.id);
+            }
+            return [];
+          });
+        } catch (error: any) {
+          // ERROR MESSAGE
+          const errorMessage = error?.response?.data?.message;
+
+          // TOAST
+          toast({
+            description: errorMessage,
+            action: <ToastClose />,
+            duration: 4000,
+            variant: "destructive",
+          });
         }
       };
 
@@ -237,17 +200,37 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(blog.id)}
-            >
-              Copy Blog ID
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDelete}>
+            <DropdownMenuItem onClick={handleDeleteClick}>
               Delete Blog
             </DropdownMenuItem>
           </DropdownMenuContent>
+
+          {/* ALERT DIALOG */}
+          <AlertDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Category Delete Confirmation
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. It will permanently delete the
+                  category and remove their data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleDeleteCancel}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteConfirm}>
+                  Confirm Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </DropdownMenu>
       );
     },
@@ -255,18 +238,19 @@ const columns: ColumnDef<blogDataResponseApi>[] = [
 ];
 
 export default function BlogsListPage() {
-  const {
-    data: blogs,
-    error,
-    // mutate,
-  } = useSWR<blogDataResponseApi[]>("/api/blog", getAllBlogsService);
+  // DATA FECTHING
+  const { data: blogs, error } = useSWR<BlogDataResponse[]>(
+    "/api/blog",
+    getAllBlogsService
+  );
 
+  // STATE SORTING DATA
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // STATE COLUMN FILTER
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
 
   const table = useReactTable({
     data: blogs ?? [],
@@ -276,11 +260,10 @@ export default function BlogsListPage() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
     },
   });
 
@@ -297,50 +280,23 @@ export default function BlogsListPage() {
   }
   return (
     <div className="w-full">
+      {/* SEARCH */}
       <div className="flex items-center mb-4">
         <Input
-          placeholder="Filter title..."
+          placeholder="Search title..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
-      <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-        <div className="space-y-4">
-          <MainTable table={table} columns={columns.length} />
-        </div>
-      </div>
+      {/* DATA TABLE */}
+      <MainTable table={table} columns={columns.length} />
 
+      {/* PAGINATION */}
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
