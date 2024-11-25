@@ -1,25 +1,27 @@
 import axiosInstance from "@/lib/axiosInstance";
 import {
-  getCategoriesData,
+  CategoriesDataResponse,
   editCategoryData,
-  createCategoryData,
-  deleteCategoryData,
+  CreateCategoryData,
 } from "@/schema/dataSchema";
 
+// DONE
 export const getAllCategoriesService = async (): Promise<
-  getCategoriesData[]
+  CategoriesDataResponse[]
 > => {
   const result = await axiosInstance.get("category");
   return result.data.data;
 };
 
+// DONE
 export const createCategoryService = async (
-  data: any
-): Promise<createCategoryData> => {
+  data: CreateCategoryData
+): Promise<CreateCategoryData> => {
   const result = await axiosInstance.post("category", data);
   return result.data;
 };
 
+// NOT YET
 export const editCategoryService = async (
   id: string,
   formEditCategory: any
@@ -28,9 +30,8 @@ export const editCategoryService = async (
   return result.data.data;
 };
 
-export const deleteCategoryService = async (
-  id: string
-): Promise<deleteCategoryData> => {
+// DONE
+export const deleteCategoryService = async (id: string) => {
   const result = await axiosInstance.delete(`category/${id}`);
-  return result.data.data;
+  return result.data;
 };

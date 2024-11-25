@@ -39,7 +39,6 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -256,6 +255,7 @@ const columns: ColumnDef<UserDataResponse>[] = [
               duration: 4000,
             });
 
+            // REFRESH TABLE
             mutate((prevUsers: UserDataResponse[] | undefined) => {
               if (Array.isArray(prevUsers)) {
                 if (deleteType === "permanent") {
@@ -282,8 +282,6 @@ const columns: ColumnDef<UserDataResponse>[] = [
               duration: 4000,
               variant: "destructive",
             });
-          } finally {
-            setShowDeleteDialog(false);
           }
         }
       };
@@ -363,7 +361,7 @@ export default function UsersPage() {
     getAllUserService
   );
 
-  // STATE SORTING DAYA
+  // STATE SORTING DATA
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   // STATE COLUMN FILTER

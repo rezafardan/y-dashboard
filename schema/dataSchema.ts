@@ -6,6 +6,7 @@ export interface UserDataLoginResponse {
   profileImage: string;
   deletedAt: Date | null;
 }
+// DONE
 
 export interface LoginResponse {
   message: any;
@@ -24,13 +25,9 @@ export interface UserDataResponse {
   updatedAt: string;
   deletedAt: string | null;
 }
+// DONE
 
-// export interface GetUsersDataResponse {
-//   message: any;
-//   data: UserDataResponse[];
-// }
-
-export interface createUserData {
+export interface CreateUserData {
   message: any;
   id: string;
   username: string;
@@ -39,6 +36,7 @@ export interface createUserData {
   role: string;
   profileImage: string;
 }
+// DONE
 
 export interface editUserData {
   id: string;
@@ -49,17 +47,10 @@ export interface editUserData {
   profileImage: string;
   createdAt: Date;
 }
-
-export interface deleteUserData {
-  id: string;
-}
-
-export interface checkUsernameData {
-  username: string;
-}
+// NOT YET
 
 // CATEGORY LIST INTEFACE > FOR /BLOGS/CATEGORY
-export interface categoriesDataResponseApi {
+export interface CategoriesDataResponse {
   id: string;
   name: string;
   description: string;
@@ -67,12 +58,7 @@ export interface categoriesDataResponseApi {
   user: User;
 }
 
-export interface getCategoriesDataResponseApi {
-  message: any;
-  data: categoriesDataResponseApi[];
-}
-
-export interface createCategoryData {
+export interface CreateCategoryData {
   message: any;
   id: string;
   name: string;
@@ -83,10 +69,6 @@ export interface createCategoryData {
 export interface editCategoryData {
   name: string;
   description: string;
-}
-
-export interface deleteCategoryData {
-  id: string;
 }
 
 // CATEGORY DATA GLOBAL

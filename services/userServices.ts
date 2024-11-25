@@ -1,6 +1,6 @@
 import axiosInstance from "@/lib/axiosInstance";
 import {
-  createUserData,
+  CreateUserData,
   editUserData,
   UserDataResponse,
 } from "@/schema/dataSchema";
@@ -19,10 +19,10 @@ export const getUserByIdService = async (
   return result.data;
 };
 
-// NOT YET
+// DONE
 export const createUserService = async (
   data: FormData
-): Promise<createUserData> => {
+): Promise<CreateUserData> => {
   const result = await axiosInstance.post("user", data);
   return result.data;
 };
@@ -54,6 +54,7 @@ export const permanentDeleteUserService = async (id: string) => {
   return result.data;
 };
 
+// DONE
 export const checkUsernameAvailability = async (
   username: string
 ): Promise<boolean> => {

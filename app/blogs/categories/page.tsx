@@ -1,35 +1,48 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 // COMPONENT
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { MoreHorizontal } from "lucide-react";
+
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
 
 // DATA TABLE
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { MainTable } from "@/components/main-table/main-table";
+import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
 import {
   ColumnDef,
   ColumnFiltersState,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/main-table/data-table-column-header";
 
 // SERVICE
 import {
@@ -38,28 +51,10 @@ import {
 } from "@/services/categoryServices";
 
 // SCHEMA
-import { Category } from "@/schema/dataSchema";
-import { useToast } from "@/hooks/use-toast";
+import { CategoriesDataResponse, User } from "@/schema/dataSchema";
 
-// "id": "cm3jg9y2z0003o20f0leezvi3",
-// "name": "MUSIC",
-// "description": "DESCRIPTION OF MUSIC CATEGORY",
-// "user": {
-//     "id": "cm3jb3f36000055qq6fckrve1",
-//     "username": "administrator",
-//     "email": "administrator@email.com",
-//     "passwordHash": "$2b$10$23gm2HZrtBOY1Kj8P4vZJOeeX4mMSNhfnKRgCKYk61o1Git1rKjZy",
-//     "role": "ADMINISTRATOR",
-//     "profileImage": "profileImageAdministrator.jpg",
-//     "createdAt": "2024-11-15T22:24:09.762Z",
-//     "updatedAt": "2024-11-15T22:24:09.762Z",
-//     "deletedAt": null
-// },
-// "createdAt": "2024-11-16T00:49:12.393Z",
-// "updatedAt": "2024-11-16T00:49:12.393Z",
-// "isUserActive": true
-
-const columns: ColumnDef<Category>[] = [
+// TABLE HEADER
+const columns: ColumnDef<CategoriesDataResponse>[] = [
   // CATEGORY NAME
   {
     accessorKey: "name",
@@ -107,11 +102,14 @@ const columns: ColumnDef<Category>[] = [
 
   // CREATEOR
   {
-    accessorKey: "user.username",
+    accessorKey: "user",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Creator" />
     ),
-    cell: ({ row }) => <div>{row.getValue("user.username")}</div>,
+    cell: ({ row }) => {
+      const user = row.getValue("user") as User;
+      return <div>{user.username}</div>;
+    },
   },
 
   // ACTIONS
@@ -121,17 +119,53 @@ const columns: ColumnDef<Category>[] = [
     cell: ({ row }) => {
       const category = row.original;
 
+      // TOAST
       const { toast } = useToast();
 
-      const handleDelete = async () => {
-        if (window.confirm("Are you sure yo want to delete this category ?")) {
-          try {
-            await deleteCategoryService(category.id);
-            alert("Category deleted successfully!");
-          } catch (error) {
-            console.error(error);
-            alert("Error deleting category.");
-          }
+      // STATE ALERT DIALOG
+      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+      // FUNC DELETE BUTTON
+      const handleDeleteClick = () => {
+        setShowDeleteDialog(true);
+      };
+
+      // CANCEL BUTTON
+      const handleDeleteCancel = () => {
+        setShowDeleteDialog(false);
+      };
+
+      // FUNC CONFIRM DELETE AFTER ALERT DIALOG
+      const handleDeleteConfirm = async () => {
+        try {
+          // SERVICE API
+          const response = await deleteCategoryService(category.id);
+
+          // TOAST
+          toast({
+            description: response.message,
+            action: <ToastClose />,
+            duration: 4000,
+          });
+
+          // REFRESH TABLE
+          mutate((prevCategories: CategoriesDataResponse[] | undefined) => {
+            if (Array.isArray(prevCategories)) {
+              return prevCategories.filter((item) => item.id !== category.id);
+            }
+            return [];
+          });
+        } catch (error: any) {
+          // ERROR MESSAGE
+          const errorMessage = error?.response?.data?.message;
+
+          // TOAST
+          toast({
+            description: errorMessage,
+            action: <ToastClose />,
+            duration: 4000,
+            variant: "destructive",
+          });
         }
       };
 
@@ -145,17 +179,36 @@ const columns: ColumnDef<Category>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(category.id)}
-            >
-              Copy Category ID
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDelete}>
+            <DropdownMenuItem onClick={handleDeleteClick}>
               Delete Category
             </DropdownMenuItem>
           </DropdownMenuContent>
+
+          <AlertDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Category Delete Confirmation
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. It will permanently delete the
+                  category and remove their data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleDeleteCancel}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteConfirm}>
+                  Confirm Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </DropdownMenu>
       );
     },
@@ -163,18 +216,19 @@ const columns: ColumnDef<Category>[] = [
 ];
 
 export default function CategorysListPage() {
-  const {
-    data: category,
-    error,
-    // mutate,
-  } = useSWR<Category[]>("/api/category", getAllCategoriesService);
+  // DATA FETCHING
+  const { data: category, error } = useSWR<CategoriesDataResponse[]>(
+    "/api/category",
+    getAllCategoriesService
+  );
 
+  // STATE SORTING DATA
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // STATE COLUMN FILTER
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
 
   const table = useReactTable({
     data: category ?? [],
@@ -184,11 +238,10 @@ export default function CategorysListPage() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
     },
   });
 
@@ -205,6 +258,7 @@ export default function CategorysListPage() {
   }
   return (
     <div className="w-full">
+      {/* SEARCH */}
       <div className="flex items-center mb-4">
         <Input
           placeholder="Search category..."
@@ -216,8 +270,10 @@ export default function CategorysListPage() {
         />
       </div>
 
+      {/* DATA TABLE */}
       <MainTable table={table} columns={columns.length} />
 
+      {/* PAGINATION */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
           <Button
