@@ -7,13 +7,14 @@ export interface UserDataLoginResponse {
   deletedAt: Date | null;
 }
 
-export interface loginResponseApi {
+export interface LoginResponse {
   message: any;
   user: UserDataLoginResponse;
 }
+// DONE
 
 // USER LIST INTERFACE > FOR /USERS
-export interface userDataResponseApi {
+export interface UserDataResponse {
   id: string;
   username: string;
   email: string;
@@ -24,10 +25,10 @@ export interface userDataResponseApi {
   deletedAt: string | null;
 }
 
-export interface getUsersDataResponseApi {
-  message: any;
-  user: userDataResponseApi[];
-}
+// export interface GetUsersDataResponse {
+//   message: any;
+//   data: UserDataResponse[];
+// }
 
 export interface createUserData {
   message: any;

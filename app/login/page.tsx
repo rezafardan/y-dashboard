@@ -62,8 +62,8 @@ export default function LoginPage() {
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     try {
       setLoading(true);
-      const result = await loginService(values);
-      const successMessage = result.message;
+      const response = await loginService(values);
+      const successMessage = response.message;
 
       toast({
         description: successMessage,

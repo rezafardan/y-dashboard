@@ -2,19 +2,19 @@ import axiosInstance from "@/lib/axiosInstance";
 import {
   createUserData,
   editUserData,
-  userDataResponseApi,
+  UserDataResponse,
 } from "@/schema/dataSchema";
 
-export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
+export const getAllUserService = async (): Promise<UserDataResponse[]> => {
   const result = await axiosInstance.get("user");
   return result.data.data;
 };
 
 export const getUserByIdService = async (
   id: string
-): Promise<userDataResponseApi[]> => {
+): Promise<UserDataResponse[]> => {
   const result = await axiosInstance.get(`user/${id}`);
-  return result.data.data;
+  return result.data;
 };
 
 export const createUserService = async (

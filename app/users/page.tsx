@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -26,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -57,10 +56,10 @@ import {
 } from "@/services/userServices";
 
 // SCHEMA
-import { userDataResponseApi } from "@/schema/dataSchema";
+import { UserDataResponse } from "@/schema/dataSchema";
 
 // TABLE HEADER
-const columns: ColumnDef<userDataResponseApi>[] = [
+const columns: ColumnDef<UserDataResponse>[] = [
   // PROFILE IMAGE
   {
     accessorKey: "profileImage",
@@ -164,7 +163,6 @@ const columns: ColumnDef<userDataResponseApi>[] = [
   // ACTIONS
   {
     id: "actions",
-    enableHiding: false,
     cell: ({ row }) => {
       const user = row.original;
 
@@ -174,15 +172,15 @@ const columns: ColumnDef<userDataResponseApi>[] = [
         "soft"
       );
       const [userToDelete, setUserToDelete] =
-        React.useState<userDataResponseApi | null>(null);
+        React.useState<UserDataResponse | null>(null);
 
-      const handleSoftDeleteClick = (user: userDataResponseApi) => {
+      const handleSoftDeleteClick = (user: UserDataResponse) => {
         setUserToDelete(user);
         setDeleteType("soft");
         setShowDeleteDialog(true);
       };
 
-      const handlePermanentDeleteClick = (user: userDataResponseApi) => {
+      const handlePermanentDeleteClick = (user: UserDataResponse) => {
         setUserToDelete(user);
         setDeleteType("permanent");
         setShowDeleteDialog(true);
@@ -192,7 +190,7 @@ const columns: ColumnDef<userDataResponseApi>[] = [
         setShowDeleteDialog(false);
       };
 
-      const handleRestoreClick = async (user: userDataResponseApi) => {
+      const handleRestoreClick = async (user: UserDataResponse) => {
         try {
           const response = await restoreSoftDeleteUserService(user.id);
 
@@ -202,7 +200,7 @@ const columns: ColumnDef<userDataResponseApi>[] = [
             duration: 4000,
           });
 
-          mutate((prevUsers: userDataResponseApi[] | undefined) => {
+          mutate((prevUsers: UserDataResponse[] | undefined) => {
             if (Array.isArray(prevUsers)) {
               return prevUsers.map((u) =>
                 u.id === user.id ? { ...u, status: "active" } : u
@@ -236,7 +234,7 @@ const columns: ColumnDef<userDataResponseApi>[] = [
               duration: 4000,
             });
 
-            mutate((prevUsers: userDataResponseApi[] | undefined) => {
+            mutate((prevUsers: UserDataResponse[] | undefined) => {
               if (Array.isArray(prevUsers)) {
                 if (deleteType === "permanent") {
                   return prevUsers.filter(
@@ -340,7 +338,7 @@ const columns: ColumnDef<userDataResponseApi>[] = [
 ];
 
 export default function UsersPage() {
-  const { data: users, error } = useSWR<userDataResponseApi[]>(
+  const { data: users, error } = useSWR<UserDataResponse[]>(
     "/api/users",
     getAllUserService
   );
