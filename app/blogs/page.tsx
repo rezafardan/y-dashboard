@@ -213,12 +213,11 @@ const columns: ColumnDef<BlogDataResponse>[] = [
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Category Delete Confirmation
-                </AlertDialogTitle>
+                <AlertDialogTitle>Confirm Blog Deletion</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. It will permanently delete the
-                  category and remove their data from our servers.
+                  Are you sure you want to delete this blog? This action is
+                  irreversible and will permanently remove the blog and its
+                  associated data from our servers. Please proceed with caution.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -237,7 +236,7 @@ const columns: ColumnDef<BlogDataResponse>[] = [
   },
 ];
 
-export default function BlogsListPage() {
+export default function BlogsPage() {
   // DATA FECTHING
   const { data: blogs, error } = useSWR<BlogDataResponse[]>(
     "/api/blog",

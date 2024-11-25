@@ -2,20 +2,22 @@ import axiosInstance from "@/lib/axiosInstance";
 import {
   BlogDataResponse,
   editBlogData,
-  createBlogData,
-  deleteBlogData,
+  CreateBlogData,
 } from "@/schema/dataSchema";
 
+// DONE
 export const getAllBlogsService = async (): Promise<BlogDataResponse[]> => {
   const result = await axiosInstance.get("blog");
   return result.data.data;
 };
 
-export const createBlogService = async (data: any): Promise<createBlogData> => {
+// NOT YET
+export const createBlogService = async (data: any): Promise<CreateBlogData> => {
   const result = await axiosInstance.post("blog", data);
   return result.data;
 };
 
+// NOT YET
 export const editBlogService = async (
   id: string,
   formEditBlog: any
@@ -24,6 +26,7 @@ export const editBlogService = async (
   return result.data.data;
 };
 
+// DONE
 export const deleteBlogService = async (id: string) => {
   const result = await axiosInstance.delete(`blog/${id}`);
   return result.data;

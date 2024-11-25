@@ -14,6 +14,8 @@ export interface LoginResponse {
 }
 // DONE
 
+// ================================================== //
+
 // USER LIST INTERFACE > FOR /USERS
 export interface UserDataResponse {
   id: string;
@@ -49,6 +51,8 @@ export interface editUserData {
 }
 // NOT YET
 
+// ================================================== //
+
 // CATEGORY LIST INTEFACE > FOR /BLOGS/CATEGORY
 export interface CategoriesDataResponse {
   id: string;
@@ -57,19 +61,24 @@ export interface CategoriesDataResponse {
   createdAt: Date;
   user: User;
 }
+// DONE
 
 export interface CreateCategoryData {
   message: any;
   id: string;
   name: string;
   description: string;
-  user: User;
+  userId: string;
 }
+// DONE
 
 export interface editCategoryData {
   name: string;
   description: string;
 }
+// NOT YET
+
+// ================================================== //
 
 // BLOG LIST INTEFACE > FOR /BLOGS
 export interface BlogDataResponse {
@@ -90,30 +99,7 @@ export interface BlogDataResponse {
   category: Category;
   user: User;
 }
-
-// CATEGORY DATA GLOBAL
-export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  user: User;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  isUserActive: boolean;
-}
-
-// USER DATA GLOBAL
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  profileImage: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-}
+// DONE
 
 export enum blogStatus {
   DRAFT,
@@ -122,10 +108,9 @@ export enum blogStatus {
   PUBLISH,
   SCHEDULE,
 }
+// DONE
 
-// BLOG DATA GLOBAL
-
-export interface createBlogData {
+export interface CreateBlogData {
   id: string;
   title: string;
   content: string;
@@ -138,13 +123,41 @@ export interface createBlogData {
   user: User;
   message: any;
 }
+// NOT YET
 
 export interface editBlogData {
   title: string;
   content: string;
   mainImageId?: string;
 }
+// NOT YET
 
-export interface deleteBlogData {
+// ================================================== //
+
+// CATEGORY DATA GLOBAL
+export interface Category {
   id: string;
+  name: string;
+  description: string;
+  user: User;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  isUserActive: boolean;
 }
+// DONE
+
+// USER DATA GLOBAL
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  profileImage: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+// DONE
+
+// ================================================== //

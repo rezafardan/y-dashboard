@@ -46,7 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
 
 // CATEGORY SCHEMA
-const newCategorySchmea = z.object({
+const newCategorySchema = z.object({
   // SCHEMA FOR TITLE VALIDATION
   name: z
     .string()
@@ -65,7 +65,7 @@ const newCategorySchmea = z.object({
     .trim()
     .min(10, { message: "Description must be at least 10 characters." })
     .max(100, { message: "Description must not exceed 100 characters." }),
-  userId: z.string().optional(),
+  userId: z.string(),
 });
 
 export default function CreateCategoryPage() {
@@ -78,36 +78,43 @@ export default function CreateCategoryPage() {
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // ERROR HANDLER
+  const [error, setError] = useState<string | null>(null);
+
   // FORM HANDLER
   const defaultValues = {
     name: "",
     description: "",
-    userId: "cm31sst3m0002zw0xn7p6c7ua",
+    userId: "cm3jb3f36000055qq6fckrve1",
   };
-  const form = useForm<z.infer<typeof newCategorySchmea>>({
-    resolver: zodResolver(newCategorySchmea),
+  const form = useForm<z.infer<typeof newCategorySchema>>({
+    resolver: zodResolver(newCategorySchema),
     defaultValues,
     shouldFocusError: false,
     mode: "all",
   });
 
-  const handleConfirmCancel = () => {
-    setShowConfirmDialog(false);
-  };
-
+  // SUBMIT FORM BUTTON
   const handleSubmitButtonClick = () => {
     setShowConfirmDialog(true);
   };
 
+  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
   const handleConfirmSubmit = () => {
     form.handleSubmit(onSubmit)();
     setShowConfirmDialog(false);
   };
 
+  // CANCEL BUTTON
+  const handleConfirmCancel = () => {
+    setShowConfirmDialog(false);
+  };
+
   // HANDLING SUBMIT FORM
-  const onSubmit = async (values: z.infer<typeof newCategorySchmea>) => {
+  const onSubmit = async (values: z.infer<typeof newCategorySchema>) => {
     try {
       setLoading(true);
+      setError(null);
 
       // SEND TO API
       const result = await createCategoryService(values);
@@ -119,6 +126,7 @@ export default function CreateCategoryPage() {
         duration: 4000,
       });
 
+      // RESET FORM
       form.reset();
     } catch (error: any) {
       // ERROR HANDLER

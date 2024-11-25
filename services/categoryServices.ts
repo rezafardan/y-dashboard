@@ -15,7 +15,7 @@ export const getAllCategoriesService = async (): Promise<
 
 // DONE
 export const createCategoryService = async (
-  data: CreateCategoryData
+  data: Omit<CreateCategoryData, "message" | "id">
 ): Promise<CreateCategoryData> => {
   const result = await axiosInstance.post("category", data);
   return result.data;

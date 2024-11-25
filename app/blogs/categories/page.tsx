@@ -191,12 +191,11 @@ const columns: ColumnDef<CategoriesDataResponse>[] = [
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Category Delete Confirmation
-                </AlertDialogTitle>
+                <AlertDialogTitle>Confirm Category Deletion</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. It will permanently delete the
-                  category and remove their data from our servers.
+                  Are you sure you want to delete this category? This action is
+                  irreversible and will permanently remove the category and its
+                  associated data from our servers. Proceed carefully.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -215,7 +214,7 @@ const columns: ColumnDef<CategoriesDataResponse>[] = [
   },
 ];
 
-export default function CategorysListPage() {
+export default function CategoryPage() {
   // DATA FETCHING
   const { data: categories, error } = useSWR<CategoriesDataResponse[]>(
     "/api/category",

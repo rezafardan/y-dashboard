@@ -1,8 +1,20 @@
 "use client";
 
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 
 // COMPONENT
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { LoadingButton } from "@/components/ui/loading-button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -12,8 +24,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,9 +31,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { Switch } from "@/components/ui/switch";
-import { LoadingButton } from "@/components/ui/loading-button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -33,49 +50,20 @@ import { useForm } from "react-hook-form";
 // SERVICE
 import { createBlogService } from "@/services/blogServices";
 
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
+
 // DATE SETTER
 import { id } from "date-fns/locale";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
 
-// TOAST
-import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
   DRAFT = "DRAFT",
-  SCHEDULE = "SCHEDULE",
-  PENDING = "PENDING",
-  APPROVED = "APPROVED",
-  PUBLISH = "PUBLSIH",
-  ARCHIVE = "ARCHIVE",
+  SEND = "SEND",
 }
-
-// === BLOG SCHEMA ===
-// id                      String             @id @default(cuid())
-// title                   String             @db.VarChar(255)
-// content                 String             @db.Text
-// status                  BlogStatus         @default(DRAFT)
-// viewCount               Int                @default(0) @map("view_count")
-// likeCount               Int                @default(0) @map("like_count")
-// allowComment            Boolean            @map("allow_comment")
-// schedulePulblishedAt    DateTime?          @map("schedule_published_at")
-// publishedAt             DateTime?          @map("published_at")
-// createdAt               DateTime           @default(now()) @map("created_at")
-// updatedAt               DateTime           @updatedAt @map("edited_at")
-// deletedAt               DateTime?          @map("deleted_at")
-// mainImageId             String?            @map("main_image_id")
-// userId                  String             @map("user_id")
-// categoryId              String             @map("category_id")
-// isUserActive            Boolean?           @default(true) @map("is_user_active")
 
 // BLOG SCHEMA
 const newBlogSchema = z.object({
@@ -86,56 +74,87 @@ const newBlogSchema = z.object({
   allowComment: z.boolean().default(true).optional(),
   publishedAt: z.date().optional(),
   tag: z.string().min(3, { message: "Input tag with minimun 3 character" }),
-  userId: z.string().optional(),
+  userId: z.string(),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
 });
 
-export default function CreateNewBlog() {
+export default function CreateBlogPage() {
+  // TOAST
   const { toast } = useToast();
-  const [loading, setLoading] = React.useState(false);
 
+  // LOADING BUTTON
+  const [loading, setLoading] = useState(false);
+
+  // ALERT DIALOG
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // FORM HANDLER
   const defaultValues = {
-    title: "Lorem Ipsum ea Tempuribud Sint Quis",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elitdolor ut aliquip pulvinar sit nulla elit adipiscing.",
-    mainImageId: "path://image.jpg",
+    title: "",
+    content: "",
+    mainImageId: "",
     status: undefined,
     allowComment: true,
     publishedAt: undefined,
-    tag: "Lorem Ipsum ea",
-    userId: "cm3tnpafy0000yyevdqzmosni",
+    tag: "",
+    userId: "cm3jb3f36000055qq6fckrve1",
     categoryId: "",
   };
 
   const form = useForm<z.infer<typeof newBlogSchema>>({
     resolver: zodResolver(newBlogSchema),
     defaultValues,
+    shouldFocusError: false,
+    mode: "all",
   });
 
+  // SUBMIT FORM BUTTON
+  const handleSubmitButtonClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
+  const handleConfirmSubmit = () => {
+    form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
+  };
+
+  // CANCEL BUTTON
+  const handleConfirmCancel = () => {
+    setShowConfirmDialog(false);
+  };
+
+  // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     try {
       setLoading(true);
 
+      // SEND TO API
       const result = await createBlogService(values);
-      const successMessage = result.message;
 
+      // TOAST MESSAGE FROM API
       toast({
-        description: successMessage,
+        description: result.message,
         action: <ToastClose />,
         duration: 4000,
       });
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message;
 
+      // RESET FORM
+      form.reset();
+    } catch (error: any) {
+      // ERROR HANDLER
+      const errorMessage =
+        error?.response?.data?.message || "An error occurred";
+
+      // TOAST MESSAGE FROM API
       toast({
         description: errorMessage,
+        variant: "destructive",
         action: <ToastClose />,
         duration: 4000,
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
-      form.reset(defaultValues);
     }
   };
 
@@ -159,7 +178,7 @@ export default function CreateNewBlog() {
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-4">
+          <form className="flex gap-4">
             <div className="w-full flex flex-col gap-4">
               {/* TITLE */}
               <FormField
@@ -308,17 +327,8 @@ export default function CreateNewBlog() {
                         <SelectItem value={BlogStatus.DRAFT}>
                           {BlogStatus.DRAFT}
                         </SelectItem>
-                        <SelectItem value={BlogStatus.SCHEDULE}>
-                          {BlogStatus.SCHEDULE}
-                        </SelectItem>
-                        <SelectItem value={BlogStatus.PENDING}>
-                          {BlogStatus.PENDING}
-                        </SelectItem>
-                        <SelectItem value={BlogStatus.APPROVED}>
-                          {BlogStatus.APPROVED}
-                        </SelectItem>
-                        <SelectItem value={BlogStatus.PUBLISH}>
-                          {BlogStatus.PUBLISH}
+                        <SelectItem value={BlogStatus.SEND}>
+                          {BlogStatus.SEND}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -356,10 +366,41 @@ export default function CreateNewBlog() {
               />
               {/* SUBMIT */}
 
-              <LoadingButton loading={loading} type="submit">
+              <LoadingButton
+                loading={loading}
+                type="button"
+                onClick={handleSubmitButtonClick}
+                disabled={
+                  !form.formState.isValid || form.formState.isSubmitting
+                }
+              >
                 Submit
               </LoadingButton>
             </div>
+
+            <AlertDialog
+              open={showConfirmDialog}
+              onOpenChange={setShowConfirmDialog}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Once the category is created, you can manage it by visiting
+                    the blog categories list in the menu. Use this list to edit
+                    or delete categories as needed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={handleConfirmCancel}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmSubmit}>
+                    Confirm Create
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </form>
         </Form>
       </CardContent>
