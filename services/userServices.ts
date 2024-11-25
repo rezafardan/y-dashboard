@@ -7,7 +7,7 @@ import {
 
 export const getAllUserService = async (): Promise<userDataResponseApi[]> => {
   const result = await axiosInstance.get("user");
-  return result.data.user;
+  return result.data.data;
 };
 
 export const getUserByIdService = async (
