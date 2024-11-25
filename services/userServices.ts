@@ -11,6 +11,7 @@ export const getAllUserService = async (): Promise<UserDataResponse[]> => {
   return result.data.data;
 };
 
+// NOT YET
 export const getUserByIdService = async (
   id: string
 ): Promise<UserDataResponse[]> => {
@@ -18,6 +19,7 @@ export const getUserByIdService = async (
   return result.data;
 };
 
+// NOT YET
 export const createUserService = async (
   data: FormData
 ): Promise<createUserData> => {
@@ -25,6 +27,7 @@ export const createUserService = async (
   return result.data;
 };
 
+// NOT YET
 export const editUserService = async (
   id: string,
   formEditUser: editUserData
@@ -33,16 +36,19 @@ export const editUserService = async (
   return result.data.data;
 };
 
+// DONE
 export const softDeleteUserService = async (id: string) => {
   const result = await axiosInstance.patch(`user/softdelete/${id}`);
   return result.data;
 };
 
+// DONE
 export const restoreSoftDeleteUserService = async (id: string) => {
   const result = await axiosInstance.patch(`user/restore/${id}`);
   return result.data;
 };
 
+// DONE
 export const permanentDeleteUserService = async (id: string) => {
   const result = await axiosInstance.delete(`user/${id}`);
   return result.data;

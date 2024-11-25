@@ -262,7 +262,6 @@ export default function CreateUserPage() {
       cropper.getCroppedCanvas().toBlob(
         (blob: any) => {
           if (blob) {
-            // Create a proper filename with timestamp to avoid cache issues
             const timestamp = new Date().getTime();
             const croppedFile = new File(
               [blob],
@@ -273,7 +272,6 @@ export default function CreateUserPage() {
               }
             );
 
-            // Store both the preview URL and the File object
             setCroppedImage(URL.createObjectURL(blob));
             setCroppedFile(croppedFile);
             form.setValue("profileImage", croppedFile);
@@ -293,16 +291,19 @@ export default function CreateUserPage() {
     form.setValue("profileImage", undefined);
   };
 
-  const handleConfirmCancel = () => {
-    setShowConfirmDialog(false);
-  };
-
+  // SUBMIT FORM BUTTON
   const handleSubmitButtonClick = () => {
     setShowConfirmDialog(true);
   };
 
+  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
   const handleConfirmSubmit = () => {
     form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
+  };
+
+  // CANCEL BUTTON
+  const handleConfirmCancel = () => {
     setShowConfirmDialog(false);
   };
 
@@ -596,6 +597,7 @@ export default function CreateUserPage() {
                   Submit
                 </LoadingButton>
 
+                {/* ALERT DIALOG */}
                 <AlertDialog
                   open={showConfirmDialog}
                   onOpenChange={setShowConfirmDialog}
