@@ -1,104 +1,5 @@
-export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  user: User;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  isUserActive: boolean;
-}
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  profileImage: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-}
-
-export enum blogStatus {
-  DRAFT,
-  PENDING,
-  REJECT,
-  PUBLISH,
-  SCHEDULE,
-}
-
-export interface blogDataResponseApi {
-  id: string;
-  status: blogStatus;
-  title: string;
-  content: string;
-  mainImageId: string;
-  allowComment: boolean;
-  likeCount: Number;
-  viewCount: Number;
-  publishedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  isUserActive: boolean;
-  tags: null;
-  category: Category;
-  user: User;
-}
-
-export interface createBlogData {
-  id: string;
-  title: string;
-  content: string;
-  status: string;
-  allowComment: boolean;
-  schedulePulblishedAt: Date;
-  publishedAt: Date;
-  mainImageId: string;
-  category: Category;
-  user: User;
-  message: any;
-}
-
-export interface editBlogData {
-  title: string;
-  content: string;
-  mainImageId?: string;
-}
-
-export interface deleteBlogData {
-  id: string;
-}
-
-// CATEGORY LIST INTEFACE > FOR /BLOGS/CATEGORY
-export interface categoriesDataResponseApi {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: Date;
-  user: User;
-}
-
-export interface createCategoryData {
-  message: any;
-  id: string;
-  name: string;
-  description: string;
-  user: User;
-}
-
-export interface editCategoryData {
-  name: string;
-  description: string;
-}
-
-export interface deleteCategoryData {
-  id: string;
-}
-
 // LOGIN INTERFACE > FOR /LOGIN
-export interface userLoginResponseApi {
+export interface UserDataLoginResponse {
   id: string;
   username: string;
   role: string;
@@ -108,7 +9,7 @@ export interface userLoginResponseApi {
 
 export interface loginResponseApi {
   message: any;
-  user: userLoginResponseApi;
+  user: UserDataLoginResponse;
 }
 
 // USER LIST INTERFACE > FOR /USERS
@@ -154,4 +55,111 @@ export interface deleteUserData {
 
 export interface checkUsernameData {
   username: string;
+}
+
+// CATEGORY LIST INTEFACE > FOR /BLOGS/CATEGORY
+export interface categoriesDataResponseApi {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: Date;
+  user: User;
+}
+
+export interface getCategoriesDataResponseApi {
+  message: any;
+  data: categoriesDataResponseApi[];
+}
+
+export interface createCategoryData {
+  message: any;
+  id: string;
+  name: string;
+  description: string;
+  user: User;
+}
+
+export interface editCategoryData {
+  name: string;
+  description: string;
+}
+
+export interface deleteCategoryData {
+  id: string;
+}
+
+// CATEGORY DATA GLOBAL
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  user: User;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  isUserActive: boolean;
+}
+
+// USER DATA GLOBAL
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  profileImage: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export enum blogStatus {
+  DRAFT,
+  PENDING,
+  REJECT,
+  PUBLISH,
+  SCHEDULE,
+}
+
+// BLOG DATA GLOBAL
+export interface blogDataResponseApi {
+  id: string;
+  status: blogStatus;
+  title: string;
+  content: string;
+  mainImageId: string;
+  allowComment: boolean;
+  likeCount: Number;
+  viewCount: Number;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  isUserActive: boolean;
+  tags: null;
+  category: Category;
+  user: User;
+}
+
+export interface createBlogData {
+  id: string;
+  title: string;
+  content: string;
+  status: string;
+  allowComment: boolean;
+  schedulePulblishedAt: Date;
+  publishedAt: Date;
+  mainImageId: string;
+  category: Category;
+  user: User;
+  message: any;
+}
+
+export interface editBlogData {
+  title: string;
+  content: string;
+  mainImageId?: string;
+}
+
+export interface deleteBlogData {
+  id: string;
 }

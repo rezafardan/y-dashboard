@@ -60,7 +60,7 @@ import { useToast } from "@/hooks/use-toast";
 // "isUserActive": true
 
 const columns: ColumnDef<Category>[] = [
-  // Title
+  // CATEGORY NAME
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -69,22 +69,7 @@ const columns: ColumnDef<Category>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
 
-  // Status
-  // {
-  //   accessorKey: "status",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Status
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("status")}</div>,
-  // },
-
-  // Category Name
+  // DESCRIPTION
   {
     accessorKey: "description",
     header: ({ column }) => (
@@ -96,53 +81,7 @@ const columns: ColumnDef<Category>[] = [
     },
   },
 
-  // Allow Comment
-  // {
-  //   accessorKey: "allowComment",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Allow Comment
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("allowComment") ? "Yes" : "No"}</div>,
-  // },
-
-  // Like Count
-  // {
-  //   accessorKey: "likeCount",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Likes
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("likeCount")}</div>,
-  // },
-
-  // View Count
-
-  // Published At
-  // {
-  //   accessorKey: "publishedAt",
-  //   header: "Published At",
-  //   cell: ({ row }) => {
-  //     const publishedAt = row.getValue("publishedAt");
-  //     return (
-  //       <div>
-  //         {publishedAt ? new Date(publishedAt).toLocaleString() : "Draft"}
-  //       </div>
-  //     );
-  //   },
-  // },
-
-  // Created At
+  // CREATED AT
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -166,94 +105,14 @@ const columns: ColumnDef<Category>[] = [
     },
   },
 
-  // Updated At
-  // {
-  //   accessorKey: "updatedAt",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Updated At
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => {
-  //     const updatedAt = new Date(row.getValue("updatedAt"));
-  //     return (
-  //       <div>
-  //         {updatedAt.toLocaleDateString("id-ID", {
-  //           day: "2-digit",
-  //           month: "long",
-  //           year: "numeric",
-  //         })}{" "}
-  //         {updatedAt.toLocaleTimeString("id-ID", {
-  //           hour: "2-digit",
-  //           minute: "2-digit",
-  //         })}
-  //       </div>
-  //     );
-  //   },
-  // },
-
-  // Tags (Array)
-  // {
-  //   accessorKey: "tags",
-  //   header: "Tags",
-  //   cell: ({ row }) => {
-  //     const tags = row.getValue("tags");
-  //     return <div>{tags.length ? tags.join(", ") : "No Tags"}</div>;
-  //   },
-  // },
-
-  // User ID
-  // {
-  //   accessorKey: "user.username", // Mengakses username dari objek user
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Username Creator
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => {
-  //     const username = row.original.user?.username || "No Username";
-  //     return <div>{username}</div>;
-  //   },
-  // },
-
-  // isUserActive
-  // {
-  //   accessorKey: "isUserActive",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       User Active
-  //       <ArrowUpDown />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div>{row.getValue("isUserActive") ? "Active" : "Inactive"}</div>
-  //   ),
-  // },
-
-  //   {
-  //     accessorKey: "user.username",
-  //     header: ({ column }) => (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Views
-  //         <ArrowUpDown />
-  //       </Button>
-  //     ),
-  //     cell: ({ row }) => <div>{row.getValue("user.username")}</div>,
-  //   },
+  // CREATEOR
+  {
+    accessorKey: "user.username",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Creator" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("user.username")}</div>,
+  },
 
   // ACTIONS
   {
@@ -348,44 +207,18 @@ export default function CategorysListPage() {
     <div className="w-full">
       <div className="flex items-center mb-4">
         <Input
-          placeholder="Filter name..."
+          placeholder="Search category..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       <MainTable table={table} columns={columns.length} />
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
