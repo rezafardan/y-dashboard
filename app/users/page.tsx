@@ -166,40 +166,54 @@ const columns: ColumnDef<UserDataResponse>[] = [
     cell: ({ row }) => {
       const user = row.original;
 
+      // TOAST
       const { toast } = useToast();
+
+      // STATE ALERT DIALOG
       const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+      // STATE DELETE SOFT OR PERMANENT
       const [deleteType, setDeleteType] = useState<"soft" | "permanent">(
         "soft"
       );
+
+      // STATE DATA USER DELETE
       const [userToDelete, setUserToDelete] =
         React.useState<UserDataResponse | null>(null);
 
+      // FUNC SOFT DELETE BUTTON
       const handleSoftDeleteClick = (user: UserDataResponse) => {
         setUserToDelete(user);
         setDeleteType("soft");
         setShowDeleteDialog(true);
       };
 
+      // FUNC PERMANENT DELETE BUTTON
       const handlePermanentDeleteClick = (user: UserDataResponse) => {
         setUserToDelete(user);
         setDeleteType("permanent");
         setShowDeleteDialog(true);
       };
 
+      // CANCEL BUTTON
       const handleDeleteCancel = () => {
         setShowDeleteDialog(false);
       };
 
+      // FUNC RESTORE USER SOFT DELETE
       const handleRestoreClick = async (user: UserDataResponse) => {
         try {
+          // SERVICE API
           const response = await restoreSoftDeleteUserService(user.id);
 
+          // TOAST
           toast({
             description: response.message,
             action: <ToastClose />,
             duration: 4000,
           });
 
+          // AUTO REFRESH AFTER ACTIONS
           mutate((prevUsers: UserDataResponse[] | undefined) => {
             if (Array.isArray(prevUsers)) {
               return prevUsers.map((u) =>
@@ -208,9 +222,13 @@ const columns: ColumnDef<UserDataResponse>[] = [
             }
             return [];
           });
-        } catch (error) {
+        } catch (error: any) {
+          // ERROR MESSAGE
+          const errorMessage = error?.response?.data?.message;
+
+          // TOAST
           toast({
-            description: "Error restoring user",
+            description: errorMessage,
             action: <ToastClose />,
             duration: 4000,
             variant: "destructive",
@@ -218,16 +236,20 @@ const columns: ColumnDef<UserDataResponse>[] = [
         }
       };
 
+      // FUNC CONFIRM DELETE AFTER ALERT DIALOG
       const handleDeleteConfirm = async () => {
         if (userToDelete) {
           try {
             let response;
             if (deleteType === "soft") {
+              // SERVICE API
               response = await softDeleteUserService(userToDelete.id);
             } else {
+              // SERVICE API
               response = await permanentDeleteUserService(userToDelete.id);
             }
 
+            // TOAST
             toast({
               description: response.message,
               action: <ToastClose />,
@@ -249,10 +271,13 @@ const columns: ColumnDef<UserDataResponse>[] = [
               }
               return [];
             });
-          } catch (error) {
-            console.log(error);
+          } catch (error: any) {
+            // ERROR MESSAGE
+            const errorMessage = error?.response?.data?.message;
+
+            // TOAST
             toast({
-              description: `Error performing ${deleteType} delete`,
+              description: errorMessage,
               action: <ToastClose />,
               duration: 4000,
               variant: "destructive",
@@ -273,13 +298,7 @@ const columns: ColumnDef<UserDataResponse>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(user.id)}
-            >
-              Copy User ID
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View profile</DropdownMenuItem>
             {user.deletedAt !== null && (
               <DropdownMenuItem onClick={() => handleRestoreClick(user)}>
                 Restore User
@@ -338,17 +357,19 @@ const columns: ColumnDef<UserDataResponse>[] = [
 ];
 
 export default function UsersPage() {
+  // DATA FECTHING
   const { data: users, error } = useSWR<UserDataResponse[]>(
     "/api/users",
     getAllUserService
   );
 
+  // STATE SORTING DAYA
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // STATE COLUMN FILTER
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
 
   const table = useReactTable({
     data: users ?? [],
@@ -359,11 +380,9 @@ export default function UsersPage() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
     },
   });
 
@@ -383,6 +402,7 @@ export default function UsersPage() {
 
   return (
     <div className="w-full">
+      {/* SEARCH */}
       <div className="flex items-center mb-4">
         <Input
           placeholder="Search username..."
@@ -395,7 +415,11 @@ export default function UsersPage() {
           className="max-w-sm"
         />
       </div>
+
+      {/* DATA TABLE */}
       <MainTable table={table} columns={columns.length} />
+
+      {/* PAGINATION */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
           <Button

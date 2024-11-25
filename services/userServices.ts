@@ -5,6 +5,7 @@ import {
   UserDataResponse,
 } from "@/schema/dataSchema";
 
+// DONE
 export const getAllUserService = async (): Promise<UserDataResponse[]> => {
   const result = await axiosInstance.get("user");
   return result.data.data;
