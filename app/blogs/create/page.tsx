@@ -59,6 +59,7 @@ import { id } from "date-fns/locale";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
 import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
+import { Tiptap } from "@/components/tiptap/tiptap-editor";
 
 const OPTIONS: Option[] = [
   { label: "nextjs", value: "Nextjs" },
@@ -234,10 +235,7 @@ export default function CreateBlogPage() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Input your blog title here..."
-                        {...field}
-                      />
+                      <Tiptap content={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                     <FormDescription>
