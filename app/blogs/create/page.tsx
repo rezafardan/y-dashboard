@@ -58,12 +58,33 @@ import { ToastClose } from "@/components/ui/toast";
 import { id } from "date-fns/locale";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
+import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
+
+const OPTIONS: Option[] = [
+  { label: "nextjs", value: "Nextjs" },
+  { label: "React", value: "react" },
+  { label: "Remix", value: "remix" },
+  { label: "Vite", value: "vite" },
+  { label: "Nuxt", value: "nuxt" },
+  { label: "Vue", value: "vue" },
+  { label: "Svelte", value: "svelte" },
+  { label: "Angular", value: "angular" },
+  { label: "Ember", value: "ember", disable: true },
+  { label: "Gatsby", value: "gatsby", disable: true },
+  { label: "Astro", value: "astro" },
+];
 
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
   DRAFT = "DRAFT",
   SEND = "SEND",
 }
+
+const optionSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+  disable: z.boolean().optional(),
+});
 
 // BLOG SCHEMA
 const newBlogSchema = z.object({
@@ -72,8 +93,9 @@ const newBlogSchema = z.object({
   mainImageId: z.string().default("path://image.jpg"),
   status: z.nativeEnum(BlogStatus).optional(),
   allowComment: z.boolean().default(true).optional(),
-  // publishedAt: z.date().optional(),
-  tag: z.string().min(3, { message: "Input tag with minimun 3 character" }),
+  tag: z
+    .array(optionSchema)
+    .min(1, { message: "Input tag with minimun 1 tag" }),
   userId: z.string(),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
 });
@@ -96,7 +118,7 @@ export default function CreateBlogPage() {
     status: undefined,
     allowComment: true,
     // publishedAt: undefined,
-    tag: "",
+    tag: undefined,
     userId: "cm3jb3f36000055qq6fckrve1",
     categoryId: "",
   };
@@ -262,6 +284,7 @@ export default function CreateBlogPage() {
                   </FormItem>
                 )}
               />
+
               {/* TAG */}
               <FormField
                 control={form.control}
@@ -270,11 +293,18 @@ export default function CreateBlogPage() {
                   <FormItem>
                     <FormLabel>Tag</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Input your blog tag here..."
+                      <MultipleSelector
                         {...field}
+                        defaultOptions={OPTIONS}
+                        placeholder="Input tag"
+                        hidePlaceholderWhenSelected
+                        creatable
+                        emptyIndicator={
+                          <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                            no results found.
+                          </p>
+                        }
                       />
-                      {/* <MultiSelectInput /> */}
                     </FormControl>
                     <FormMessage />
                     <FormDescription>
