@@ -72,7 +72,7 @@ const newBlogSchema = z.object({
   mainImageId: z.string().default("path://image.jpg"),
   status: z.nativeEnum(BlogStatus).optional(),
   allowComment: z.boolean().default(true).optional(),
-  publishedAt: z.date().optional(),
+  // publishedAt: z.date().optional(),
   tag: z.string().min(3, { message: "Input tag with minimun 3 character" }),
   userId: z.string(),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
@@ -92,10 +92,10 @@ export default function CreateBlogPage() {
   const defaultValues = {
     title: "",
     content: "",
-    mainImageId: "",
+    mainImageId: "path://image.jpg",
     status: undefined,
     allowComment: true,
-    publishedAt: undefined,
+    // publishedAt: undefined,
     tag: "",
     userId: "cm3jb3f36000055qq6fckrve1",
     categoryId: "",
@@ -142,6 +142,8 @@ export default function CreateBlogPage() {
       // RESET FORM
       form.reset();
     } catch (error: any) {
+      console.log(values);
+
       // ERROR HANDLER
       const errorMessage =
         error?.response?.data?.message || "An error occurred";
@@ -179,7 +181,7 @@ export default function CreateBlogPage() {
       <CardContent>
         <Form {...form}>
           <form className="flex gap-4">
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-3/4 flex flex-col gap-4">
               {/* TITLE */}
               <FormField
                 control={form.control}
@@ -226,7 +228,7 @@ export default function CreateBlogPage() {
               />
             </div>
 
-            <div className="max-w-min flex flex-col gap-4">
+            <div className="w-1/4 flex flex-col gap-4">
               {/* CATEGORY */}
               <FormField
                 control={form.control}
@@ -272,6 +274,7 @@ export default function CreateBlogPage() {
                         placeholder="Input your blog tag here..."
                         {...field}
                       />
+                      {/* <MultiSelectInput /> */}
                     </FormControl>
                     <FormMessage />
                     <FormDescription>
@@ -283,7 +286,7 @@ export default function CreateBlogPage() {
               />
 
               {/* DATE PICKER */}
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="publishedAt"
                 render={({ field }) => (
@@ -305,7 +308,7 @@ export default function CreateBlogPage() {
                     </FormDescription>
                   </FormItem>
                 )}
-              />
+              /> */}
 
               {/* STATUS */}
               <FormField
