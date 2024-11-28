@@ -2,6 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import { Toolbar } from "./tiptap-toolbar";
+
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
@@ -18,6 +19,8 @@ import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 import HardBreak from "@tiptap/extension-hard-break";
+
+import Image from "@tiptap/extension-image";
 
 export const Tiptap = ({
   onChange,
@@ -66,7 +69,7 @@ export const Tiptap = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] rounded-md border border-input bg-background px-3 py-2 " +
+          "min-h-[480px] rounded-md border border-input bg-background px-3 py-2 ring-offset-background" +
           "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" +
           "[&_ol]:list-decimal [&_ul]:list-disc " +
           "[&_ol]:pl-5 [&_ul]:pl-5 " +

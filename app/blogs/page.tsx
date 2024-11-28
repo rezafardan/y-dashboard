@@ -60,7 +60,7 @@ const columns: ColumnDef<BlogDataResponse>[] = [
       <DataTableColumnHeader column={column} title="Title" />
     ),
     cell: ({ row }) => (
-      <div className="max-w-32 truncate sm:max-w-72 md:max-w-[31rem]">
+      <div className="max-w-32 truncate sm:max-w-sm md:max-w-[26rem]">
         {row.getValue("title")}
       </div>
     ),

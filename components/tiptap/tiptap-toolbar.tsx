@@ -16,6 +16,7 @@ import {
   Underline,
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
+import { Input } from "../ui/input";
 
 type Props = {
   editor: Editor | null;
@@ -27,9 +28,9 @@ export const Toolbar = ({ editor }: Props) => {
   }
 
   return (
-    <div className="border border-input bg-background rounded-md p-1 flex gap-1">
+    <div className="border border-input bg-background rounded-md p-1 flex gap-1 overflow-auto scrollbar-hidden">
       {/* Text Formatting */}
-      <div className="flex gap-1 mr-2">
+      <div className="flex gap-1">
         <Toggle
           size="sm"
           pressed={editor.isActive("bold")}
@@ -68,7 +69,7 @@ export const Toolbar = ({ editor }: Props) => {
       </div>
 
       {/* Headings */}
-      <div className="flex gap-1 mr-2">
+      <div className="flex gap-1">
         <Toggle
           size="sm"
           pressed={editor.isActive("heading", { level: 1 })}
@@ -93,7 +94,7 @@ export const Toolbar = ({ editor }: Props) => {
       </div>
 
       {/* Lists */}
-      <div className="flex gap-1 mr-2">
+      <div className="flex gap-1">
         <Toggle
           size="sm"
           pressed={editor.isActive("bulletList")}
@@ -118,7 +119,7 @@ export const Toolbar = ({ editor }: Props) => {
       </div>
 
       {/* Alignment */}
-      <div className="flex gap-1 mr-2">
+      <div className="flex gap-1">
         <Toggle
           size="sm"
           pressed={editor.isActive({ textAlign: "left" })}

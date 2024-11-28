@@ -12,7 +12,9 @@ export const getAllBlogsService = async (): Promise<BlogDataResponse[]> => {
 };
 
 // NOT YET
-export const createBlogService = async (data: any): Promise<CreateBlogData> => {
+export const createBlogService = async (
+  data: FormData
+): Promise<CreateBlogData> => {
   const result = await axiosInstance.post("blog", data);
   return result.data;
 };
