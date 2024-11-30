@@ -40,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tiptap } from "@/components/tiptap/tiptap-editor";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -47,7 +48,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 // SERVICE
-import { createBlogService } from "@/services/blogServices";
+import { createBlogService, getAllTagsService } from "@/services/blogServices";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -57,23 +58,7 @@ import { ToastClose } from "@/components/ui/toast";
 import { id } from "date-fns/locale";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
-import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
-import { Tiptap } from "@/components/tiptap/tiptap-editor";
-import { blogStatus } from "@/schema/dataSchema";
-
-const OPTIONS: Option[] = [
-  { label: "Next", value: "next" },
-  { label: "React", value: "react" },
-  { label: "Remix", value: "remix" },
-  { label: "Vite", value: "vite" },
-  { label: "Nuxt", value: "nuxt" },
-  { label: "Vue", value: "vue" },
-  { label: "Svelte", value: "svelte" },
-  { label: "Angular", value: "angular" },
-  { label: "Gatsby", value: "gatsby" },
-  { label: "Astro", value: "astro" },
-  // { label: "Ember", value: "ember", disable: true },
-];
+import MultipleSelector from "@/components/ui/multiple-selector";
 
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
@@ -81,10 +66,9 @@ enum BlogStatus {
   SEND = "SEND",
 }
 
-const optionSchema = z.object({
-  label: z.string(),
-  value: z.string(),
-  disable: z.boolean().optional(),
+const tagSchema = z.object({
+  id: z.string().default(""),
+  name: z.string(),
 });
 
 // BLOG SCHEMA
@@ -94,10 +78,7 @@ const newBlogSchema = z.object({
   mainImageId: z.instanceof(File),
   status: z.nativeEnum(BlogStatus).optional(),
   allowComment: z.boolean().default(true).optional(),
-  tag: z
-    .array(optionSchema)
-    .min(1, { message: "Input tag with minimun 1 tag" }),
-  userId: z.string(),
+  tags: z.array(tagSchema).min(1, { message: "Input tag with minimun 1 tag" }),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
 });
 
@@ -116,16 +97,14 @@ export default function CreateBlogPage() {
 
   // FORM HANDLER
   const defaultValues = {
-    title: "Pengamat Politik UB : Waspadai Politik Uang di Masa Tenang",
-    content:
-      "<p>Pengamat Politik FISIP Universitas Brawijaya (UB) Wawan Sobari S.IP., MA., Ph.D. mengingatkan masyarakat untuk mewaspadai tim sukses (Timses) tingkat RT/RW melakukan politik uang di masa tenang.</p><p></p><p>“Saya analisa praktik politik uang di masa tenang tim sukses (Timses) tingkat RT/RW biasanya sering kali memanfaatkan itu dan berperan dalam praktik ini,” ucapnya, saat dikonfirmasi, Minggu (24/11/2024).</p><p></p><p>Menurut Wawan, modus praktik politik uang pada masa tenang, biasanya pemberian langsung dalam jumlah kecil. Hal itu dilakukan untuk menghindari deteksi dan memanfaatkan kebutuhan ekonomi masyarakat​.</p><p></p><p>Penyaluran melalui jejaring informal, seperti relawan, tokoh masyarakat, atau kepala desa, untuk mendistribusikan uang atau barang secara masif.</p><p></p><p>“Biasanya Timses tingkat RT/RW sering&nbsp; dimanfaatkan untuk memperluas distribusi​. Bantuan berupa sembako atau kebutuhan sehari-hari disalurkan melalui tokoh lokal atau acara komunitas​,” ungkapnya.</p><p></p><p>Sebab, lanjut Wawan, berdasarkan analisis pada 23 jurnal mengenai politik uang dalam pilkada dan laporan hasil survei berjudul ‘Peta Elektoral Pilkada Kota&nbsp; Malang dari Lembaga Survei Indonesia’. Kandidat memanfaatkan program bantuan sosial pemerintah sebagai sarana untuk menyisipkan agenda politik​ sangat dimungkinkan terjadi.</p><p></p><p>Jika dilihat dari beberapa kasus, program bantuan sosial bisa dijadikan sarana menyisipkan agenda politik. Dimana kegiatan simbolis seperti doa bersama atau pemberian sumbangan amal, sering digunakan untuk mengalihkan perhatian dari maksud sebenarnya​.</p><p></p><p>“Modus-modus ini menunjukkan bahwa praktik politik uang sudah beradaptasi dengan sistem pengawasan Pemilu,” jelasnya.</p><p></p><p>Wawan menjelaskan, pola ini merefleksikan tingginya kebutuhan akan strategi pencegahan berbasis intelijen, yang dapat mengidentifikasi jaringan distribusi dan memutus rantainya sebelum pelaksanaan.</p><p>“Solusi dari politik uang di masa tenang, melalui deteksi anomali dalam distribusi sumber daya atau komunikasi politik bisa menjadi pendekatan inovatif. Selain itu, transparansi dana kampanye harus diintegrasikan dengan audit yang lebih ketat untuk menghindari penggunaan dana ilegal,” pungkasnya.</p>",
+    title: "",
+    content: "",
     mainImageId: undefined,
     status: undefined,
     allowComment: true,
-    // publishedAt: undefined,
-    tag: undefined,
-    userId: "cm3jb3f36000055qq6fckrve1",
+    tags: undefined,
     categoryId: "",
+    // publishedAt: undefined,
   };
 
   const form = useForm<z.infer<typeof newBlogSchema>>({
@@ -171,15 +150,14 @@ export default function CreateBlogPage() {
 
       formData.append("title", values.title);
       formData.append("content", values.content);
-      formData.append("userId", values.userId);
       formData.append("status", values.status || BlogStatus.DRAFT);
       formData.append("allowComment", String(values.allowComment));
       formData.append("categoryId", values.categoryId);
       formData.append("mainImageId", values.mainImageId);
-      if (values.tag && values.tag.length > 0) {
-        const tags = values.tag.map((tag) => JSON.stringify(tag)); // Pastikan sesuai format backend
-        formData.append("tag", JSON.stringify(tags)); // Bisa juga mengirim sebagai stringified array
+      if (values.tags && values.tags.length > 0) {
+        formData.append("tags", JSON.stringify(values.tags));
       }
+
       // SEND TO API
       const result = await createBlogService(formData);
 
@@ -211,11 +189,23 @@ export default function CreateBlogPage() {
     }
   };
 
-  const fetcher = () => getAllCategoriesService();
-  const { data, error, isLoading } = useSWR("/category", fetcher);
+  const fetcherCategories = () => getAllCategoriesService();
+  const fetcherTags = () => getAllTagsService();
+  const {
+    data: categories,
+    error: categoriesError,
+    isLoading: isLoadingCategories,
+  } = useSWR("/category", fetcherCategories);
+  const {
+    data: tags,
+    error: tagsError,
+    isLoading: isLoadingTags,
+  } = useSWR("/tag", fetcherTags);
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error loading data</p>;
+  if (isLoadingCategories) return <p>Loading...</p>;
+  if (categoriesError) return <p>Error loading data categories</p>;
+  if (isLoadingTags) return <p>Loading...</p>;
+  if (tagsError) return <p>Error loading data tags</p>;
 
   return (
     <Card>
@@ -337,7 +327,7 @@ export default function CreateBlogPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {data!.map((item, index) => {
+                        {categories!.map((item, index) => {
                           return (
                             <Fragment key={index}>
                               <SelectItem value={item.id}>
@@ -360,15 +350,15 @@ export default function CreateBlogPage() {
               {/* TAG */}
               <FormField
                 control={form.control}
-                name="tag"
+                name="tags"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tag</FormLabel>
                     <FormControl>
                       <MultipleSelector
                         {...field}
-                        defaultOptions={OPTIONS}
-                        placeholder="Input tag"
+                        defaultOptions={tags}
+                        placeholder="Input tag or Create a new tag"
                         hidePlaceholderWhenSelected
                         creatable
                         emptyIndicator={

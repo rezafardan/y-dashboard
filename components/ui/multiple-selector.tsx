@@ -15,8 +15,9 @@ import {
 import { cn } from "@/lib/utils";
 
 export interface Option {
-  value: string;
-  label: string;
+  id?: string;
+  name?: string;
+
   disable?: boolean;
   /** fixed option that can't be removed. */
   fixed?: boolean;
@@ -131,7 +132,7 @@ function removePickedOption(groupOption: GroupOption, picked: Option[]) {
 
   for (const [key, value] of Object.entries(cloneOption)) {
     cloneOption[key] = value.filter(
-      (val) => !picked.find((p) => p.value === val.value)
+      (val) => !picked.find((p) => p.id === val.id)
     );
   }
   return cloneOption;
@@ -139,9 +140,7 @@ function removePickedOption(groupOption: GroupOption, picked: Option[]) {
 
 function isOptionsExist(groupOption: GroupOption, targetOption: Option[]) {
   for (const [, value] of Object.entries(groupOption)) {
-    if (
-      value.some((option) => targetOption.find((p) => p.value === option.value))
-    ) {
+    if (value.some((option) => targetOption.find((p) => p.id === option.id))) {
       return true;
     }
   }
@@ -245,7 +244,7 @@ const MultipleSelector = React.forwardRef<
 
     const handleUnselect = React.useCallback(
       (option: Option) => {
-        const newOptions = selected.filter((s) => s.value !== option.value);
+        const newOptions = selected.filter((s) => s.value !== option.id);
         setSelected(newOptions);
         onChange?.(newOptions);
       },
@@ -358,9 +357,11 @@ const MultipleSelector = React.forwardRef<
 
     const CreatableItem = () => {
       if (!creatable) return undefined;
+
+      // Cek apakah tag sudah ada
       if (
-        isOptionsExist(options, [{ value: inputValue, label: inputValue }]) ||
-        selected.find((s) => s.value === inputValue)
+        isOptionsExist(options, [{ id: inputValue, name: inputValue }]) ||
+        selected.find((s) => s.name === inputValue)
       ) {
         return undefined;
       }
@@ -379,7 +380,7 @@ const MultipleSelector = React.forwardRef<
               return;
             }
             setInputValue("");
-            const newOptions = [...selected, { value, label: value }];
+            const newOptions = [...selected, { id: "", name: value }];
             setSelected(newOptions);
             onChange?.(newOptions);
           }}
@@ -473,7 +474,7 @@ const MultipleSelector = React.forwardRef<
             {selected.map((option) => {
               return (
                 <Badge
-                  key={option.value}
+                  key={option.id}
                   className={cn(
                     "data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground",
                     "data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground",
@@ -482,7 +483,7 @@ const MultipleSelector = React.forwardRef<
                   data-fixed={option.fixed}
                   data-disabled={disabled || undefined}
                 >
-                  {option.label}
+                  {option.name}
                   <button
                     className={cn(
                       "ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -592,8 +593,8 @@ const MultipleSelector = React.forwardRef<
                         {dropdowns.map((option) => {
                           return (
                             <CommandItem
-                              key={option.value}
-                              value={option.value}
+                              key={option.id}
+                              value={option.id}
                               disabled={option.disable}
                               onMouseDown={(e) => {
                                 e.preventDefault();
@@ -615,7 +616,7 @@ const MultipleSelector = React.forwardRef<
                                   "cursor-default text-muted-foreground"
                               )}
                             >
-                              {option.label}
+                              {option.name}
                             </CommandItem>
                           );
                         })}
