@@ -77,7 +77,7 @@ const newUserSchema = z
     username: z
       .string()
       .min(4, { message: "Username minimum 4 characters" })
-      .max(10, { message: "Username maximum 10 characters" })
+      .max(14, { message: "Username maximum 14 characters" })
       .refine((val) => !val.includes(" "), {
         message: "Username cannot contain spaces",
       })
@@ -188,7 +188,7 @@ export default function CreateUserPage() {
     mode: "all",
   });
 
-  // DEBOUNCE
+  // DEBOUNCE FETCHING USERNAME DATA
   const debouncedUsernameCheck = useCallback(
     debounce(async (username: string) => {
       if (username.length >= 4) {
@@ -385,8 +385,8 @@ export default function CreateUserPage() {
 
         <CardContent>
           <Form {...form}>
-            <form className="w-full flex gap-4">
-              <div className="flex flex-col gap-4 w-9/12">
+            <form className="w-full flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col gap-4 md:w-9/12">
                 {/* USERNAME */}
                 <FormField
                   control={form.control}
@@ -520,69 +520,71 @@ export default function CreateUserPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-4 w-3/12 justify-between">
+              <div className="flex flex-col gap-4 md:w-3/12 justify-between">
                 {/* PROFILE PICTURE */}
-                <FormField
-                  control={form.control}
-                  name="profileImage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Profile Image</FormLabel>
-                      <div className="relative bg-muted w-full h-64 flex items-center justify-center dark:bg-background rounded-md">
-                        {!image && <p className="text-sm">Upload an image</p>}
+                <div className="w-1/2 flex md:w-full">
+                  <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profile Image</FormLabel>
+                        <div className="relative bg-muted aspect-square flex items-center justify-center dark:bg-background rounded-md">
+                          {!image && <p className="text-sm">Upload an image</p>}
+                          {image && !isCropped && (
+                            <Cropper
+                              src={image}
+                              style={{ height: "100%", width: "100%" }}
+                              initialAspectRatio={1}
+                              aspectRatio={1}
+                              guides={false}
+                              ref={cropperRef}
+                            />
+                          )}
+                          {isCropped && croppedImage && (
+                            <img
+                              src={croppedImage}
+                              alt="Cropped"
+                              className="w-full h-full rounded-full p-1"
+                            />
+                          )}
+                        </div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            handleImageChange(e);
+                            field.onChange(e.target.files?.[0]);
+                          }}
+                          className="mt-4"
+                        />
                         {image && !isCropped && (
-                          <Cropper
-                            src={image}
-                            style={{ height: "100%", width: "100%" }}
-                            initialAspectRatio={1}
-                            aspectRatio={1}
-                            guides={false}
-                            ref={cropperRef}
-                          />
+                          <Button
+                            type="button"
+                            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
+                            onClick={cropImage}
+                          >
+                            Crop Image
+                          </Button>
                         )}
-                        {isCropped && croppedImage && (
-                          <img
-                            src={croppedImage}
-                            alt="Cropped"
-                            className="w-full h-full rounded-full p-2"
-                          />
+                        {isCropped && (
+                          <Button
+                            type="button"
+                            className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
+                            onClick={resetCrop}
+                          >
+                            Reset Crop
+                          </Button>
                         )}
-                      </div>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          handleImageChange(e);
-                          field.onChange(e.target.files?.[0]);
-                        }}
-                        className="mt-4"
-                      />
-                      {image && !isCropped && (
-                        <Button
-                          type="button"
-                          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
-                          onClick={cropImage}
-                        >
-                          Crop Image
-                        </Button>
-                      )}
-                      {isCropped && (
-                        <Button
-                          type="button"
-                          className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
-                          onClick={resetCrop}
-                        >
-                          Reset Crop
-                        </Button>
-                      )}
-                      <FormDescription>
-                        Upload an image file (PNG, JPG, JPEG, or GIF) with a
-                        maximum size of 2MB.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormDescription>
+                          Upload an image file (PNG, JPG, JPEG, or GIF) with a
+                          maximum size of 2MB.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* SUBMIT */}
                 <LoadingButton

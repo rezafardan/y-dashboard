@@ -244,7 +244,7 @@ const MultipleSelector = React.forwardRef<
 
     const handleUnselect = React.useCallback(
       (option: Option) => {
-        const newOptions = selected.filter((s) => s.value !== option.id);
+        const newOptions = selected.filter((s) => s.id !== option.id);
         setSelected(newOptions);
         onChange?.(newOptions);
       },
@@ -358,7 +358,6 @@ const MultipleSelector = React.forwardRef<
     const CreatableItem = () => {
       if (!creatable) return undefined;
 
-      // Cek apakah tag sudah ada
       if (
         isOptionsExist(options, [{ id: inputValue, name: inputValue }]) ||
         selected.find((s) => s.name === inputValue)
@@ -474,7 +473,7 @@ const MultipleSelector = React.forwardRef<
             {selected.map((option) => {
               return (
                 <Badge
-                  key={option.id}
+                  key={option.name}
                   className={cn(
                     "data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground",
                     "data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground",

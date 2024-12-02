@@ -104,7 +104,6 @@ export const Toolbar = ({ editor }: Props) => {
             }`}
           />
         </Toggle>
-
         <Toggle
           size="sm"
           onClick={() => editor.chain().focus().redo().run()}
@@ -117,7 +116,6 @@ export const Toolbar = ({ editor }: Props) => {
             }`}
           />
         </Toggle>
-
         <Separator orientation="vertical" className="h-4" />
       </div>
 

@@ -83,8 +83,7 @@ const newBlogSchema = z.object({
     .max(100, { message: "Title can be up to 100 characters" }),
   content: z
     .string()
-    .min(1, { message: "Content must be at least 1 character" })
-    .max(10000, { message: "Content cannot exceed 10,000 characters" }),
+    .min(1, { message: "Content must be at least 1 character" }),
   mainImageId: z.custom<File>((file) => {
     if (!file) {
       return false;
@@ -99,8 +98,6 @@ const newBlogSchema = z.object({
     .max(5, { message: "Input tag with maximum 5 tag" }),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
 });
-
-const STORAGE_KEY = "createBlogForm";
 
 export default function CreateBlogPage() {
   // TOAST
@@ -169,27 +166,8 @@ export default function CreateBlogPage() {
     setShowConfirmDialog(false);
   };
 
-  useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      form.reset(parsedData);
-      if (parsedData.mainImageId) {
-        setImage(parsedData.mainImageId); // Jika ada gambar, set preview-nya
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
-    console.log(values); // Menampilkan seluruh data form
     try {
       setLoading(true);
 
@@ -219,8 +197,8 @@ export default function CreateBlogPage() {
       form.reset();
       form.setValue("tags", []);
       form.setValue("status", undefined);
+      form.setValue("content", "");
       setImage(null);
-      localStorage.removeItem(STORAGE_KEY);
     } catch (error: any) {
       // ERROR HANDLER
       const errorMessage =
@@ -347,11 +325,7 @@ export default function CreateBlogPage() {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Tiptap
-                      content={field.value}
-                      onChange={field.onChange}
-                      key={form.watch("content")}
-                    />
+                    <Tiptap content={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
@@ -428,28 +402,28 @@ export default function CreateBlogPage() {
 
             {/* DATE PICKER */}
             {/* <FormField
-                control={form.control}
-                name="publishedAt"
-                render={({ field }) => (
-                  <FormItem className="flex w-72 flex-col gap-2">
-                    <FormLabel>Date Publish</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                        displayFormat={{ hour24: "PPP HH:mm" }}
-                        locale={id}
-                        granularity="minute"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                    <FormDescription>
-                      Choose the desired date and time to publish this blog.
-                      Adjust according to your schedule
-                    </FormDescription>
-                  </FormItem>
-                )}
-              /> */}
+              control={form.control}
+              name="publishedAt"
+              render={({ field }) => (
+                <FormItem className="flex w-72 flex-col gap-2">
+                  <FormLabel>Date Publish</FormLabel>
+                  <FormControl>
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      displayFormat={{ hour24: "PPP HH:mm" }}
+                      locale={id}
+                      granularity="minute"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <FormDescription>
+                    Choose the desired date and time to publish this blog.
+                    Adjust according to your schedule
+                  </FormDescription>
+                </FormItem>
+              )}
+            /> */}
 
             {/* STATUS */}
             <FormField
@@ -458,10 +432,7 @@ export default function CreateBlogPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={undefined}
-                  >
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue

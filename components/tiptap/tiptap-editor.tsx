@@ -25,6 +25,7 @@ import Link from "@tiptap/extension-link";
 import History from "@tiptap/extension-history";
 
 import Image from "@tiptap/extension-image";
+import { useEffect } from "react";
 
 export const Tiptap = ({
   onChange,
@@ -74,15 +75,13 @@ export const Tiptap = ({
         autolink: true,
         defaultProtocol: "https",
       }),
-
       Image.configure({
         inline: true,
         allowBase64: true,
       }),
-
       History.configure({
-        depth: 100, // Maksimum jumlah perubahan yang bisa di-undo/redo
-        newGroupDelay: 250, // Delay sebelum perubahan baru dianggap sebagai grup baru
+        depth: 100,
+        newGroupDelay: 250,
       }),
     ],
     content: content ? JSON.parse(content) : "",
@@ -99,28 +98,10 @@ export const Tiptap = ({
           "prose prose-sm max-w-full w-full" +
           "[&_p]:leading-tight [&_p]:my-0 ",
       },
-      handleClick(view, pos, event) {
-        const attrs = view.state.doc.nodeAt(pos)?.attrs;
-        if (attrs?.href) {
-          window.open(attrs.href, "_blank");
-          return true;
-        }
-        return false;
-      },
     },
     onUpdate({ editor }) {
       const jsonContent = editor.getJSON();
-
-      // Cek apakah dokumen hanya paragraf kosong
-      const isEmptyDoc =
-        jsonContent.content &&
-        jsonContent.content.length === 1 &&
-        jsonContent.content[0].type === "paragraph" &&
-        (!jsonContent.content[0].content ||
-          jsonContent.content[0].content.length === 0);
-
-      onChange(isEmptyDoc ? "" : JSON.stringify(jsonContent)); // Simpan sebagai string kosong jika dokumen kosong
-      console.log(jsonContent);
+      onChange(JSON.stringify(jsonContent));
     },
   });
 

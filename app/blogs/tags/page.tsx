@@ -50,7 +50,7 @@ import { deleteBlogService } from "@/services/blogServices";
 
 // SCHEMA
 import { BlogDataResponse, TagDataResponse, User } from "@/schema/dataSchema";
-import { getAllTagsService } from "@/services/tagServices";
+import { deleteTagService, getAllTagsService } from "@/services/tagServices";
 
 // TABLE HEADER
 const columns: ColumnDef<TagDataResponse>[] = [
@@ -106,7 +106,7 @@ const columns: ColumnDef<TagDataResponse>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const blog = row.original;
+      const tag = row.original;
 
       // TOAST
       const { toast } = useToast();
@@ -128,7 +128,7 @@ const columns: ColumnDef<TagDataResponse>[] = [
       const handleDeleteConfirm = async () => {
         try {
           // SERVICE API
-          const response = await deleteBlogService(blog.id);
+          const response = await deleteTagService(tag.id);
 
           // TOAST
           toast({
@@ -140,7 +140,7 @@ const columns: ColumnDef<TagDataResponse>[] = [
           // REFRESH TABLE
           mutate((prevBlogs: BlogDataResponse[] | undefined) => {
             if (Array.isArray(prevBlogs)) {
-              return prevBlogs.filter((item) => item.id !== blog.id);
+              return prevBlogs.filter((item) => item.id !== tag.id);
             }
             return [];
           });
@@ -170,7 +170,7 @@ const columns: ColumnDef<TagDataResponse>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleDeleteClick}>
-              Delete Blog
+              Delete Tag
             </DropdownMenuItem>
           </DropdownMenuContent>
 
