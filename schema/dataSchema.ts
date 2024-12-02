@@ -134,6 +134,13 @@ export interface editBlogData {
 
 // ================================================== //
 
+// TAGS LIST INTEFACE > FOR /TAGS
+export interface TagDataResponse {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
+
 // CATEGORY DATA GLOBAL
 export interface Category {
   id: string;

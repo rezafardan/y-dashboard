@@ -48,7 +48,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 // SERVICE
-import { createBlogService, getAllTagsService } from "@/services/blogServices";
+import { createBlogService } from "@/services/blogServices";
+import { getAllTagsService } from "@/services/tagServices";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -216,7 +217,9 @@ export default function CreateBlogPage() {
 
       // RESET FORM
       form.reset();
-
+      form.setValue("tags", []);
+      form.setValue("status", undefined);
+      setImage(null);
       localStorage.removeItem(STORAGE_KEY);
     } catch (error: any) {
       // ERROR HANDLER
@@ -344,7 +347,11 @@ export default function CreateBlogPage() {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Tiptap content={field.value} onChange={field.onChange} />
+                    <Tiptap
+                      content={field.value}
+                      onChange={field.onChange}
+                      key={form.watch("content")}
+                    />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
@@ -398,6 +405,7 @@ export default function CreateBlogPage() {
                   <FormControl>
                     <MultipleSelector
                       {...field}
+                      value={form.watch("tags")}
                       defaultOptions={tags}
                       placeholder="Input tag or Create a new tag"
                       hidePlaceholderWhenSelected
@@ -450,7 +458,10 @@ export default function CreateBlogPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={undefined}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue

@@ -11,11 +11,6 @@ export const getAllBlogsService = async (): Promise<BlogDataResponse[]> => {
   return result.data.data;
 };
 
-export const getAllTagsService = async () => {
-  const result = await axiosInstance.get("tag");
-  return result.data.data;
-};
-
 // NOT YET
 export const createBlogService = async (
   data: FormData

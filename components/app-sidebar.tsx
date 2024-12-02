@@ -49,6 +49,10 @@ const data = {
           title: "Blog Categories Lists",
           url: "/blogs/categories",
         },
+        {
+          title: "Blog Tags Lists",
+          url: "/blogs/tags",
+        },
       ],
     },
     {
