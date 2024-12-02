@@ -113,7 +113,7 @@ export enum blogStatus {
 export interface CreateBlogData {
   id: string;
   title: string;
-  content: string;
+  content: JSON;
   status: string;
   allowComment: boolean;
   schedulePulblishedAt: Date;

@@ -14,23 +14,115 @@ import {
   AlignCenter,
   AlignRight,
   Underline,
+  Image,
+  Link2,
+  Undo,
+  Redo,
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { Input } from "../ui/input";
+import { useCallback, useState } from "react";
+import { Separator } from "../ui/separator";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "../ui/button";
 
 type Props = {
   editor: Editor | null;
 };
 
 export const Toolbar = ({ editor }: Props) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [url, setUrl] = useState("");
+
   if (!editor) {
     return null;
   }
 
+  // Fungsi untuk upload gambar
+  const handleUploadImage = (editor: Editor) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async (event: Event) => {
+      const file = (event.target as HTMLInputElement)?.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64Image = reader.result;
+
+          // Tambahkan gambar ke editor
+          editor
+            .chain()
+            .focus()
+            .setImage({ src: base64Image as string })
+            .run();
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    input.click();
+  };
+
+  const handleSetLink = useCallback(() => {
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .setLink({ href: url })
+        .run();
+    }
+    setIsDialogOpen(false);
+    setUrl(""); // Reset URL input
+  }, [editor, url]);
+
   return (
     <div className="border border-input bg-background rounded-md p-1 flex gap-1 overflow-auto scrollbar-hidden">
+      <div className="flex gap-1 items-center">
+        <Toggle
+          size="sm"
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().undo()}
+          title="Undo"
+        >
+          <Undo
+            className={`h-4 w-4 ${
+              editor.can().undo() ? "text-black" : "text-gray-400"
+            }`}
+          />
+        </Toggle>
+
+        <Toggle
+          size="sm"
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().redo()}
+          title="Redo"
+        >
+          <Redo
+            className={`h-4 w-4 ${
+              editor.can().redo() ? "text-black" : "text-gray-400"
+            }`}
+          />
+        </Toggle>
+
+        <Separator orientation="vertical" className="h-4" />
+      </div>
+
       {/* Text Formatting */}
-      <div className="flex gap-1">
+      <div className="flex gap-1 items-center">
         <Toggle
           size="sm"
           pressed={editor.isActive("bold")}
@@ -66,10 +158,12 @@ export const Toolbar = ({ editor }: Props) => {
         >
           <Strikethrough className="h-4 w-4" />
         </Toggle>
+
+        <Separator orientation="vertical" className="h-4" />
       </div>
 
       {/* Headings */}
-      <div className="flex gap-1">
+      <div className="flex gap-1 items-center">
         <Toggle
           size="sm"
           pressed={editor.isActive("heading", { level: 1 })}
@@ -91,10 +185,12 @@ export const Toolbar = ({ editor }: Props) => {
         >
           <Heading2 className="h-4 w-4" />
         </Toggle>
+
+        <Separator orientation="vertical" className="h-4" />
       </div>
 
       {/* Lists */}
-      <div className="flex gap-1">
+      <div className="flex gap-1 items-center">
         <Toggle
           size="sm"
           pressed={editor.isActive("bulletList")}
@@ -116,10 +212,12 @@ export const Toolbar = ({ editor }: Props) => {
         >
           <ListOrdered className="h-4 w-4" />
         </Toggle>
+
+        <Separator orientation="vertical" className="h-4" />
       </div>
 
       {/* Alignment */}
-      <div className="flex gap-1">
+      <div className="flex gap-1 items-center">
         <Toggle
           size="sm"
           pressed={editor.isActive({ textAlign: "left" })}
@@ -152,10 +250,12 @@ export const Toolbar = ({ editor }: Props) => {
         >
           <AlignRight className="h-4 w-4" />
         </Toggle>
+
+        <Separator orientation="vertical" className="h-4" />
       </div>
 
       {/* Additional Features */}
-      <div className="flex gap-1">
+      <div className="flex gap-1 items-center">
         <Toggle
           size="sm"
           pressed={editor.isActive("blockquote")}
@@ -174,6 +274,49 @@ export const Toolbar = ({ editor }: Props) => {
           title="Code"
         >
           <Code className="h-4 w-4" />
+        </Toggle>
+
+        <Separator orientation="vertical" className="h-4" />
+
+        {/* Insert Link Button */}
+        <Toggle
+          size="sm"
+          onClick={() => setIsDialogOpen(true)} // Buka dialog
+          pressed={editor.isActive("link")}
+          title="Insert Link"
+        >
+          <Link2 className="h-4 w-4" />
+        </Toggle>
+
+        {/* Dialog for Adding Link */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Insert Link</DialogTitle>
+              <DialogDescription>Add a link to your content</DialogDescription>
+            </DialogHeader>
+
+            <Input
+              placeholder="https://example.com"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSetLink}>Add Link</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Toggle
+          size="sm"
+          onClick={() => handleUploadImage(editor)}
+          title="Upload Image"
+        >
+          <Image className="h-4 w-4" />
         </Toggle>
       </div>
     </div>

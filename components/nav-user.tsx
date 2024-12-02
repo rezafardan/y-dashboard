@@ -38,6 +38,7 @@ export function NavUser({
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem("createBlogForm");
       const response = await logoutService();
       const successMessage = response.message;
 
