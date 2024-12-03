@@ -68,7 +68,6 @@ export interface CreateCategoryData {
   id: string;
   name: string;
   description: string;
-  userId: string;
 }
 // DONE
 

@@ -39,32 +39,29 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 // API SERVICE
-import { createCategoryService } from "@/services/categoryServices";
+import { createTagService, getAllTagsService } from "@/services/tagServices";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
+import MultipleSelector from "@/components/ui/multiple-selector";
+import useSWR from "swr";
 
-// CATEGORY SCHEMA
-const newCategorySchema = z.object({
-  // SCHEMA FOR TITLE VALIDATION
+const tagSchema = z.object({
+  id: z.string().optional(),
   name: z
     .string()
-    .trim()
-    .min(3, { message: "Name must be at least 3 characters." })
-    .max(12, { message: "Name must not exceed 12 characters." })
-    .regex(/^[A-Za-z]+$/, {
-      message:
-        "Name should only contain letters and must not contain spaces or numbers.",
-    })
-    .transform((name) => name.toUpperCase()),
+    .min(3, { message: "Tag name must be at least 3 characters" })
+    .max(50, { message: "Tag name cannot exceed 50 characters" }),
+});
 
-  // SCHEMA FOR DESCRIPTION VALIDATION
-  description: z
-    .string()
-    .trim()
-    .min(10, { message: "Description must be at least 10 characters." })
-    .max(100, { message: "Description must not exceed 100 characters." }),
+// CATEGORY SCHEMA
+const newTagSchema = z.object({
+  // SCHEMA FOR TITLE VALIDATION
+  tags: z
+    .array(tagSchema)
+    .min(1, { message: "Input tag with minimun 1 tag" })
+    .max(5, { message: "Input tag with maximum 5 tag" }),
 });
 
 export default function CreateCategoryPage() {
@@ -82,11 +79,10 @@ export default function CreateCategoryPage() {
 
   // FORM HANDLER
   const defaultValues = {
-    name: "",
-    description: "",
+    tags: undefined,
   };
-  const form = useForm<z.infer<typeof newCategorySchema>>({
-    resolver: zodResolver(newCategorySchema),
+  const form = useForm<z.infer<typeof newTagSchema>>({
+    resolver: zodResolver(newTagSchema),
     defaultValues,
     shouldFocusError: false,
     mode: "all",
@@ -109,13 +105,13 @@ export default function CreateCategoryPage() {
   };
 
   // HANDLING SUBMIT FORM
-  const onSubmit = async (values: z.infer<typeof newCategorySchema>) => {
+  const onSubmit = async (values: z.infer<typeof newTagSchema>) => {
     try {
       setLoading(true);
       setError(null);
 
       // SEND TO API
-      const result = await createCategoryService(values);
+      const result = await createTagService(values);
 
       // TOAST MESSAGE FROM API
       toast({
@@ -125,7 +121,7 @@ export default function CreateCategoryPage() {
       });
 
       // RESET FORM
-      form.reset();
+      form.setValue("tags", []);
     } catch (error: any) {
       // ERROR HANDLER
       const errorMessage =
@@ -143,15 +139,21 @@ export default function CreateCategoryPage() {
     }
   };
 
+  const fetcher = () => getAllTagsService();
+
+  const { data: tags, error: tagsError, isLoading } = useSWR("/tag", fetcher);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (tagsError) return <p>Error loading data tags</p>;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create A New Category for Blogs</CardTitle>
+        <CardTitle>Create A New Tag for Blogs</CardTitle>
         <CardDescription>
-          Organize your blogs effectively by creating a new category. Categories
-          help readers find blogs related to specific topics easily. Provide a
-          clear and descriptive name for your category to ensure it is intuitive
-          and aligns with the content it represents.
+          Create a tag to classify your blog posts effectively. Tags help
+          readers discover content based on specific topics or themes. Choose a
+          name that is short, relevant, and easy to understand.
         </CardDescription>
         <Separator />
       </CardHeader>
@@ -162,37 +164,28 @@ export default function CreateCategoryPage() {
             {/* CATEGORY NAME */}
             <FormField
               control={form.control}
-              name="name"
+              name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category Name</FormLabel>
+                  <FormLabel>Tag Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Category name" {...field} />
+                    <MultipleSelector
+                      {...field}
+                      value={form.watch("tags")}
+                      defaultOptions={tags}
+                      placeholder="Input tag or Create a new tag"
+                      hidePlaceholderWhenSelected
+                      creatable
+                      emptyIndicator={
+                        <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
+                          No results found
+                        </p>
+                      }
+                    />
                   </FormControl>
                   <FormDescription>
-                    Provide a name for the category. Use 3-12 characters, and
-                    make sure it&apos;s clear and descriptive. Only letters, are
-                    allowed.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* DESCRIPTION */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Description of category" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Write a description for the category. It should be 10-100
-                    characters long, providing readers with an idea of what this
-                    category is about.
+                    Provide a name for the tag. Use 3-50 characters and ensure
+                    it accurately reflects the topic or theme it represents.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -215,11 +208,11 @@ export default function CreateCategoryPage() {
             >
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
+                  <AlertDialogTitle>Confirm Create Tag</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Once the category is created, you can manage it by visiting
-                    the blog categories list in the menu. Use this list to edit
-                    or delete categories as needed.
+                    Once the tag is created, it can be used to group blog posts
+                    by similar topics. You can edit or delete tags later if
+                    needed.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -244,7 +244,7 @@ const MultipleSelector = React.forwardRef<
 
     const handleUnselect = React.useCallback(
       (option: Option) => {
-        const newOptions = selected.filter((s) => s.id !== option.id);
+        const newOptions = selected.filter((s) => s.name !== option.name);
         setSelected(newOptions);
         onChange?.(newOptions);
       },
@@ -593,7 +593,7 @@ const MultipleSelector = React.forwardRef<
                           return (
                             <CommandItem
                               key={option.id}
-                              value={option.id}
+                              value={option.name}
                               disabled={option.disable}
                               onMouseDown={(e) => {
                                 e.preventDefault();

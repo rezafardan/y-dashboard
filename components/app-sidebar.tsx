@@ -50,6 +50,10 @@ const data = {
           url: "/blogs/categories",
         },
         {
+          title: "Add New Tag",
+          url: "/blogs/tags/create",
+        },
+        {
           title: "Blog Tags Lists",
           url: "/blogs/tags",
         },

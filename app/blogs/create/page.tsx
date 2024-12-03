@@ -197,7 +197,6 @@ export default function CreateBlogPage() {
       form.reset();
       form.setValue("tags", []);
       form.setValue("status", undefined);
-      form.setValue("content", "");
       setImage(null);
     } catch (error: any) {
       // ERROR HANDLER
