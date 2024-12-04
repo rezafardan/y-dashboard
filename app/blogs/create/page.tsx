@@ -91,7 +91,6 @@ const newBlogSchema = z.object({
     return file.size <= 5 * 1024 * 1024;
   }, "File size must not exceed 5MB"),
   status: z.nativeEnum(BlogStatus).optional(),
-  allowComment: z.boolean().default(true).optional(),
   tags: z
     .array(tagSchema)
     .min(1, { message: "Input tag with minimun 1 tag" })
@@ -118,7 +117,6 @@ export default function CreateBlogPage() {
     content: "",
     mainImageId: undefined,
     status: undefined,
-    allowComment: true,
     tags: undefined,
     categoryId: "",
     // publishedAt: undefined,
@@ -176,7 +174,6 @@ export default function CreateBlogPage() {
       formData.append("title", values.title);
       formData.append("content", values.content);
       formData.append("status", values.status || BlogStatus.DRAFT);
-      formData.append("allowComment", String(values.allowComment));
       formData.append("categoryId", values.categoryId);
       formData.append("mainImageId", values.mainImageId);
       if (values.tags && values.tags.length > 0) {
@@ -458,12 +455,12 @@ export default function CreateBlogPage() {
               )}
             />
             {/* ALLOW COMMENT */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="allowComment"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-background dark:bg-background">
+                  <div className="space-y-0.5 ">
                     <FormLabel className="text-base">
                       Allow users to comment
                     </FormLabel>
@@ -480,7 +477,7 @@ export default function CreateBlogPage() {
                   </FormControl>
                 </FormItem>
               )}
-            />
+            /> */}
             {/* SUBMIT */}
 
             <LoadingButton

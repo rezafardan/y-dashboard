@@ -100,7 +100,9 @@ export const Toolbar = ({ editor }: Props) => {
         >
           <Undo
             className={`h-4 w-4 ${
-              editor.can().undo() ? "text-black" : "text-gray-400"
+              editor.can().undo()
+                ? "text-black dark:text-white"
+                : "text-gray-400"
             }`}
           />
         </Toggle>
@@ -112,7 +114,9 @@ export const Toolbar = ({ editor }: Props) => {
         >
           <Redo
             className={`h-4 w-4 ${
-              editor.can().redo() ? "text-black" : "text-gray-400"
+              editor.can().redo()
+                ? "text-black dark:text-white"
+                : "text-gray-400"
             }`}
           />
         </Toggle>

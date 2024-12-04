@@ -11,6 +11,11 @@ export const getAllBlogsService = async (): Promise<BlogDataResponse[]> => {
   return result.data.data;
 };
 
+export const getBlogByIdService = async (id: any) => {
+  const result = await axiosInstance.get(`blog/${id}`);
+  return result.data.data;
+};
+
 // NOT YET
 export const createBlogService = async (
   data: FormData
@@ -20,12 +25,9 @@ export const createBlogService = async (
 };
 
 // NOT YET
-export const editBlogService = async (
-  id: string,
-  formEditBlog: any
-): Promise<editBlogData[]> => {
+export const reviewBlogService = async (id: string, formEditBlog: any) => {
   const result = await axiosInstance.patch(`blog/${id}`, formEditBlog);
-  return result.data.data;
+  return result.data;
 };
 
 // DONE

@@ -50,6 +50,7 @@ import { deleteBlogService, getAllBlogsService } from "@/services/blogServices";
 
 // SCHEMA
 import { BlogDataResponse, User } from "@/schema/dataSchema";
+import { useRouter } from "next/navigation";
 
 // TABLE HEADER
 const columns: ColumnDef<BlogDataResponse>[] = [
@@ -140,6 +141,8 @@ const columns: ColumnDef<BlogDataResponse>[] = [
     cell: ({ row }) => {
       const blog = row.original;
 
+      const router = useRouter();
+
       // TOAST
       const { toast } = useToast();
 
@@ -201,6 +204,20 @@ const columns: ColumnDef<BlogDataResponse>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(`/blogs/view/${blog.id}`);
+              }}
+            >
+              View Blog Detail
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(`/blogs/review/${blog.id}`);
+              }}
+            >
+              Review Blog
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDeleteClick}>
               Delete Blog
             </DropdownMenuItem>
