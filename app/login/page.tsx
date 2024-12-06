@@ -2,7 +2,7 @@
 
 import "./background.css";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +34,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // API SERVICE
 import { loginService } from "@/services/authServices";
 
+import { useAuth } from "@/context/AuthContext";
+
 // TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
@@ -45,6 +47,7 @@ const loginSchema = z.object({
 });
 
 export default function LoginPage() {
+  const { loginUser } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -63,7 +66,11 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const response = await loginService(values);
+      const userData = response.user;
       const successMessage = response.message;
+
+      sessionStorage.setItem("userData", JSON.stringify(userData));
+      loginUser(userData);
 
       toast({
         description: successMessage,

@@ -1,8 +1,11 @@
+// TYPE OF USER ROLE
+export type UserRole = "ADMINISTRATOR" | "AUTHOR" | "EDITOR";
+
 // LOGIN INTERFACE > FOR /LOGIN
 export interface UserDataLoginResponse {
   id: string;
   username: string;
-  role: string;
+  role: UserRole;
   profileImage: string;
   deletedAt: Date | null;
 }

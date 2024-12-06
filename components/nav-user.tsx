@@ -1,8 +1,8 @@
 "use client";
 
-import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react";
+import { UserPen, LogOut } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,22 +23,30 @@ import { useRouter } from "next/navigation";
 import { logoutService } from "@/services/authServices";
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "./ui/toast";
+import { Button } from "./ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string;
-    email: string;
+    username: string;
+    role: string;
+    profileImage: string;
   };
 }) {
+  const { logoutUser } = useAuth();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { toast } = useToast();
 
+  const initials = user.username
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
+
   const handleLogout = async () => {
     try {
-      localStorage.removeItem("createBlogForm");
       const response = await logoutService();
       const successMessage = response.message;
 
@@ -48,11 +56,8 @@ export function NavUser({
         duration: 2000,
       });
 
-      if (response.message === "Logout successfully") {
-        router.push("/login");
-      } else {
-        console.error("Logout failed: ", response.message);
-      }
+      logoutUser();
+      router.push("/login");
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message;
 
@@ -68,58 +73,52 @@ export function NavUser({
   };
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Edit Profile
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={`http://localhost:3001/${user.profileImage}`}
+              alt={user.username}
+            />
+            <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        side={isMobile ? "bottom" : "bottom"}
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage
+                src={`http://localhost:3001/${user.profileImage}`}
+                alt={user.username}
+              />
+              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{user.username}</span>
+              <span className="truncate text-xs">{user.role}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <UserPen />
+            Edit Profile
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
 
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
