@@ -8,6 +8,7 @@ import {
   ListOrdered,
   Heading1,
   Heading2,
+  Heading3,
   Quote,
   Code,
   AlignLeft,
@@ -31,16 +32,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
+import { createImageContent } from "@/services/blogServices";
+import { Dropzone } from "@/components/ui/dropzone";
 
 type Props = {
   editor: Editor | null;
 };
 
 export const Toolbar = ({ editor }: Props) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false); // Dialog untuk link
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false); // Dialog untuk upload image
+  const [files, setFiles] = useState<File | null>(null);
+
   const [url, setUrl] = useState("");
 
   if (!editor) {
@@ -48,32 +53,38 @@ export const Toolbar = ({ editor }: Props) => {
   }
 
   // Fungsi untuk upload gambar
-  const handleUploadImage = (editor: Editor) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
+  const handleUploadImage = async () => {
+    if (!files) {
+      alert("Please select an image file first.");
+      return;
+    }
 
-    input.onchange = async (event: Event) => {
-      const file = (event.target as HTMLInputElement)?.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64Image = reader.result;
+    const formData = new FormData();
+    formData.append("content", files);
 
-          // Tambahkan gambar ke editor
-          editor
-            .chain()
-            .focus()
-            .setImage({ src: base64Image as string })
-            .run();
-        };
-        reader.readAsDataURL(file);
-      }
-    };
+    try {
+      // Upload ke backend
+      const response = await createImageContent(formData);
+      console.log(response);
 
-    input.click();
+      const imageUrl = response.data.filepath; // URL gambar dari response backend
+      console.log(imageUrl);
+
+      // Tambahkan gambar ke editor
+      editor
+        .chain()
+        .focus()
+        .setImage({ src: `http://localhost:3001/${imageUrl}` })
+        .run();
+
+      // Reset state dan tutup dialog
+      setFiles(null);
+      setIsImageDialogOpen(false);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
+    }
   };
-
   const handleSetLink = useCallback(() => {
     if (url.trim() === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
@@ -85,7 +96,7 @@ export const Toolbar = ({ editor }: Props) => {
         .setLink({ href: url })
         .run();
     }
-    setIsDialogOpen(false);
+    setIsLinkDialogOpen(false);
     setUrl(""); // Reset URL input
   }, [editor, url]);
 
@@ -188,6 +199,17 @@ export const Toolbar = ({ editor }: Props) => {
           <Heading2 className="h-4 w-4" />
         </Toggle>
 
+        <Toggle
+          size="sm"
+          pressed={editor.isActive("heading", { level: 3 })}
+          onPressedChange={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+          title="Heading 3"
+        >
+          <Heading3 className="h-4 w-4" />
+        </Toggle>
+
         <Separator orientation="vertical" className="h-4" />
       </div>
 
@@ -283,7 +305,7 @@ export const Toolbar = ({ editor }: Props) => {
         {/* Insert Link Button */}
         <Toggle
           size="sm"
-          onClick={() => setIsDialogOpen(true)} // Buka dialog
+          onClick={() => setIsLinkDialogOpen(true)} // Buka dialog
           pressed={editor.isActive("link")}
           title="Insert Link"
         >
@@ -291,7 +313,7 @@ export const Toolbar = ({ editor }: Props) => {
         </Toggle>
 
         {/* Dialog for Adding Link */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Insert Link</DialogTitle>
@@ -305,7 +327,10 @@ export const Toolbar = ({ editor }: Props) => {
             />
 
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+              <Button
+                variant="ghost"
+                onClick={() => setIsLinkDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleSetLink}>Add Link</Button>
@@ -313,13 +338,43 @@ export const Toolbar = ({ editor }: Props) => {
           </DialogContent>
         </Dialog>
 
+        {/* Dialog for Image Upload */}
         <Toggle
           size="sm"
-          onClick={() => handleUploadImage(editor)}
+          onClick={() => setIsImageDialogOpen(true)}
           title="Upload Image"
         >
           <Image className="h-4 w-4" />
         </Toggle>
+
+        <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Upload Image</DialogTitle>
+              <DialogDescription>
+                Select an image file to upload.
+              </DialogDescription>
+            </DialogHeader>
+
+            <Dropzone
+              onChange={setFiles}
+              className="w-full"
+              fileExtension="image/*"
+            />
+
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => setIsImageDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUploadImage} disabled={!files}>
+                Upload & Insert
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

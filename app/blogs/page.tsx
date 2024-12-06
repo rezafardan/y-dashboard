@@ -211,13 +211,6 @@ const columns: ColumnDef<BlogDataResponse>[] = [
             >
               View Blog Detail
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(`/blogs/review/${blog.id}`);
-              }}
-            >
-              Review Blog
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDeleteClick}>
               Delete Blog
             </DropdownMenuItem>

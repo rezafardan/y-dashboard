@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { BubbleMenu, useEditor, EditorContent } from "@tiptap/react";
 import { Toolbar } from "./tiptap-toolbar";
 
 import Document from "@tiptap/extension-document";
@@ -22,10 +22,16 @@ import HardBreak from "@tiptap/extension-hard-break";
 import Dropcursor from "@tiptap/extension-dropcursor";
 import Link from "@tiptap/extension-link";
 
+import {
+  Bold as IBold,
+  Italic as IItalic,
+  Strikethrough as IStrikethrough,
+} from "lucide-react";
+
 import History from "@tiptap/extension-history";
 
 import Image from "@tiptap/extension-image";
-import { useEffect } from "react";
+import { Toggle } from "../ui/toggle";
 
 export const Tiptap = ({
   onChange,
@@ -78,6 +84,9 @@ export const Tiptap = ({
       Image.configure({
         inline: true,
         allowBase64: true,
+        HTMLAttributes: {
+          class: "block w-full h-auto cursor-pointer",
+        },
       }),
       History.configure({
         depth: 100,
@@ -96,18 +105,47 @@ export const Tiptap = ({
           "[&_ol]:pl-5 [&_ul]:pl-5 " +
           "[&_ol]:list-outside [&_ul]:list-outside " +
           "prose prose-sm max-w-full w-full" +
-          "[&_p]:leading-tight [&_p]:my-0 ",
+          "[&_p]:leading-tight [&_p]:my-0" +
+          "prose-img:focus:border-4",
       },
     },
     onUpdate({ editor }) {
       const jsonContent = editor.getJSON();
       onChange(JSON.stringify(jsonContent));
+      console.log(jsonContent);
     },
   });
 
   return (
     <div className="flex flex-col justify-stretch gap-2">
       <Toolbar editor={editor} />
+      {editor && (
+        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+          <div className="flex gap-1 p-1 rounded-lg border bg-background">
+            <Toggle
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={editor.isActive("bold") ? "is-active" : ""}
+              size="sm"
+            >
+              <IBold />
+            </Toggle>
+            <Toggle
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={editor.isActive("italic") ? "is-active" : ""}
+              size="sm"
+            >
+              <IItalic />
+            </Toggle>
+            <Toggle
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              className={editor.isActive("strike") ? "is-active" : ""}
+              size="sm"
+            >
+              <IStrikethrough />
+            </Toggle>
+          </div>
+        </BubbleMenu>
+      )}
       <EditorContent editor={editor} />
     </div>
   );

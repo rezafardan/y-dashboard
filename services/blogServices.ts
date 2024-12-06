@@ -16,6 +16,11 @@ export const getBlogByIdService = async (id: any) => {
   return result.data.data;
 };
 
+export const createImageContent = async (data: FormData) => {
+  const result = await axiosInstance.post("blog/content", data);
+  return result.data;
+};
+
 // NOT YET
 export const createBlogService = async (
   data: FormData
@@ -25,8 +30,8 @@ export const createBlogService = async (
 };
 
 // NOT YET
-export const reviewBlogService = async (id: string, formEditBlog: any) => {
-  const result = await axiosInstance.patch(`blog/${id}`, formEditBlog);
+export const reviewBlogService = async (id: any, formEditBlog: any) => {
+  const result = await axiosInstance.patch(`blog/review/${id}`, formEditBlog);
   return result.data;
 };
 

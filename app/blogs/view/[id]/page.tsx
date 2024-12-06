@@ -36,6 +36,7 @@ import ListItem from "@tiptap/extension-list-item";
 import HardBreak from "@tiptap/extension-hard-break";
 import Dropcursor from "@tiptap/extension-dropcursor";
 import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
 import { getBlogByIdService } from "@/services/blogServices";
 
 export default function ReviewBlogPage() {
@@ -87,14 +88,14 @@ export default function ReviewBlogPage() {
       HardBreak,
       Dropcursor,
       Link,
+      Image,
     ]);
   }, [blog]); // Hanya memerlukan dependensi blog
 
   // Menampilkan loading indicator saat data masih loading
-  if (isLoading) {
-    return <p>Loading...</p>; // Tampilkan loading ketika data sedang diproses
-  }
-
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error fetching blog data: {error.message}</p>;
+  if (!blog) return <p>No content available...</p>;
   // Jika tidak ada output, tampilkan pesan bahwa data belum tersedia
   if (!output) {
     return <p>No content available...</p>; // Data atau konten belum ada
@@ -105,8 +106,10 @@ export default function ReviewBlogPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Blog View</CardTitle>
-        <CardDescription>View Blog Data detail</CardDescription>
+        <CardTitle>Blog Details</CardTitle>
+        <CardDescription>
+          Explore the full details of the selected blog.
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -126,7 +129,7 @@ export default function ReviewBlogPage() {
               <img
                 src={`http://localhost:3001/${blog.mainImage?.filepath || ""}`}
                 alt={blog.title || "Blog Image"}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-md"
               />
             ) : (
               <div className="w-full h-64 flex items-center justify-center rounded-md bg-gray-100">
@@ -149,7 +152,21 @@ export default function ReviewBlogPage() {
                 <p>
                   Created At:{" "}
                   {blog?.createdAt
-                    ? new Date(blog.createdAt).toLocaleDateString("en-US", {
+                    ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Not Available"}
+                </p>
+                <p>Total Likes: {blog?.likeCount}</p>
+                <p>Total Views: {blog?.viewCount}</p>
+                <p>
+                  Published Date:{" "}
+                  {blog?.publishedAt
+                    ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
                         day: "2-digit",
                         month: "long",
                         year: "numeric",

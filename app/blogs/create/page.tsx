@@ -64,7 +64,8 @@ import MultipleSelector from "@/components/ui/multiple-selector";
 // ENUM FOR STATUS BLOG
 enum BlogStatus {
   DRAFT = "DRAFT",
-  SEND = "SEND",
+  PUBLISH = "PUBLISH",
+  SCHEDULE = "SCHEDULE",
 }
 
 const tagSchema = z.object({
@@ -96,6 +97,8 @@ const newBlogSchema = z.object({
     .min(1, { message: "Input tag with minimun 1 tag" })
     .max(5, { message: "Input tag with maximum 5 tag" }),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
+  allowComment: z.boolean(),
+  publishedAt: z.date(),
 });
 
 export default function CreateBlogPage() {
@@ -119,7 +122,8 @@ export default function CreateBlogPage() {
     status: undefined,
     tags: undefined,
     categoryId: "",
-    // publishedAt: undefined,
+    allowComment: true,
+    publishedAt: undefined,
   };
 
   const form = useForm<z.infer<typeof newBlogSchema>>({
@@ -166,6 +170,7 @@ export default function CreateBlogPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
+    console.log(values);
     try {
       setLoading(true);
 
@@ -176,6 +181,8 @@ export default function CreateBlogPage() {
       formData.append("status", values.status || BlogStatus.DRAFT);
       formData.append("categoryId", values.categoryId);
       formData.append("mainImageId", values.mainImageId);
+      formData.append("allowComment", String(values.allowComment));
+      formData.append("publishedAt", values.publishedAt.toISOString());
       if (values.tags && values.tags.length > 0) {
         formData.append("tags", JSON.stringify(values.tags));
       }
@@ -397,7 +404,7 @@ export default function CreateBlogPage() {
             />
 
             {/* DATE PICKER */}
-            {/* <FormField
+            <FormField
               control={form.control}
               name="publishedAt"
               render={({ field }) => (
@@ -419,7 +426,7 @@ export default function CreateBlogPage() {
                   </FormDescription>
                 </FormItem>
               )}
-            /> */}
+            />
 
             {/* STATUS */}
             <FormField
@@ -441,8 +448,11 @@ export default function CreateBlogPage() {
                       <SelectItem value={BlogStatus.DRAFT}>
                         {BlogStatus.DRAFT}
                       </SelectItem>
-                      <SelectItem value={BlogStatus.SEND}>
-                        {BlogStatus.SEND}
+                      <SelectItem value={BlogStatus.PUBLISH}>
+                        {BlogStatus.PUBLISH}
+                      </SelectItem>
+                      <SelectItem value={BlogStatus.SCHEDULE}>
+                        {BlogStatus.SCHEDULE}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -454,8 +464,9 @@ export default function CreateBlogPage() {
                 </FormItem>
               )}
             />
+
             {/* ALLOW COMMENT */}
-            {/* <FormField
+            <FormField
               control={form.control}
               name="allowComment"
               render={({ field }) => (
@@ -477,7 +488,7 @@ export default function CreateBlogPage() {
                   </FormControl>
                 </FormItem>
               )}
-            /> */}
+            />
             {/* SUBMIT */}
 
             <LoadingButton
