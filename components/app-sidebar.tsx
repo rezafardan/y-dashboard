@@ -102,11 +102,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               if (role === "ADMINISTRATOR") return true;
               if (
                 role === "AUTHOR" &&
-                ![
-                  "/blogs/create",
-                  "/blogs/categories/create",
-                  "/blogs/tags/create",
-                ].includes(item.url)
+                !["/blogs/categories/create", "/blogs/tags/create"].includes(
+                  item.url
+                )
               )
                 return true;
               if (

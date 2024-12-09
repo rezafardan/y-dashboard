@@ -86,9 +86,11 @@ export const Toolbar = ({ editor }: Props) => {
     }
   };
   const handleSetLink = useCallback(() => {
+    // Jika URL kosong, hapus link
     if (url.trim() === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
     } else {
+      // Jika URL tidak kosong, tambahkan atau perbarui link
       editor
         .chain()
         .focus()
@@ -96,8 +98,10 @@ export const Toolbar = ({ editor }: Props) => {
         .setLink({ href: url })
         .run();
     }
+
+    // Reset URL dan tutup dialog setelah eksekusi
     setIsLinkDialogOpen(false);
-    setUrl(""); // Reset URL input
+    setUrl("");
   }, [editor, url]);
 
   return (
@@ -305,7 +309,16 @@ export const Toolbar = ({ editor }: Props) => {
         {/* Insert Link Button */}
         <Toggle
           size="sm"
-          onClick={() => setIsLinkDialogOpen(true)} // Buka dialog
+          onClick={() => {
+            // Jika ada link aktif, isi URL input dengan href saat ini
+            const currentLink = editor.getAttributes("link").href;
+            if (currentLink) {
+              setUrl(currentLink); // Isi URL input dengan nilai link saat ini
+            } else {
+              setUrl(""); // Reset jika tidak ada link aktif
+            }
+            setIsLinkDialogOpen(true); // Buka dialog
+          }}
           pressed={editor.isActive("link")}
           title="Insert Link"
         >
@@ -316,8 +329,10 @@ export const Toolbar = ({ editor }: Props) => {
         <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Insert Link</DialogTitle>
-              <DialogDescription>Add a link to your content</DialogDescription>
+              <DialogTitle>Insert or Edit Link</DialogTitle>
+              <DialogDescription>
+                Add, update, or remove a link from your content.
+              </DialogDescription>
             </DialogHeader>
 
             <Input
@@ -333,7 +348,28 @@ export const Toolbar = ({ editor }: Props) => {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSetLink}>Add Link</Button>
+
+              {editor.isActive("link") && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    editor
+                      .chain()
+                      .focus()
+                      .extendMarkRange("link")
+                      .unsetLink()
+                      .run();
+                    setIsLinkDialogOpen(false);
+                    setUrl("");
+                  }}
+                >
+                  Remove Link
+                </Button>
+              )}
+
+              <Button onClick={handleSetLink}>
+                {editor.isActive("link") ? "Update Link" : "Add Link"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -59,7 +59,7 @@ export default function LayoutDashboard({
           <Separator />
         </div>
 
-        <main className="flex flex-col justify-start gap-2 p-4 w-full">
+        <main className="flex flex-col justify-start gap-2 p-4 w-full min-h-full">
           {children}
         </main>
       </SidebarInset>

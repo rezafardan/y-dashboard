@@ -17,6 +17,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import useSWR from "swr";
+import { getAllCategoriesService } from "@/services/categoryServices";
+
 const chartData = [
   { category: "SPORT", blogs: 186 },
   { category: "POLITIC", blogs: 305 },
@@ -35,6 +38,38 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function GrowthBlogByCategoryChart() {
+  const { data: categories, error } = useSWR(
+    "/api/category",
+    getAllCategoriesService
+  );
+
+  console.log(categories);
+
+  if (error) return <div>Error loading data.</div>;
+  if (!categories) return <div>Loading...</div>;
+
+  const chartData = categories.reduce((acc, blog) => {
+    // Mengambil tanggal posting dalam format yyyy-mm-dd
+    const date = new Date(blog.createdAt).toLocaleDateString();
+
+    // Menyusun data untuk jumlah post per hari
+    const dayData = acc.find((item) => item.date === date);
+    if (dayData) {
+      dayData.posts += 1;
+    } else {
+      acc.push({
+        date,
+        posts: 1,
+      });
+    }
+
+    return acc;
+  }, [] as { date: string; posts: number }[]);
+
+  chartData.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
   return (
     <Card className="w-4/12">
       <CardHeader className="border-b py-5">

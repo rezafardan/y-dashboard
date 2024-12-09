@@ -87,7 +87,7 @@ export function Dropzone({
           <Button
             variant="ghost"
             size="sm"
-            className="flex h-8 space-x-2 px-2 text-xs bg-background"
+            className="flex h-8 space-x-2 px-2 text-xs bg-background ml-1"
             onClick={handleButtonClick}
           >
             Click Here

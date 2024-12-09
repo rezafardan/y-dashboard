@@ -90,6 +90,14 @@ const newUserSchema = z
           "Username can only contain lowercase letters, numbers and underscore",
       }),
 
+    fullname: z
+      .string()
+      .min(4, { message: "Fullname minimum 4 character" })
+      .max(30, { message: "Fullname maximum 30 characters" })
+      .refine((val) => /^[a-z ]+$/.test(val), {
+        message: "Fullname can only contain lowercase letters and spaces",
+      }),
+
     // SCHEMA FOR EMAIL VALIDATION
     email: z
       .string()
@@ -175,6 +183,7 @@ export default function CreateUserPage() {
   // FORM HANDLER
   const defaultValues = {
     username: "",
+    fullname: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -394,7 +403,7 @@ export default function CreateUserPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>*Username</FormLabel>
+                      <FormLabel>Username</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Username"
@@ -411,13 +420,36 @@ export default function CreateUserPage() {
                   )}
                 />
 
+                {/* FULLNAME */}
+                <FormField
+                  control={form.control}
+                  name="fullname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fullname</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Fullname"
+                          autoComplete="fullname"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Fullname must be lowercase, contain spaces, and only
+                        include letters, numbers, or underscores.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* EMAIL */}
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>*Email</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -441,7 +473,7 @@ export default function CreateUserPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>*Password</FormLabel>
+                      <FormLabel>Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -466,7 +498,7 @@ export default function CreateUserPage() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>*Confirm Password</FormLabel>
+                      <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -490,7 +522,7 @@ export default function CreateUserPage() {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>*Role</FormLabel>
+                      <FormLabel>Role</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -523,7 +555,7 @@ export default function CreateUserPage() {
 
               <div className="flex flex-col gap-4 md:w-3/12 justify-between">
                 {/* PROFILE PICTURE */}
-                <div className="w-1/2 flex md:w-full">
+                <div className="w-full flex">
                   <FormField
                     control={form.control}
                     name="profileImage"

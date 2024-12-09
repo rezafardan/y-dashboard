@@ -85,7 +85,8 @@ export const Tiptap = ({
         inline: true,
         allowBase64: true,
         HTMLAttributes: {
-          class: "block w-full h-auto cursor-pointer",
+          class:
+            "w-full h-auto cursor-pointer outline-2 outline-offset-2 outline-black block",
         },
       }),
       History.configure({
@@ -105,8 +106,7 @@ export const Tiptap = ({
           "[&_ol]:pl-5 [&_ul]:pl-5 " +
           "[&_ol]:list-outside [&_ul]:list-outside " +
           "prose prose-sm max-w-full w-full" +
-          "[&_p]:leading-tight [&_p]:my-0" +
-          "prose-img:focus:border-4",
+          "[&_p]:leading-tight [&_p]:my-0",
       },
     },
     onUpdate({ editor }) {
