@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Home, FileText, Users, Command } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
+
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -18,10 +16,6 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-  },
   navMain: [
     {
       title: "Home",

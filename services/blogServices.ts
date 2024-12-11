@@ -21,10 +21,13 @@ export const createImageContent = async (data: FormData) => {
   return result.data;
 };
 
+export const createCoverImage = async (data: FormData) => {
+  const result = await axiosInstance.post("blog/cover", data);
+  return result.data;
+};
+
 // NOT YET
-export const createBlogService = async (
-  data: FormData
-): Promise<CreateBlogData> => {
+export const createBlogService = async (data: any): Promise<CreateBlogData> => {
   const result = await axiosInstance.post("blog", data);
   return result.data;
 };

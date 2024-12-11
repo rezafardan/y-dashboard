@@ -395,8 +395,8 @@ export default function CreateUserPage() {
 
         <CardContent>
           <Form {...form}>
-            <form className="w-full flex flex-col md:flex-row gap-4">
-              <div className="flex flex-col gap-4 md:w-9/12">
+            <form className="grid grid-cols-6 gap-4">
+              <div className="col-span-6 lg:col-span-4">
                 {/* USERNAME */}
                 <FormField
                   control={form.control}
@@ -553,77 +553,76 @@ export default function CreateUserPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-4 md:w-3/12 justify-between">
+              <div className="col-span-6 lg:col-span-2 justify-between">
                 {/* PROFILE PICTURE */}
-                <div className="w-full flex">
-                  <FormField
-                    control={form.control}
-                    name="profileImage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Profile Image</FormLabel>
-                        <div className="relative bg-muted aspect-square flex items-center justify-center dark:bg-background rounded-md">
-                          {!image && <p className="text-sm">Upload an image</p>}
-                          {image && !isCropped && (
-                            <Cropper
-                              src={image}
-                              style={{ height: "100%", width: "100%" }}
-                              initialAspectRatio={1}
-                              aspectRatio={1}
-                              guides={false}
-                              ref={cropperRef}
-                            />
-                          )}
-                          {isCropped && croppedImage && (
-                            <img
-                              src={croppedImage}
-                              alt="Cropped"
-                              className="w-full h-full rounded-full p-1"
-                            />
-                          )}
-                        </div>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            handleImageChange(e);
-                            field.onChange(e.target.files?.[0]);
-                          }}
-                          className="mt-4"
-                        />
+
+                <FormField
+                  control={form.control}
+                  name="profileImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profile Image</FormLabel>
+                      <div className="relative bg-muted aspect-square flex items-center justify-center dark:bg-background rounded-md">
+                        {!image && <p className="text-sm">Upload an image</p>}
                         {image && !isCropped && (
-                          <Button
-                            type="button"
-                            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
-                            onClick={cropImage}
-                          >
-                            Crop Image
-                          </Button>
+                          <Cropper
+                            src={image}
+                            style={{ height: "100%", width: "100%" }}
+                            initialAspectRatio={1}
+                            aspectRatio={1}
+                            guides={false}
+                            ref={cropperRef}
+                          />
                         )}
-                        {isCropped && (
-                          <Button
-                            type="button"
-                            className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
-                            onClick={resetCrop}
-                          >
-                            Reset Crop
-                          </Button>
+                        {isCropped && croppedImage && (
+                          <img
+                            src={croppedImage}
+                            alt="Cropped"
+                            className="w-full h-full rounded-full p-1"
+                          />
                         )}
-                        <FormDescription>
-                          Upload an image file (PNG, JPG, JPEG, or GIF) with a
-                          maximum size of 2MB.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          handleImageChange(e);
+                          field.onChange(e.target.files?.[0]);
+                        }}
+                        className="mt-4"
+                      />
+                      {image && !isCropped && (
+                        <Button
+                          type="button"
+                          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
+                          onClick={cropImage}
+                        >
+                          Crop Image
+                        </Button>
+                      )}
+                      {isCropped && (
+                        <Button
+                          type="button"
+                          className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
+                          onClick={resetCrop}
+                        >
+                          Reset Crop
+                        </Button>
+                      )}
+                      <FormDescription>
+                        Upload an image file (PNG, JPG, JPEG, or GIF) with a
+                        maximum size of 2MB.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 {/* SUBMIT */}
                 <LoadingButton
                   loading={loading}
                   type="button"
-                  className="mb-6"
+                  className="w-full my-4"
                   onClick={handleSubmitButtonClick}
                   disabled={
                     !form.formState.isValid || form.formState.isSubmitting

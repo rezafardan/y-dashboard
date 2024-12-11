@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
@@ -41,15 +41,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tiptap } from "@/components/tiptap/tiptap-editor";
+import MultipleSelector from "@/components/ui/multiple-selector";
 
 // FORM HANDLER
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { newBlogSchema, BlogStatus } from "@/schema/formSchema";
 
 // SERVICE
-import { createBlogService } from "@/services/blogServices";
+import { createBlogService, createCoverImage } from "@/services/blogServices";
 import { getAllTagsService } from "@/services/tagServices";
+import { getAllCategoriesService } from "@/services/categoryServices";
+import useSWR from "swr";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -57,56 +61,10 @@ import { ToastClose } from "@/components/ui/toast";
 
 // DATE SETTER
 import { id } from "date-fns/locale";
-import { getAllCategoriesService } from "@/services/categoryServices";
-import useSWR from "swr";
-import MultipleSelector from "@/components/ui/multiple-selector";
-
-// ENUM FOR STATUS BLOG
-enum BlogStatus {
-  DRAFT = "DRAFT",
-  PUBLISH = "PUBLISH",
-  SCHEDULE = "SCHEDULE",
-}
-
-const tagSchema = z.object({
-  id: z.string().optional(),
-  name: z
-    .string()
-    .min(3, { message: "Tag name must be at least 3 characters" })
-    .max(50, { message: "Tag name cannot exceed 50 characters" }),
-});
-
-// BLOG SCHEMA
-const newBlogSchema = z.object({
-  title: z
-    .string()
-    .min(3, { message: "Input with minimum 3 characters" })
-    .max(100, { message: "Title can be up to 100 characters" }),
-  content: z
-    .string()
-    .min(1, { message: "Content must be at least 1 character" }),
-  mainImageId: z.custom<File>((file) => {
-    if (!file) {
-      return false;
-    }
-    return file.size <= 5 * 1024 * 1024;
-  }, "File size must not exceed 5MB"),
-  status: z.nativeEnum(BlogStatus).optional(),
-  tags: z
-    .array(tagSchema)
-    .min(1, { message: "Input tag with minimun 1 tag" })
-    .max(5, { message: "Input tag with maximum 5 tag" }),
-  categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
-  allowComment: z.boolean(),
-  publishedAt: z.date(),
-});
 
 export default function CreateBlogPage() {
   // TOAST
   const { toast } = useToast();
-
-  // IMAGE
-  const [image, setImage] = useState<string | null>(null);
 
   // LOADING BUTTON
   const [loading, setLoading] = useState(false);
@@ -114,16 +72,17 @@ export default function CreateBlogPage() {
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // =========================================== //
+
   // FORM HANDLER
   const defaultValues = {
     title: "",
     content: "",
-    mainImageId: undefined,
     status: undefined,
     tags: undefined,
     categoryId: "",
     allowComment: true,
-    publishedAt: undefined,
+    publishedAt: new Date(),
   };
 
   const form = useForm<z.infer<typeof newBlogSchema>>({
@@ -132,30 +91,6 @@ export default function CreateBlogPage() {
     shouldFocusError: false,
     mode: "all",
   });
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          description: "File size cannot exceed 2MB",
-          variant: "destructive",
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result as string);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // SUBMIT FORM BUTTON
-  const handleSubmitButtonClick = () => {
-    setShowConfirmDialog(true);
-  };
 
   // FUNC CONFIRM CREATE AFTER ALERT DIALOG
   const handleConfirmSubmit = () => {
@@ -168,27 +103,22 @@ export default function CreateBlogPage() {
     setShowConfirmDialog(false);
   };
 
+  // SUBMIT FORM BUTTON
+  const handleSubmitButtonClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  console.log(form.watch().content);
+
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
+    // CHECK VALUE
     console.log(values);
     try {
       setLoading(true);
 
-      const formData = new FormData();
-
-      formData.append("title", values.title);
-      formData.append("content", values.content);
-      formData.append("status", values.status || BlogStatus.DRAFT);
-      formData.append("categoryId", values.categoryId);
-      formData.append("mainImageId", values.mainImageId);
-      formData.append("allowComment", String(values.allowComment));
-      formData.append("publishedAt", values.publishedAt.toISOString());
-      if (values.tags && values.tags.length > 0) {
-        formData.append("tags", JSON.stringify(values.tags));
-      }
-
       // SEND TO API
-      const result = await createBlogService(formData);
+      const result = await createBlogService(values);
 
       // TOAST MESSAGE FROM API
       toast({
@@ -201,7 +131,6 @@ export default function CreateBlogPage() {
       form.reset();
       form.setValue("tags", []);
       form.setValue("status", undefined);
-      setImage(null);
     } catch (error: any) {
       // ERROR HANDLER
       const errorMessage =
@@ -219,6 +148,7 @@ export default function CreateBlogPage() {
     }
   };
 
+  // FETCH DATA CATEGORIES AND DATA TAGS
   const fetcherCategories = () => getAllCategoriesService();
   const fetcherTags = () => getAllTagsService();
   const {
@@ -239,6 +169,7 @@ export default function CreateBlogPage() {
 
   return (
     <Card>
+      {/* HEADER */}
       <CardHeader>
         <CardTitle>Create A New Blog</CardTitle>
         <CardDescription>
@@ -269,52 +200,6 @@ export default function CreateBlogPage() {
                   <FormDescription>
                     Enter the title of your blog here. Minimum of 3 characters
                     for better descriptiveness and appeal
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-
-            {/* MAIN IMAGE */}
-            <FormField
-              control={form.control}
-              name="mainImageId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Main Image</FormLabel>
-                  <FormControl>
-                    <div className="flex flex-col gap-2">
-                      {/* Image Preview */}
-                      {image ? (
-                        <div className="relative w-full aspect-video rounded-md overflow-hidden">
-                          <img
-                            src={image}
-                            alt="Preview"
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-64 border border-dashed border-input rounded-md bg-background">
-                          <span className="text-gray-400">
-                            No image selected
-                          </span>
-                        </div>
-                      )}
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        name="mainImageId"
-                        onChange={(e) => {
-                          handleImageChange(e);
-                          field.onChange(e.target.files?.[0]);
-                        }}
-                        placeholder="Upload your image"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Upload an image file (PNG, JPG, JPEG, or GIF) with a maximum
-                    size of 5MB.
                   </FormDescription>
                 </FormItem>
               )}
@@ -363,6 +248,7 @@ export default function CreateBlogPage() {
                       })}
                     </SelectContent>
                   </Select>
+
                   <FormMessage />
                   <FormDescription>
                     Select an appropriate category for this blog. You must
@@ -386,7 +272,6 @@ export default function CreateBlogPage() {
                       defaultOptions={tags}
                       placeholder="Input tag or Create a new tag"
                       hidePlaceholderWhenSelected
-                      creatable
                       emptyIndicator={
                         <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
                           No results found

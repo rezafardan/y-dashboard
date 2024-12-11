@@ -399,6 +399,8 @@ export default function UsersPage() {
     return <div className="text-red-500 text-center mt-20">{errorMessage}</div>;
   }
 
+  console.log(users);
+
   return (
     <div className="w-full">
       {/* SEARCH */}

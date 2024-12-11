@@ -74,7 +74,7 @@ export const Toolbar = ({ editor }: Props) => {
       editor
         .chain()
         .focus()
-        .setImage({ src: `http://localhost:3001/${imageUrl}` })
+        .setImage({ src: `${process.env.NEXT_PUBLIC_ASSETS_URL}/${imageUrl}` })
         .run();
 
       // Reset state dan tutup dialog
