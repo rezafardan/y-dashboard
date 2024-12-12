@@ -5,7 +5,6 @@ import React, { useState } from "react";
 // COMPONENT
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,11 +45,11 @@ import {
 } from "@tanstack/react-table";
 
 // SERVICE
-import { deleteBlogService } from "@/services/blogServices";
 
 // SCHEMA
 import { BlogDataResponse, TagDataResponse, User } from "@/schema/dataSchema";
 import { deleteTagService, getAllTagsService } from "@/services/tagServices";
+import { ApiErrorResponse } from "@/schema/error";
 
 // TABLE HEADER
 const columns: ColumnDef<TagDataResponse>[] = [
@@ -107,102 +106,107 @@ const columns: ColumnDef<TagDataResponse>[] = [
     id: "actions",
     cell: ({ row }) => {
       const tag = row.original;
-
-      // TOAST
-      const { toast } = useToast();
-
-      // STATE ALERT DIALOG
-      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-      // FUNC DELETE BUTTON
-      const handleDeleteClick = () => {
-        setShowDeleteDialog(true);
-      };
-
-      // CANCEL BUTTON
-      const handleDeleteCancel = () => {
-        setShowDeleteDialog(false);
-      };
-
-      // FUNC CONFIRM DELETE AFTER ALERT DIALOG
-      const handleDeleteConfirm = async () => {
-        try {
-          // SERVICE API
-          const response = await deleteTagService(tag.id);
-
-          // TOAST
-          toast({
-            description: response.message,
-            action: <ToastClose />,
-            duration: 4000,
-          });
-
-          // REFRESH TABLE
-          mutate((prevBlogs: BlogDataResponse[] | undefined) => {
-            if (Array.isArray(prevBlogs)) {
-              return prevBlogs.filter((item) => item.id !== tag.id);
-            }
-            return [];
-          });
-        } catch (error: any) {
-          // ERROR MESSAGE
-          const errorMessage = error?.response?.data?.message;
-
-          // TOAST
-          toast({
-            description: errorMessage,
-            action: <ToastClose />,
-            duration: 4000,
-            variant: "destructive",
-          });
-        }
-      };
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDeleteClick}>
-              Delete Tag
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-
-          {/* ALERT DIALOG */}
-          <AlertDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Blog Deletion</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this blog? This action is
-                  irreversible and will permanently remove the blog and its
-                  associated data from our servers. Please proceed with caution.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={handleDeleteCancel}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteConfirm}>
-                  Confirm Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </DropdownMenu>
-      );
+      return <TagActionCell tag={tag} />;
     },
   },
 ];
+
+const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
+  // TOAST
+  const { toast } = useToast();
+
+  // STATE ALERT DIALOG
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // FUNC DELETE BUTTON
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  // CANCEL BUTTON
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+  };
+
+  // FUNC CONFIRM DELETE AFTER ALERT DIALOG
+  const handleDeleteConfirm = async () => {
+    try {
+      // SERVICE API
+      const response = await deleteTagService(tag.id);
+
+      // TOAST
+      toast({
+        description: response.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
+
+      // REFRESH TABLE
+      mutate((prevBlogs: BlogDataResponse[] | undefined) => {
+        if (Array.isArray(prevBlogs)) {
+          return prevBlogs.filter((item) => item.id !== tag.id);
+        }
+        return [];
+      });
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+      // TOAST
+      toast({
+        description: errorMessage,
+        action: <ToastClose />,
+        duration: 4000,
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDeleteClick}>
+          Delete Tag
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+
+      {/* ALERT DIALOG */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Blog Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this blog? This action is
+              irreversible and will permanently remove the blog and its
+              associated data from our servers. Please proceed with caution.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Confirm Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DropdownMenu>
+  );
+};
 
 export default function BlogsPage() {
   // DATA FECTHING

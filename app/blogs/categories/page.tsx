@@ -52,6 +52,7 @@ import {
 
 // SCHEMA
 import { CategoriesDataResponse, User } from "@/schema/dataSchema";
+import { ApiErrorResponse } from "@/schema/error";
 
 // TABLE HEADER
 const columns: ColumnDef<CategoriesDataResponse>[] = [
@@ -117,102 +118,111 @@ const columns: ColumnDef<CategoriesDataResponse>[] = [
     id: "actions",
     cell: ({ row }) => {
       const category = row.original;
-
-      // TOAST
-      const { toast } = useToast();
-
-      // STATE ALERT DIALOG
-      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-      // FUNC DELETE BUTTON
-      const handleDeleteClick = () => {
-        setShowDeleteDialog(true);
-      };
-
-      // CANCEL BUTTON
-      const handleDeleteCancel = () => {
-        setShowDeleteDialog(false);
-      };
-
-      // FUNC CONFIRM DELETE AFTER ALERT DIALOG
-      const handleDeleteConfirm = async () => {
-        try {
-          // SERVICE API
-          const response = await deleteCategoryService(category.id);
-
-          // TOAST
-          toast({
-            description: response.message,
-            action: <ToastClose />,
-            duration: 4000,
-          });
-
-          // REFRESH TABLE
-          mutate((prevCategories: CategoriesDataResponse[] | undefined) => {
-            if (Array.isArray(prevCategories)) {
-              return prevCategories.filter((item) => item.id !== category.id);
-            }
-            return [];
-          });
-        } catch (error: any) {
-          // ERROR MESSAGE
-          const errorMessage = error?.response?.data?.message;
-
-          // TOAST
-          toast({
-            description: errorMessage,
-            action: <ToastClose />,
-            duration: 4000,
-            variant: "destructive",
-          });
-        }
-      };
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDeleteClick}>
-              Delete Category
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-
-          {/* ALERT DIALOG */}
-          <AlertDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Category Deletion</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this category? This action is
-                  irreversible and will permanently remove the category and its
-                  associated data from our servers. Proceed carefully.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={handleDeleteCancel}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteConfirm}>
-                  Confirm Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </DropdownMenu>
-      );
+      return <CategoryActionCell category={category} />;
     },
   },
 ];
+
+const CategoryActionCell = ({
+  category,
+}: {
+  category: CategoriesDataResponse;
+}) => {
+  // TOAST
+  const { toast } = useToast();
+
+  // STATE ALERT DIALOG
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // FUNC DELETE BUTTON
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  // CANCEL BUTTON
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+  };
+
+  // FUNC CONFIRM DELETE AFTER ALERT DIALOG
+  const handleDeleteConfirm = async () => {
+    try {
+      // SERVICE API
+      const response = await deleteCategoryService(category.id);
+
+      // TOAST
+      toast({
+        description: response.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
+
+      // REFRESH TABLE
+      mutate((prevCategories: CategoriesDataResponse[] | undefined) => {
+        if (Array.isArray(prevCategories)) {
+          return prevCategories.filter((item) => item.id !== category.id);
+        }
+        return [];
+      });
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+      // TOAST
+      toast({
+        description: errorMessage,
+        action: <ToastClose />,
+        duration: 4000,
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDeleteClick}>
+          Delete Category
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+
+      {/* ALERT DIALOG */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Category Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this category? This action is
+              irreversible and will permanently remove the category and its
+              associated data from our servers. Proceed carefully.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Confirm Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DropdownMenu>
+  );
+};
 
 export default function CategoryPage() {
   // DATA FETCHING

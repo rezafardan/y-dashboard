@@ -20,6 +20,7 @@ export const newBlogSchema = z.object({
     .string()
     .min(3, { message: "Input with minimum 3 characters" })
     .max(100, { message: "Title can be up to 100 characters" }),
+  coverImageId: z.string(),
   content: z
     .string()
     .min(1, { message: "Content must be at least 1 character" }),
@@ -30,14 +31,5 @@ export const newBlogSchema = z.object({
     .max(5, { message: "Input tag with maximum 5 tag" }),
   categoryId: z.string().min(1, { message: "Select minimum 1 option" }),
   allowComment: z.boolean(),
-  publishedAt: z.date(),
-});
-
-export const imageCoverBlogSchema = z.object({
-  coverImageId: z.custom<File>((file) => {
-    if (!file) {
-      return false;
-    }
-    return file.size <= 5 * 1024 * 1024;
-  }, "File size must not exceed 5MB"),
+  publishedAt: z.date().optional(),
 });

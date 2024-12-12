@@ -56,6 +56,7 @@ import {
 
 // SCHEMA
 import { UserDataResponse } from "@/schema/dataSchema";
+import { ApiErrorResponse } from "@/schema/error";
 
 // TABLE HEADER
 const columns: ColumnDef<UserDataResponse>[] = [
@@ -164,196 +165,205 @@ const columns: ColumnDef<UserDataResponse>[] = [
     id: "actions",
     cell: ({ row }) => {
       const user = row.original;
-
-      // TOAST
-      const { toast } = useToast();
-
-      // STATE ALERT DIALOG
-      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-      // STATE DELETE SOFT OR PERMANENT
-      const [deleteType, setDeleteType] = useState<"soft" | "permanent">(
-        "soft"
-      );
-
-      // STATE DATA USER DELETE
-      const [userToDelete, setUserToDelete] =
-        React.useState<UserDataResponse | null>(null);
-
-      // FUNC SOFT DELETE BUTTON
-      const handleSoftDeleteClick = (user: UserDataResponse) => {
-        setUserToDelete(user);
-        setDeleteType("soft");
-        setShowDeleteDialog(true);
-      };
-
-      // FUNC PERMANENT DELETE BUTTON
-      const handlePermanentDeleteClick = (user: UserDataResponse) => {
-        setUserToDelete(user);
-        setDeleteType("permanent");
-        setShowDeleteDialog(true);
-      };
-
-      // CANCEL BUTTON
-      const handleDeleteCancel = () => {
-        setShowDeleteDialog(false);
-      };
-
-      // FUNC RESTORE USER SOFT DELETE
-      const handleRestoreClick = async (user: UserDataResponse) => {
-        try {
-          // SERVICE API
-          const response = await restoreSoftDeleteUserService(user.id);
-
-          // TOAST
-          toast({
-            description: response.message,
-            action: <ToastClose />,
-            duration: 4000,
-          });
-
-          // AUTO REFRESH AFTER ACTIONS
-          mutate((prevUsers: UserDataResponse[] | undefined) => {
-            if (Array.isArray(prevUsers)) {
-              return prevUsers.map((u) =>
-                u.id === user.id ? { ...u, status: "active" } : u
-              );
-            }
-            return [];
-          });
-        } catch (error: any) {
-          // ERROR MESSAGE
-          const errorMessage = error?.response?.data?.message;
-
-          // TOAST
-          toast({
-            description: errorMessage,
-            action: <ToastClose />,
-            duration: 4000,
-            variant: "destructive",
-          });
-        }
-      };
-
-      // FUNC CONFIRM DELETE AFTER ALERT DIALOG
-      const handleDeleteConfirm = async () => {
-        if (userToDelete) {
-          try {
-            let response;
-            if (deleteType === "soft") {
-              // SERVICE API
-              response = await softDeleteUserService(userToDelete.id);
-            } else {
-              // SERVICE API
-              response = await permanentDeleteUserService(userToDelete.id);
-            }
-
-            // TOAST
-            toast({
-              description: response.message,
-              action: <ToastClose />,
-              duration: 4000,
-            });
-
-            // REFRESH TABLE
-            mutate((prevUsers: UserDataResponse[] | undefined) => {
-              if (Array.isArray(prevUsers)) {
-                if (deleteType === "permanent") {
-                  return prevUsers.filter(
-                    (user) => user.id !== userToDelete.id
-                  );
-                }
-                return prevUsers.map((user) =>
-                  user.id === userToDelete.id
-                    ? { ...user, status: "inactive" }
-                    : user
-                );
-              }
-              return [];
-            });
-          } catch (error: any) {
-            // ERROR MESSAGE
-            const errorMessage = error?.response?.data?.message;
-
-            // TOAST
-            toast({
-              description: errorMessage,
-              action: <ToastClose />,
-              duration: 4000,
-              variant: "destructive",
-            });
-          }
-        }
-      };
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {user.deletedAt !== null && (
-              <DropdownMenuItem onClick={() => handleRestoreClick(user)}>
-                Restore User
-              </DropdownMenuItem>
-            )}
-
-            {user.deletedAt !== null ? null : (
-              <DropdownMenuItem onClick={() => handleSoftDeleteClick(user)}>
-                Soft Delete User
-              </DropdownMenuItem>
-            )}
-
-            <DropdownMenuItem onClick={() => handlePermanentDeleteClick(user)}>
-              Permanent Delete User
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-
-          {/* ALERT DIALOG */}
-          <AlertDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  {deleteType === "soft"
-                    ? "Soft Delete Confirmation"
-                    : "Permanent Delete Confirmation"}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  {deleteType === "soft" ? (
-                    <>This action will change the user status to inactive.</>
-                  ) : (
-                    <>
-                      This action cannot be undone. It will permanently delete
-                      the user and remove their data from our servers.
-                    </>
-                  )}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={handleDeleteCancel}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteConfirm}>
-                  {deleteType === "soft"
-                    ? "Confirm Soft Delete"
-                    : "Confirm Permanent Delete"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </DropdownMenu>
-      );
+      return <UserActionCell user={user} />;
     },
   },
 ];
+
+const UserActionCell = ({ user }: { user: UserDataResponse }) => {
+  // TOAST
+  const { toast } = useToast();
+
+  // STATE ALERT DIALOG
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // STATE DELETE SOFT OR PERMANENT
+  const [deleteType, setDeleteType] = useState<"soft" | "permanent">("soft");
+
+  // STATE DATA USER DELETE
+  const [userToDelete, setUserToDelete] =
+    React.useState<UserDataResponse | null>(null);
+
+  // FUNC SOFT DELETE BUTTON
+  const handleSoftDeleteClick = (user: UserDataResponse) => {
+    setUserToDelete(user);
+    setDeleteType("soft");
+    setShowDeleteDialog(true);
+  };
+
+  // FUNC PERMANENT DELETE BUTTON
+  const handlePermanentDeleteClick = (user: UserDataResponse) => {
+    setUserToDelete(user);
+    setDeleteType("permanent");
+    setShowDeleteDialog(true);
+  };
+
+  // CANCEL BUTTON
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+  };
+
+  // FUNC RESTORE USER SOFT DELETE
+  const handleRestoreClick = async (user: UserDataResponse) => {
+    try {
+      // SERVICE API
+      const response = await restoreSoftDeleteUserService(user.id);
+
+      // TOAST
+      toast({
+        description: response.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
+
+      // AUTO REFRESH AFTER ACTIONS
+      mutate((prevUsers: UserDataResponse[] | undefined) => {
+        if (Array.isArray(prevUsers)) {
+          return prevUsers.map((u) =>
+            u.id === user.id ? { ...u, status: "active" } : u
+          );
+        }
+        return [];
+      });
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST
+      toast({
+        description: errorMessage,
+        action: <ToastClose />,
+        duration: 4000,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // FUNC CONFIRM DELETE AFTER ALERT DIALOG
+  const handleDeleteConfirm = async () => {
+    if (userToDelete) {
+      try {
+        let response;
+        if (deleteType === "soft") {
+          // SERVICE API
+          response = await softDeleteUserService(userToDelete.id);
+        } else {
+          // SERVICE API
+          response = await permanentDeleteUserService(userToDelete.id);
+        }
+
+        // TOAST
+        toast({
+          description: response.message,
+          action: <ToastClose />,
+          duration: 4000,
+        });
+
+        // REFRESH TABLE
+        mutate((prevUsers: UserDataResponse[] | undefined) => {
+          if (Array.isArray(prevUsers)) {
+            if (deleteType === "permanent") {
+              return prevUsers.filter((user) => user.id !== userToDelete.id);
+            }
+            return prevUsers.map((user) =>
+              user.id === userToDelete.id
+                ? { ...user, status: "inactive" }
+                : user
+            );
+          }
+          return [];
+        });
+      } catch (error) {
+        // ERROR HANDLER
+        const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+        const errorMessage =
+          apiError.response?.data?.message ||
+          (error instanceof Error
+            ? error.message
+            : "An unexpected error occurred");
+
+        // TOAST
+        toast({
+          description: errorMessage,
+          action: <ToastClose />,
+          duration: 4000,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>View Detail</DropdownMenuItem>
+        {user.deletedAt !== null && (
+          <DropdownMenuItem onClick={() => handleRestoreClick(user)}>
+            Restore User
+          </DropdownMenuItem>
+        )}
+
+        {user.deletedAt !== null ? null : (
+          <DropdownMenuItem onClick={() => handleSoftDeleteClick(user)}>
+            Soft Delete User
+          </DropdownMenuItem>
+        )}
+
+        <DropdownMenuItem onClick={() => handlePermanentDeleteClick(user)}>
+          Permanent Delete User
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+
+      {/* ALERT DIALOG */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteType === "soft"
+                ? "Soft Delete Confirmation"
+                : "Permanent Delete Confirmation"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteType === "soft" ? (
+                <>This action will change the user status to inactive.</>
+              ) : (
+                <>
+                  This action cannot be undone. It will permanently delete the
+                  user and remove their data from our servers.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              {deleteType === "soft"
+                ? "Confirm Soft Delete"
+                : "Confirm Permanent Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DropdownMenu>
+  );
+};
 
 export default function UsersPage() {
   // DATA FECTHING
@@ -398,8 +408,6 @@ export default function UsersPage() {
 
     return <div className="text-red-500 text-center mt-20">{errorMessage}</div>;
   }
-
-  console.log(users);
 
   return (
     <div className="w-full">

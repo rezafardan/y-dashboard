@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 
 // COMPONENT
-import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -46,6 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
 import MultipleSelector from "@/components/ui/multiple-selector";
 import useSWR from "swr";
+import { ApiErrorResponse } from "@/schema/error";
 
 const tagSchema = z.object({
   id: z.string().optional(),
@@ -75,6 +75,7 @@ export default function CreateCategoryPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // ERROR HANDLER
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
 
   // FORM HANDLER
@@ -122,11 +123,15 @@ export default function CreateCategoryPage() {
 
       // RESET FORM
       form.setValue("tags", []);
-    } catch (error: any) {
+    } catch (error) {
       // ERROR HANDLER
-      const errorMessage =
-        error?.response?.data?.message || "An error occurred";
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
 
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
       // TOAST MESSAGE FROM API
       toast({
         description: errorMessage,
@@ -173,7 +178,7 @@ export default function CreateCategoryPage() {
                       {...field}
                       value={form.watch("tags")}
                       defaultOptions={tags}
-                      placeholder="Input tag or Create a new tag"
+                      placeholder="Create a new tag"
                       hidePlaceholderWhenSelected
                       creatable
                       emptyIndicator={

@@ -39,6 +39,10 @@ import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import { getBlogByIdService } from "@/services/blogServices";
 
+interface Tag {
+  name: string;
+}
+
 export default function ReviewBlogPage() {
   const params = useParams(); // Gunakan useParams() untuk mendapatkan id
   const id = params?.id; // Pastikan id tersedia
@@ -53,13 +57,6 @@ export default function ReviewBlogPage() {
     error,
     isLoading,
   } = useSWR(id ? `/blogs/${id}` : null, fetcher);
-
-  if (error) {
-    return <p>Error fetching blog data: {error.message}</p>;
-  }
-
-  const json = blog?.content;
-  console.log(json);
 
   // Pastikan pengecekan data dilakukan setelah hook dipanggil.
   const output = useMemo(() => {
@@ -90,7 +87,14 @@ export default function ReviewBlogPage() {
       Link,
       Image,
     ]);
-  }, [blog]); // Hanya memerlukan dependensi blog
+  }, [blog?.content]); // Hanya memerlukan dependensi blog
+
+  if (error) {
+    return <p>Error fetching blog data: {error.message}</p>;
+  }
+
+  const json = blog?.content;
+  console.log(json);
 
   // Menampilkan loading indicator saat data masih loading
   if (isLoading) return <p>Loading...</p>;
@@ -125,11 +129,12 @@ export default function ReviewBlogPage() {
           </CardHeader>
           <CardContent>
             {/* Menampilkan gambar utama */}
-            {blog?.mainImageId ? (
+            {blog?.coverImageId ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={`http://localhost:3001/${blog.mainImage?.filepath || ""}`}
+                src={`http://localhost:3001/${blog.coverImage?.filepath || ""}`}
                 alt={blog.title || "Blog Image"}
-                className="w-full h-full object-cover rounded-md"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-64 flex items-center justify-center rounded-md bg-gray-100">
@@ -139,7 +144,7 @@ export default function ReviewBlogPage() {
 
             {/* Menampilkan konten blog */}
             <div
-              className="prose-base mt-4"
+              className="prose-base mt-4 dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: output }} // Render the generated HTML
             />
           </CardContent>
@@ -180,7 +185,7 @@ export default function ReviewBlogPage() {
               <div>
                 <p>
                   Tag:{" "}
-                  {blog?.tags?.map((tag: any) => tag.name).join(", ") ||
+                  {blog?.tags?.map((tag: Tag) => tag.name).join(", ") ||
                     "No Tags"}
                 </p>
               </div>

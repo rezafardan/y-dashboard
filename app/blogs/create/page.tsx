@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
@@ -61,8 +61,13 @@ import { ToastClose } from "@/components/ui/toast";
 
 // DATE SETTER
 import { id } from "date-fns/locale";
+import { useAuth } from "@/context/AuthContext";
+import { ApiErrorResponse } from "@/schema/error";
+import Image from "next/image";
 
 export default function CreateBlogPage() {
+  const { role } = useAuth();
+
   // TOAST
   const { toast } = useToast();
 
@@ -74,15 +79,49 @@ export default function CreateBlogPage() {
 
   // =========================================== //
 
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        console.log(file);
+        const formData = new FormData();
+        formData.append("coverimage", file);
+
+        console.log(formData);
+
+        const response = await createCoverImage(formData);
+        console.log(response);
+        const imageId = response.data.id; // Assume backend returns an imageId
+        console.log(imageId);
+
+        form.setValue("coverImageId", imageId);
+        setCoverImage(URL.createObjectURL(file)); // Optional: Preview image
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast({
+          description: "Failed to upload image",
+          variant: "destructive",
+          action: <ToastClose />,
+          duration: 4000,
+        });
+      }
+    }
+  };
+
   // FORM HANDLER
   const defaultValues = {
     title: "",
+    coverImageId: undefined,
     content: "",
     status: undefined,
     tags: undefined,
     categoryId: "",
     allowComment: true,
-    publishedAt: new Date(),
+    publishedAt: undefined,
   };
 
   const form = useForm<z.infer<typeof newBlogSchema>>({
@@ -108,8 +147,7 @@ export default function CreateBlogPage() {
     setShowConfirmDialog(true);
   };
 
-  console.log(form.watch().content);
-
+  console.log(form.watch());
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     // CHECK VALUE
@@ -131,10 +169,15 @@ export default function CreateBlogPage() {
       form.reset();
       form.setValue("tags", []);
       form.setValue("status", undefined);
-    } catch (error: any) {
+    } catch (error) {
       // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
       const errorMessage =
-        error?.response?.data?.message || "An error occurred";
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
 
       // TOAST MESSAGE FROM API
       toast({
@@ -147,6 +190,33 @@ export default function CreateBlogPage() {
       setLoading(false);
     }
   };
+
+  // Handle perubahan status dan publish date
+  useEffect(() => {
+    const status = form.getValues("status");
+    const publishedAt = form.getValues("publishedAt");
+
+    if (status === BlogStatus.DRAFT) {
+      form.setValue("publishedAt", new Date());
+    }
+
+    // Set default publishedAt jika status adalah PUBLISH atau SCHEDULE
+    if (
+      (status === BlogStatus.PUBLISH || status === BlogStatus.SCHEDULE) &&
+      !publishedAt
+    ) {
+      form.setValue("publishedAt", new Date());
+    }
+
+    // Jika status berubah menjadi SCHEDULE dan tanggal sebelumnya adalah kemarin atau lebih kecil, reset tanggal ke sekarang
+    if (
+      status === BlogStatus.SCHEDULE &&
+      publishedAt &&
+      new Date(publishedAt) < new Date()
+    ) {
+      form.setValue("publishedAt", new Date()); // Set tanggal ke sekarang
+    }
+  }, [form, form.getValues("status")]); // Hanya mengupdate ketika status berubah
 
   // FETCH DATA CATEGORIES AND DATA TAGS
   const fetcherCategories = () => getAllCategoriesService();
@@ -173,10 +243,10 @@ export default function CreateBlogPage() {
       <CardHeader>
         <CardTitle>Create A New Blog</CardTitle>
         <CardDescription>
-          Share your ideas, stories or interesting information with the world!
-          Fill in each section below with relevant details to create an engaging
-          and informative blog. Make sure all input meets the requirements so
-          that your blog is ready to be published.
+          Share your ideas, stories, or interesting information with the world!
+          Fill out each section below with the necessary details to create an
+          engaging and informative blog. Ensure all inputs meet the requirements
+          so your blog is ready for publishing.
         </CardDescription>
       </CardHeader>
 
@@ -198,8 +268,53 @@ export default function CreateBlogPage() {
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    Enter the title of your blog here. Minimum of 3 characters
-                    for better descriptiveness and appeal
+                    Enter the title of your blog. A minimum of 3 characters is
+                    required for better clarity and appeal.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="coverImageId"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Main Image</FormLabel>
+                  <FormControl>
+                    <div className="flex flex-col gap-2">
+                      {/* Image Preview */}
+                      {coverImage ? (
+                        <div className="relative w-full aspect-video rounded-md overflow-hidden">
+                          <Image
+                            loading="eager"
+                            src={coverImage}
+                            alt="Preview"
+                            className="w-full h-full"
+                            layout="fill"
+                            objectFit="cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-64 border border-dashed border-input rounded-md bg-background">
+                          <span className="text-gray-400">
+                            No image selected
+                          </span>
+                        </div>
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        name="mainImageId"
+                        onChange={handleImageChange}
+                        placeholder="Upload your image"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                  <FormDescription>
+                    Upload an image file (PNG, JPG, JPEG, or GIF) with a maximum
+                    file size of 5MB.
                   </FormDescription>
                 </FormItem>
               )}
@@ -217,9 +332,9 @@ export default function CreateBlogPage() {
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    Add the main content of your blog here. At least 1
-                    characters are required to provide more information to
-                    readers
+                    Add the main content of your blog here. A minimum of 1
+                    character is required to provide enough information to your
+                    readers.
                   </FormDescription>
                 </FormItem>
               )}
@@ -251,8 +366,8 @@ export default function CreateBlogPage() {
 
                   <FormMessage />
                   <FormDescription>
-                    Select an appropriate category for this blog. You must
-                    choose at least one category
+                    Select an appropriate category for your blog. You must
+                    choose at least one category.
                   </FormDescription>
                 </FormItem>
               )}
@@ -270,8 +385,13 @@ export default function CreateBlogPage() {
                       {...field}
                       value={form.watch("tags")}
                       defaultOptions={tags}
-                      placeholder="Input tag or Create a new tag"
+                      placeholder={
+                        role === "AUTHOR"
+                          ? "Select existing tag"
+                          : "Create a new tag, or select existing tag"
+                      }
                       hidePlaceholderWhenSelected
+                      creatable={role === "AUTHOR" ? false : true}
                       emptyIndicator={
                         <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
                           No results found
@@ -281,8 +401,56 @@ export default function CreateBlogPage() {
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    Add a tag related to your blog to make it easier to find.
-                    Minimum of 3 characters
+                    Add a relevant tag to your blog to make it easier to
+                    discover. Tags must be at least 3 characters long.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
+            {/* STATUS */}
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem
+                        value={BlogStatus.DRAFT}
+                        disabled={
+                          form.getValues("publishedAt") &&
+                          new Date(form.getValues("publishedAt") as Date) >
+                            new Date()
+                        }
+                      >
+                        {BlogStatus.DRAFT}
+                      </SelectItem>
+                      <SelectItem
+                        value={BlogStatus.PUBLISH}
+                        disabled={
+                          form.getValues("publishedAt") &&
+                          new Date(form.getValues("publishedAt") as Date) >
+                            new Date()
+                        }
+                      >
+                        {BlogStatus.PUBLISH}
+                      </SelectItem>
+                      <SelectItem value={BlogStatus.SCHEDULE}>
+                        {BlogStatus.SCHEDULE}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                  <FormDescription>
+                    Choose the publication status: DRAFT for a draft, SCHEDULE
+                    to schedule, or PUBLISH to publish immediately.
                   </FormDescription>
                 </FormItem>
               )}
@@ -297,54 +465,37 @@ export default function CreateBlogPage() {
                   <FormLabel>Date Publish</FormLabel>
                   <FormControl>
                     <DateTimePicker
-                      value={field.value}
-                      onChange={field.onChange}
+                      value={field.value || new Date()} // Tampilkan tanggal sekarang jika tidak ada nilai
+                      onChange={(date) => {
+                        // Cek jika status PUBLISH, maka otomatis set tanggal ke sekarang
+                        if (form.getValues("status") === BlogStatus.PUBLISH) {
+                          field.onChange(new Date()); // Tanggal otomatis diatur ke sekarang
+                        } else if (
+                          form.getValues("status") === BlogStatus.SCHEDULE
+                        ) {
+                          if (date && date < new Date()) {
+                            form.setValue("status", BlogStatus.PUBLISH); // Ubah status jadi PUBLISH
+                          } else if (date && date > new Date()) {
+                            form.setValue("status", BlogStatus.SCHEDULE); // Tetap SCHEDULE jika tanggal lebih besar
+                          }
+                          field.onChange(date);
+                        }
+                      }}
                       displayFormat={{ hour24: "PPP HH:mm" }}
                       locale={id}
                       granularity="minute"
+                      disabled={
+                        // Disable saat status DRAFT atau PUBLISH
+                        !form.getValues("status") ||
+                        form.getValues("status") === BlogStatus.DRAFT ||
+                        form.getValues("status") === BlogStatus.PUBLISH
+                      }
                     />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    Choose the desired date and time to publish this blog.
-                    Adjust according to your schedule
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-
-            {/* STATUS */}
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder="Select Status"
-                          defaultValue={"DRAFT"}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value={BlogStatus.DRAFT}>
-                        {BlogStatus.DRAFT}
-                      </SelectItem>
-                      <SelectItem value={BlogStatus.PUBLISH}>
-                        {BlogStatus.PUBLISH}
-                      </SelectItem>
-                      <SelectItem value={BlogStatus.SCHEDULE}>
-                        {BlogStatus.SCHEDULE}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                  <FormDescription>
-                    Select the publication status: DRAFT for draft, SCHEDULE to
-                    schedule, or PUBLISH to publish immediately
+                    Choose the date and time you want to publish this blog.
+                    Adjust the schedule as needed.
                   </FormDescription>
                 </FormItem>
               )}
@@ -361,8 +512,8 @@ export default function CreateBlogPage() {
                       Allow users to comment
                     </FormLabel>
                     <FormDescription>
-                      Check this box to allow users to comment on this blog, or
-                      leave it unchecked to disable comments.
+                      Enable this option to allow users to comment on your blog,
+                      or leave it unchecked to disable comments.
                     </FormDescription>
                   </div>
                   <FormControl>

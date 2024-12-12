@@ -15,71 +15,69 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
-const data = {
-  navMain: [
-    {
-      title: "Home",
-      url: "/",
-      icon: Home,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: "Blogs",
-      url: "#",
-      icon: FileText,
-      isActive: true,
-      items: [
-        {
-          title: "Add New Blog",
-          url: "/blogs/create",
-        },
-        {
-          title: "Blog Lists",
-          url: "/blogs",
-        },
-        {
-          title: "Add New Category",
-          url: "/blogs/categories/create",
-        },
-        {
-          title: "Blog Categories Lists",
-          url: "/blogs/categories",
-        },
-        {
-          title: "Add New Tag",
-          url: "/blogs/tags/create",
-        },
-        {
-          title: "Blog Tags Lists",
-          url: "/blogs/tags",
-        },
-      ],
-    },
-    {
-      title: "Users",
-      url: "#",
-      icon: Users,
-      isActive: true,
-      items: [
-        {
-          title: "Add New User",
-          url: "/users/create",
-        },
-        {
-          title: "User Lists",
-          url: "/users",
-        },
-      ],
-    },
-  ],
-};
+const navMain = [
+  {
+    title: "Home",
+    url: "/",
+    icon: Home,
+    isActive: false,
+    items: [],
+  },
+  {
+    title: "Blogs",
+    url: "#",
+    icon: FileText,
+    isActive: true,
+    items: [
+      {
+        title: "Add New Blog",
+        url: "/blogs/create",
+      },
+      {
+        title: "Blog Lists",
+        url: "/blogs",
+      },
+      {
+        title: "Add New Category",
+        url: "/blogs/categories/create",
+      },
+      {
+        title: "Blog Categories Lists",
+        url: "/blogs/categories",
+      },
+      {
+        title: "Add New Tag",
+        url: "/blogs/tags/create",
+      },
+      {
+        title: "Blog Tags Lists",
+        url: "/blogs/tags",
+      },
+    ],
+  },
+  {
+    title: "Users",
+    url: "#",
+    icon: Users,
+    isActive: true,
+    items: [
+      {
+        title: "Add New User",
+        url: "/users/create",
+      },
+      {
+        title: "User Lists",
+        url: "/users",
+      },
+    ],
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { role } = useAuth();
 
   // Filter menu berdasarkan role
-  const filteredNavMain = data.navMain
+  const filteredNavMain = navMain
     .filter((section) => {
       // Hapus section "Users" jika role bukan ADMINISTRATOR
       if (section.title === "Users" && role !== "ADMINISTRATOR") {

@@ -2,7 +2,7 @@
 
 import "./background.css";
 
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -39,6 +39,7 @@ import { useAuth } from "@/context/AuthContext";
 // TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
+import { ApiErrorResponse } from "@/schema/error";
 
 // LOGIN SCHEMA
 const loginSchema = z.object({
@@ -80,8 +81,15 @@ export default function LoginPage() {
 
       // REDIRECT TO HOMEPAGE
       router.push("/");
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message;
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
 
       toast({
         description: errorMessage,

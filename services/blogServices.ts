@@ -22,7 +22,7 @@ export const createImageContent = async (data: FormData) => {
 };
 
 export const createCoverImage = async (data: FormData) => {
-  const result = await axiosInstance.post("blog/cover", data);
+  const result = await axiosInstance.post("blog/coverimage", data);
   return result.data;
 };
 

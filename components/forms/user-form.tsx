@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,9 +22,10 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import debounce from "lodash/debounce";
+
 import { Cropper } from "react-cropper";
 import "cropperjs/dist/cropper.css";
+import Image from "next/image";
 
 // ENUM FOR USER ROLE
 enum UserRole {
@@ -244,7 +244,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           <FormField
             control={form.control}
             name="profileImage"
-            render={({ field }) => (
+            render={() => (
               <FormItem>
                 <FormLabel>Profile Image</FormLabel>
                 <Input
@@ -262,7 +262,13 @@ export const UserForm: React.FC<UserFormProps> = ({
                   />
                 )}
                 {isCropped && croppedFile && (
-                  <img src={URL.createObjectURL(croppedFile)} alt="Cropped" />
+                  <Image
+                    src={URL.createObjectURL(croppedFile)}
+                    alt="Cropped"
+                    layout="fill"
+                    objectFit="cover"
+                    loading="eager"
+                  />
                 )}
                 <Button type="button" onClick={cropImage}>
                   Crop Image

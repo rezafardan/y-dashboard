@@ -44,6 +44,7 @@ import { createCategoryService } from "@/services/categoryServices";
 // TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
+import { ApiErrorResponse } from "@/schema/error";
 
 // CATEGORY SCHEMA
 const newCategorySchema = z.object({
@@ -78,6 +79,7 @@ export default function CreateCategoryPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // ERROR HANDLER
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
 
   // FORM HANDLER
@@ -126,10 +128,15 @@ export default function CreateCategoryPage() {
 
       // RESET FORM
       form.reset();
-    } catch (error: any) {
+    } catch (error) {
       // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
       const errorMessage =
-        error?.response?.data?.message || "An error occurred";
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
 
       // TOAST MESSAGE FROM API
       toast({

@@ -44,8 +44,7 @@ type Props = {
 export const Toolbar = ({ editor }: Props) => {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false); // Dialog untuk link
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false); // Dialog untuk upload image
-  const [files, setFiles] = useState<File | null>(null);
-
+  const [contentImage, setContentImage] = useState<File | null>(null);
   const [url, setUrl] = useState("");
 
   if (!editor) {
@@ -54,31 +53,37 @@ export const Toolbar = ({ editor }: Props) => {
 
   // Fungsi untuk upload gambar
   const handleUploadImage = async () => {
-    if (!files) {
+    if (!contentImage) {
       alert("Please select an image file first.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("content", files);
+    formData.append("contentimage", contentImage);
 
     try {
       // Upload ke backend
       const response = await createImageContent(formData);
       console.log(response);
 
-      const imageUrl = response.data.filepath; // URL gambar dari response backend
-      console.log(imageUrl);
+      const { filepath, id } = response.data;
+      console.log(id);
 
-      // Tambahkan gambar ke editor
       editor
         .chain()
         .focus()
-        .setImage({ src: `${process.env.NEXT_PUBLIC_ASSETS_URL}/${imageUrl}` })
+        .insertContent({
+          type: "image",
+          attrs: {
+            src: `${process.env.NEXT_PUBLIC_ASSETS_URL}/${filepath}`,
+            alt: contentImage.name,
+            id,
+          },
+        })
         .run();
 
       // Reset state dan tutup dialog
-      setFiles(null);
+      setContentImage(null);
       setIsImageDialogOpen(false);
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -393,7 +398,7 @@ export const Toolbar = ({ editor }: Props) => {
             </DialogHeader>
 
             <Dropzone
-              onChange={setFiles}
+              onChange={setContentImage}
               className="w-full"
               fileExtension="image/*"
             />
@@ -405,7 +410,7 @@ export const Toolbar = ({ editor }: Props) => {
               >
                 Cancel
               </Button>
-              <Button onClick={handleUploadImage} disabled={!files}>
+              <Button onClick={handleUploadImage} disabled={!contentImage}>
                 Upload & Insert
               </Button>
             </DialogFooter>

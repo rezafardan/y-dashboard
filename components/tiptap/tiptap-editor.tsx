@@ -33,6 +33,27 @@ import History from "@tiptap/extension-history";
 import Image from "@tiptap/extension-image";
 import { Toggle } from "../ui/toggle";
 
+// Extend the Image extension
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      id: { default: null }, // Menambahkan atribut id
+    };
+  },
+
+  renderHTML({ node }) {
+    return [
+      "img",
+      {
+        src: node.attrs.src,
+        alt: node.attrs.alt,
+        id: node.attrs.id || "", // Memastikan id ditambahkan
+      },
+    ];
+  },
+});
+
 export const Tiptap = ({
   onChange,
   content,
@@ -81,14 +102,8 @@ export const Tiptap = ({
         autolink: true,
         defaultProtocol: "https",
       }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-        HTMLAttributes: {
-          class:
-            "w-full h-auto cursor-pointer outline-2 outline-offset-2 outline-black block",
-        },
-      }),
+      CustomImage,
+
       History.configure({
         depth: 100,
         newGroupDelay: 250,
@@ -106,7 +121,7 @@ export const Tiptap = ({
           "[&_ol]:pl-5 [&_ul]:pl-5 " +
           "[&_ol]:list-outside [&_ul]:list-outside " +
           "prose prose-sm max-w-full w-full" +
-          "[&_p]:leading-tight [&_p]:my-0",
+          "[&_p]:leading-tight [&_p]:my-0 dark:prose-invert",
       },
     },
     onUpdate({ editor }) {
@@ -117,7 +132,7 @@ export const Tiptap = ({
   });
 
   return (
-    <div className="flex flex-col justify-stretch gap-2">
+    <div className="flex flex-col justify-stretch gap-2 ">
       <Toolbar editor={editor} />
       {editor && (
         <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>

@@ -20,15 +20,15 @@ import {
 import useSWR from "swr";
 import { getAllCategoriesService } from "@/services/categoryServices";
 
-const chartData = [
-  { category: "SPORT", blogs: 186 },
-  { category: "POLITIC", blogs: 305 },
-  { category: "MUSIC", blogs: 237 },
-  { category: "CULTURE", blogs: 273 },
-  { category: "FOOD", blogs: 209 },
-  { category: "EDUCATION", blogs: 214 },
-  { category: "KIDS", blogs: 494 },
-];
+// const chartData = [
+//   { category: "SPORT", blogs: 186 },
+//   { category: "POLITIC", blogs: 305 },
+//   { category: "MUSIC", blogs: 237 },
+//   { category: "CULTURE", blogs: 273 },
+//   { category: "FOOD", blogs: 209 },
+//   { category: "EDUCATION", blogs: 214 },
+//   { category: "KIDS", blogs: 494 },
+// ];
 
 const chartConfig = {
   desktop: {
@@ -42,8 +42,6 @@ export function GrowthBlogByCategoryChart() {
     "/api/category",
     getAllCategoriesService
   );
-
-  console.log(categories);
 
   if (error) return <div>Error loading data.</div>;
   if (!categories) return <div>Loading...</div>;

@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [username, setUsername] = useState<string>("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  // Fungsi untuk memperbarui status autentikasi setelah login
   const loginUser = (userData: {
     username: string;
     role: UserRole;
@@ -57,7 +56,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
 
-      // Update state di AuthContext
       loginUser(parsedUser);
     }
   }, []);
@@ -80,8 +78,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated,
         username,
         profileImage,
-        loginUser, // Menambahkan loginUser ke dalam context
-        logoutUser, // Menambahkan logoutUser ke dalam context
+        loginUser,
+        logoutUser,
       }}
     >
       {children}

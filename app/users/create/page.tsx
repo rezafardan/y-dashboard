@@ -62,7 +62,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import useSWR from "swr";
+import { ApiErrorResponse } from "@/schema/error";
+import Image from "next/image";
 
 // ENUM FOR USER ROLE
 enum UserRole {
@@ -195,7 +196,7 @@ export default function CreateUserPage() {
     resolver: zodResolver(newUserSchema),
     defaultValues,
     shouldFocusError: false,
-    mode: "all",
+    mode: "onChange",
   });
 
   // DEBOUNCE FETCHING USERNAME DATA
@@ -363,11 +364,15 @@ export default function CreateUserPage() {
       setCroppedImage(null);
       setCroppedFile(null);
       setIsCropped(false);
-    } catch (error: any) {
+    } catch (error) {
       // ERROR HANDLER
-      const errorMessage =
-        error?.response?.data?.message || "An error occurred";
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
 
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
       // TOAST MESSAGE FROM API
       toast({
         description: errorMessage,
@@ -555,14 +560,13 @@ export default function CreateUserPage() {
 
               <div className="col-span-6 lg:col-span-2 justify-between">
                 {/* PROFILE PICTURE */}
-
                 <FormField
                   control={form.control}
                   name="profileImage"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Profile Image</FormLabel>
-                      <div className="relative bg-muted aspect-square flex items-center justify-center dark:bg-background rounded-md">
+                      <div className="relative bg-muted self-center aspect-square flex items-center justify-center dark:bg-background rounded-md">
                         {!image && <p className="text-sm">Upload an image</p>}
                         {image && !isCropped && (
                           <Cropper
@@ -575,10 +579,13 @@ export default function CreateUserPage() {
                           />
                         )}
                         {isCropped && croppedImage && (
-                          <img
+                          <Image
+                            loading="eager"
                             src={croppedImage}
                             alt="Cropped"
                             className="w-full h-full rounded-full p-1"
+                            layout="fill"
+                            objectFit="cover"
                           />
                         )}
                       </div>

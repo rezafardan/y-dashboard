@@ -69,45 +69,46 @@ const config: Config = {
       typography: {
         DEFAULT: {
           css: {
-            // Typographic Hierarchy
+            // Headings
             h1: {
               fontSize: "2.25rem", // 36px
               fontWeight: "700",
               marginBottom: "1rem",
-              color: "#1a202c", // Dark headline color
+              color: "#1a202c", // Light mode heading
             },
             h2: {
               fontSize: "1.75rem", // 28px
               fontWeight: "600",
               marginBottom: "0.75rem",
-              color: "#2d3748", // Slightly lighter dark color
+              color: "#2d3748", // Slightly lighter
             },
             h3: {
               fontSize: "1.5rem", // 24px
               fontWeight: "600",
               marginBottom: "0.5rem",
-              color: "#4a5568", // Medium dark color
+              color: "#4a5568",
             },
             p: {
               fontSize: "1rem", // 16px
-              lineHeight: "1.6", // Optimal readability
+              lineHeight: "1.6",
               marginBottom: "1rem",
-              color: "#2d3748", // Comfortable reading color
+              color: "#2d3748",
             },
 
-            // List Styling
+            // Lists
             "ul, ol": {
               paddingLeft: "1.5rem",
               marginBottom: "1rem",
               lineHeight: "1.6",
+              color: "#2d3748",
             },
             li: {
               marginBottom: "0.5rem",
             },
 
-            // Link Styling
+            // Links
             a: {
-              color: "#3182ce", // Professional blue
+              color: "#3182ce", // Light mode link
               textDecoration: "underline",
               fontWeight: "500",
               "&:hover": {
@@ -115,7 +116,7 @@ const config: Config = {
               },
             },
 
-            // Blockquote Styling
+            // Blockquote
             blockquote: {
               borderLeftColor: "#4a5568",
               fontStyle: "italic",
@@ -126,13 +127,34 @@ const config: Config = {
               color: "#4a5568",
             },
 
-            // Code Styling
+            // Code
             code: {
               backgroundColor: "#f7fafc",
               padding: "0.2rem 0.4rem",
               borderRadius: "0.25rem",
               fontSize: "0.875rem",
               color: "#d53f8c",
+            },
+
+            // Images
+            img: {
+              height: "auto",
+              borderRadius: "0.5rem",
+              transition: "all 0.3s ease",
+              boxShadow:
+                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              cursor: "pointer",
+              border: "2px solid transparent",
+              "&:hover": {
+                opacity: 0.85,
+                boxShadow:
+                  "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                borderColor: "hsl(var(--primary))",
+              },
+              "&:active": {
+                opacity: 1,
+                borderColor: "hsl(var(--primary-foreground))",
+              },
             },
 
             // Horizontal Rule
@@ -143,21 +165,64 @@ const config: Config = {
             },
           },
         },
-        // Variasi untuk dark mode
+        // DARK MODE CONFIGURATION
         invert: {
           css: {
-            color: "#e2e8f0",
+            color: "#e2e8f0", // Default text color
             "h1, h2, h3": {
-              color: "#ffffff",
+              color: "#ffffff", // White headings
             },
             p: {
+              color: "#cbd5e0", // Softer white for paragraphs
+            },
+
+            // Lists
+            "ul, ol": {
               color: "#cbd5e0",
             },
+            li: {
+              color: "#cbd5e0",
+            },
+
+            // Links
             a: {
-              color: "#63b3ed",
+              color: "#63b3ed", // Bright link in dark mode
               "&:hover": {
-                color: "#4299e1",
+                color: "#4299e1", // Slightly darker blue
               },
+            },
+
+            // Blockquote
+            blockquote: {
+              borderLeftColor: "#e2e8f0",
+              color: "#e2e8f0",
+            },
+
+            // Code
+            code: {
+              backgroundColor: "#2d3748", // Darker background
+              color: "#d53f8c",
+            },
+
+            // Images
+            img: {
+              boxShadow:
+                "0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06)",
+              borderColor: "rgba(255,255,255,0.1)",
+              "&:hover": {
+                opacity: 0.75,
+                boxShadow:
+                  "0 10px 15px -3px rgba(255, 255, 255, 0.1), 0 4px 6px -2px rgba(255, 255, 255, 0.05)",
+                borderColor: "hsl(var(--primary))",
+              },
+              "&:active": {
+                borderColor: "hsl(var(--primary-foreground))",
+              },
+            },
+
+            // Horizontal Rule
+            hr: {
+              borderColor: "#4a5568",
             },
           },
         },

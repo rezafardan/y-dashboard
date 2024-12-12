@@ -12,12 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
 
 import { useRouter } from "next/navigation";
 import { logoutService } from "@/services/authServices";
@@ -25,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "./ui/toast";
 import { Button } from "./ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { ApiErrorResponse } from "@/schema/error";
 
 export function NavUser({
   user,
@@ -58,8 +54,15 @@ export function NavUser({
 
       logoutUser();
       router.push("/login");
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message;
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
 
       toast({
         description: errorMessage,
