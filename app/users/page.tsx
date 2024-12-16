@@ -57,6 +57,7 @@ import {
 // SCHEMA
 import { UserDataResponse } from "@/schema/dataSchema";
 import { ApiErrorResponse } from "@/schema/error";
+import { useRouter } from "next/navigation";
 
 // TABLE HEADER
 const columns: ColumnDef<UserDataResponse>[] = [
@@ -171,6 +172,8 @@ const columns: ColumnDef<UserDataResponse>[] = [
 ];
 
 const UserActionCell = ({ user }: { user: UserDataResponse }) => {
+  const router = useRouter();
+
   // TOAST
   const { toast } = useToast();
 
@@ -311,7 +314,13 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>View Detail</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            router.push(`/users/view/${user.id}`);
+          }}
+        >
+          View Detail
+        </DropdownMenuItem>
         {user.deletedAt !== null && (
           <DropdownMenuItem onClick={() => handleRestoreClick(user)}>
             Restore User

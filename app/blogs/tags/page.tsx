@@ -50,6 +50,7 @@ import {
 import { BlogDataResponse, TagDataResponse, User } from "@/schema/dataSchema";
 import { deleteTagService, getAllTagsService } from "@/services/tagServices";
 import { ApiErrorResponse } from "@/schema/error";
+import { useRouter } from "next/navigation";
 
 // TABLE HEADER
 const columns: ColumnDef<TagDataResponse>[] = [
@@ -112,6 +113,7 @@ const columns: ColumnDef<TagDataResponse>[] = [
 ];
 
 const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
+  const router = useRouter();
   // TOAST
   const { toast } = useToast();
 
@@ -178,6 +180,13 @@ const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => {
+            router.push(`/blogs/tags/edit/${tag.id}`);
+          }}
+        >
+          Edit Tag
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleDeleteClick}>
           Delete Tag
         </DropdownMenuItem>

@@ -53,6 +53,7 @@ import {
 // SCHEMA
 import { CategoriesDataResponse, User } from "@/schema/dataSchema";
 import { ApiErrorResponse } from "@/schema/error";
+import { useRouter } from "next/navigation";
 
 // TABLE HEADER
 const columns: ColumnDef<CategoriesDataResponse>[] = [
@@ -128,6 +129,7 @@ const CategoryActionCell = ({
 }: {
   category: CategoriesDataResponse;
 }) => {
+  const router = useRouter();
   // TOAST
   const { toast } = useToast();
 
@@ -194,6 +196,13 @@ const CategoryActionCell = ({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => {
+            router.push(`/blogs/categories/edit/${category.id}`);
+          }}
+        >
+          Edit Category
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleDeleteClick}>
           Delete Category
         </DropdownMenuItem>

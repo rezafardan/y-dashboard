@@ -13,6 +13,11 @@ export const getAllCategoriesService = async (): Promise<
   return result.data.data;
 };
 
+export const getCategoryById = async (id: any) => {
+  const result = await axiosInstance.get(`category/${id}`);
+  return result.data.data;
+};
+
 // DONE
 export const createCategoryService = async (
   data: Omit<CreateCategoryData, "message" | "id">

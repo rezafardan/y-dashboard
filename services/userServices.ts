@@ -12,11 +12,9 @@ export const getAllUserService = async (): Promise<UserDataResponse[]> => {
 };
 
 // NOT YET
-export const getUserByIdService = async (
-  id: string
-): Promise<UserDataResponse[]> => {
+export const getUserByIdService = async (id: any) => {
   const result = await axiosInstance.get(`user/${id}`);
-  return result.data;
+  return result.data.data;
 };
 
 // DONE

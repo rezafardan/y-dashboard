@@ -43,7 +43,7 @@ interface Tag {
   name: string;
 }
 
-export default function ReviewBlogPage() {
+export default function ViewBlogPage() {
   const params = useParams(); // Gunakan useParams() untuk mendapatkan id
   const id = params?.id; // Pastikan id tersedia
 
