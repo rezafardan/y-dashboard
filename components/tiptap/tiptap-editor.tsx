@@ -32,6 +32,7 @@ import History from "@tiptap/extension-history";
 
 import Image from "@tiptap/extension-image";
 import { Toggle } from "../ui/toggle";
+import { useEffect } from "react";
 
 // Extend the Image extension
 const CustomImage = Image.extend({
@@ -57,9 +58,11 @@ const CustomImage = Image.extend({
 export const Tiptap = ({
   onChange,
   content,
+  reset,
 }: {
   onChange: (value: string) => void;
   content: string;
+  reset: boolean;
 }) => {
   const editor = useEditor({
     extensions: [
@@ -130,6 +133,12 @@ export const Tiptap = ({
       console.log(jsonContent);
     },
   });
+
+  useEffect(() => {
+    if (reset && editor) {
+      editor.commands.setContent("");
+    }
+  }, [reset, editor]);
 
   return (
     <div className="flex flex-col justify-stretch gap-2 ">

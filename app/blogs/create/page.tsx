@@ -77,6 +77,9 @@ export default function CreateBlogPage() {
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // RESET TIPTAP EDITOR
+  const [shouldResetEditor, setShouldResetEditor] = useState(false);
+
   // =========================================== //
 
   const [coverImage, setCoverImage] = useState<string | null>(null);
@@ -166,9 +169,18 @@ export default function CreateBlogPage() {
       });
 
       // RESET FORM
-      form.reset();
+      form.reset(defaultValues);
       form.setValue("tags", []);
       form.setValue("status", undefined);
+      setCoverImage(null);
+      setShouldResetEditor(true);
+
+      const fileInput = document.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = ""; // Clear file input
+      }
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
@@ -328,7 +340,11 @@ export default function CreateBlogPage() {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Tiptap content={field.value} onChange={field.onChange} />
+                    <Tiptap
+                      content={field.value}
+                      onChange={field.onChange}
+                      reset={shouldResetEditor}
+                    />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
@@ -415,7 +431,11 @@ export default function CreateBlogPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    key={field.value ? "with-value" : "without-value"}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Status" />

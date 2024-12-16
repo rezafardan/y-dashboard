@@ -1,18 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  const { cookies } = req;
-  const authToken = cookies.get("authToken");
-  const userRole = cookies.get("role");
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
 
-  console.log(cookies);
-
-  if (authToken && req.nextUrl.pathname === "/login") {
-    return NextResponse.redirect(`${req.nextUrl.origin}/`);
+  // Jika di halaman login dan sudah punya token, redirect ke beranda
+  if (accessToken && req.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (!authToken && req.nextUrl.pathname !== "/login") {
-    return NextResponse.redirect(`${req.nextUrl.origin}/login`);
+  // Jika tidak punya token dan bukan halaman login
+  if (!accessToken && req.nextUrl.pathname !== "/login") {
+    // Cek apakah masih punya refresh token
+    if (refreshToken) {
+      // Lanjutkan request, biarkan frontend/backend yang handle refresh
+      return NextResponse.next();
+    }
+
+    // Redirect ke login jika tidak punya token sama sekali
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   return NextResponse.next();
