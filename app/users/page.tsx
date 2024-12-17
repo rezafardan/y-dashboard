@@ -321,6 +321,13 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
         >
           View Detail
         </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            router.push(`/users/edit/${user.id}`);
+          }}
+        >
+          Edit User
+        </DropdownMenuItem>
         {user.deletedAt !== null && (
           <DropdownMenuItem onClick={() => handleRestoreClick(user)}>
             Restore User
