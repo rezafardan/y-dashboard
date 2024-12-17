@@ -20,12 +20,13 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "./ui/toast";
 import { Button } from "./ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { ApiErrorResponse } from "@/schema/error";
+import { ApiErrorResponse } from "@/models/error";
 
 export function NavUser({
   user,
 }: {
   user: {
+    id: string;
     username: string;
     role: string;
     profileImage: string;
@@ -70,8 +71,6 @@ export function NavUser({
         duration: 4000,
         variant: "destructive",
       });
-
-      console.error("An error occured during logout: ", error);
     }
   };
 
@@ -114,7 +113,11 @@ export function NavUser({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              router.push(`/users/edit/${user.id}`);
+            }}
+          >
             <UserPen />
             Edit Profile
           </DropdownMenuItem>

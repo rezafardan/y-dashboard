@@ -130,7 +130,6 @@ export const Tiptap = ({
     onUpdate({ editor }) {
       const jsonContent = editor.getJSON();
       onChange(JSON.stringify(jsonContent));
-      console.log(jsonContent);
     },
   });
 

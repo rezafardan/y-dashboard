@@ -8,16 +8,12 @@ import LayoutDashboard from "@/components/dashboar-layout";
 
 export default function Dashboard() {
   return (
-    <div className="flex w-full items-center justify-center">
+    <div>
       <LayoutDashboard>
-        <div className="flex gap-4 mb-2 ">
-          <VisitorChart />
-          <GrowthBlogByCategoryChart />
-        </div>
-        <div className="flex gap-4">
-          <TotalBlogChart />
-          <GrowthBlogChart />
-        </div>
+        <VisitorChart />
+        <GrowthBlogByCategoryChart />
+        <TotalBlogChart />
+        <GrowthBlogChart />
       </LayoutDashboard>
     </div>
   );

@@ -27,7 +27,6 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        console.log("Attempting to refresh token");
         const response = await axios.post(
           `${BASE_URL}/refresh-token`,
           {},
@@ -35,10 +34,9 @@ axiosInstance.interceptors.response.use(
             withCredentials: true,
           }
         );
-        console.log("Refresh Token Response:", response);
+
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.error("Refresh Token Failed:", refreshError);
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

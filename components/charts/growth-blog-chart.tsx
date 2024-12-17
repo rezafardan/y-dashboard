@@ -65,7 +65,7 @@ export function GrowthBlogChart() {
   );
 
   return (
-    <Card className="w-3/4">
+    <Card>
       <CardHeader>
         <CardTitle>New Blog Growth</CardTitle>
         <CardDescription>January - June 2024</CardDescription>

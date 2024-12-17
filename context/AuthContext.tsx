@@ -7,9 +7,10 @@ import {
   useState,
   useEffect,
 } from "react";
-import { UserRole } from "@/schema/dataSchema";
+import { UserRole } from "@/models/dataSchema";
 
 interface AuthContextType {
+  id: string | null;
   role: UserRole | null;
   setRole: (role: UserRole | null) => void;
   isAuthenticated: boolean;
@@ -17,6 +18,7 @@ interface AuthContextType {
   username: string;
   profileImage: string | null;
   loginUser: (userData: {
+    id: string;
     username: string;
     role: UserRole;
     profileImage: string;
@@ -35,16 +37,19 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [role, setRole] = useState<UserRole | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [id, setId] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
 
   const loginUser = (userData: {
+    id: string;
     username: string;
     role: UserRole;
     profileImage: string;
   }) => {
+    setId(userData.id);
     setUsername(userData.username);
     setRole(userData.role);
     setProfileImage(userData.profileImage);
@@ -63,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Untuk logout, reset semua data
   const logoutUser = () => {
     sessionStorage.removeItem("userData");
+    setId(null);
     setUsername("");
     setRole(null);
     setProfileImage(null);
@@ -72,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider
       value={{
+        id,
         role,
         setRole,
         isAuthenticated,

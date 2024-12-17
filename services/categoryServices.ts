@@ -1,9 +1,12 @@
+// INSTANCE
 import axiosInstance from "@/lib/axiosInstance";
+
+// MODELS
 import {
   CategoriesDataResponse,
   editCategoryData,
   CreateCategoryData,
-} from "@/schema/dataSchema";
+} from "@/models/dataSchema";
 
 // DONE
 export const getAllCategoriesService = async (): Promise<

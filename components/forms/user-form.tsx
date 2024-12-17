@@ -99,7 +99,6 @@ export const UserForm: React.FC<UserFormProps> = ({
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const cropperRef = useRef<HTMLImageElement & { cropper?: Cropper }>(null);
 
-  console.log(initialValues?.profileImage);
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {

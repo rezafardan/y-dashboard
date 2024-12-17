@@ -1,9 +1,12 @@
+// INSTANCE
 import axiosInstance from "@/lib/axiosInstance";
+
+// MODELS
 import {
   CreateUserData,
   editUserData,
   UserDataResponse,
-} from "@/schema/dataSchema";
+} from "@/models/dataSchema";
 
 // DONE
 export const getAllUserService = async (): Promise<UserDataResponse[]> => {
@@ -67,7 +70,6 @@ export const checkUsernameAvailability = async (
 
     throw new Error("Unexpected response status");
   } catch (error) {
-    console.error("Error checking username availability:", error);
     return false;
   }
 };

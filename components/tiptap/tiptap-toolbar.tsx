@@ -64,10 +64,8 @@ export const Toolbar = ({ editor }: Props) => {
     try {
       // Upload ke backend
       const response = await createImageContent(formData);
-      console.log(response);
 
       const { filepath, id } = response.data;
-      console.log(id);
 
       editor
         .chain()
@@ -86,7 +84,6 @@ export const Toolbar = ({ editor }: Props) => {
       setContentImage(null);
       setIsImageDialogOpen(false);
     } catch (error) {
-      console.error("Error uploading image:", error);
       alert("Failed to upload image. Please try again.");
     }
   };

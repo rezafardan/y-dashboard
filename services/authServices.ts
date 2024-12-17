@@ -1,5 +1,8 @@
+// INSTANCE
 import axiosInstance from "@/lib/axiosInstance";
-import { LoginResponse } from "@/schema/dataSchema";
+
+// MODELS
+import { LoginResponse } from "@/models/dataSchema";
 
 export const loginService = async (credential: {
   username: string;

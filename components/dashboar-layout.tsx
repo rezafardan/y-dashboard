@@ -14,7 +14,7 @@ export default function LayoutDashboard({
 }: {
   children: React.ReactNode;
 }) {
-  const { role, username, profileImage } = useAuth();
+  const { id, role, username, profileImage } = useAuth();
 
   // Fungsi untuk kapitalisasi huruf pertama nama
   const capitalizeName = (name: string | null) => {
@@ -24,7 +24,7 @@ export default function LayoutDashboard({
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
-
+  const displayId = id ? id : "";
   const displayUserName = username ? capitalizeName(username) : "";
   const displayUserRole = role ? role.toUpperCase() : "";
   const userProfileImage = profileImage || "";
@@ -47,6 +47,7 @@ export default function LayoutDashboard({
             <ModeToggle />
             <NavUser
               user={{
+                id: displayId,
                 username: displayUserName,
                 role: displayUserRole,
                 profileImage: userProfileImage,

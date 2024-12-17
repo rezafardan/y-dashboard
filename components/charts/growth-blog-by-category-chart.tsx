@@ -69,7 +69,7 @@ export function GrowthBlogByCategoryChart() {
   );
 
   return (
-    <Card className="w-4/12">
+    <Card>
       <CardHeader className="border-b py-5">
         <CardTitle>Blogs per Category (Dummy Data)</CardTitle>
         <CardDescription>Showing total blog by category</CardDescription>
