@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tiptap } from "@/components/tiptap/tiptap-editor";
 import MultipleSelector from "@/components/ui/multiple-selector";
+import { RefreshCcw } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -64,6 +66,7 @@ import { ToastClose } from "@/components/ui/toast";
 // DATE SETTER
 import { id } from "date-fns/locale";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
 
 export default function CreateBlogPage() {
   // CONTEXT
@@ -503,6 +506,9 @@ export default function CreateBlogPage() {
                       }
                     />
                   </FormControl>
+                  <Button variant="outline">
+                    <RefreshCcw />
+                  </Button>
                   <FormMessage />
                   <FormDescription>
                     Choose the date and time you want to publish this blog.
@@ -536,43 +542,42 @@ export default function CreateBlogPage() {
                 </FormItem>
               )}
             />
-            {/* SUBMIT */}
-
-            <LoadingButton
-              loading={loading}
-              type="button"
-              onClick={handleSubmitButtonClick}
-              disabled={!form.formState.isValid || form.formState.isSubmitting}
-            >
-              Submit
-            </LoadingButton>
-
-            <AlertDialog
-              open={showConfirmDialog}
-              onOpenChange={setShowConfirmDialog}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Once the category is created, you can manage it by visiting
-                    the blog categories list in the menu. Use this list to edit
-                    or delete categories as needed.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={handleConfirmCancel}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction onClick={handleConfirmSubmit}>
-                    Confirm Create
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </form>
         </Form>
       </CardContent>
+
+      {/* SUBMIT */}
+      <CardFooter>
+        <LoadingButton
+          loading={loading}
+          type="button"
+          onClick={handleSubmitButtonClick}
+          disabled={!form.formState.isValid || form.formState.isSubmitting}
+        >
+          Submit
+        </LoadingButton>
+      </CardFooter>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once the category is created, you can manage it by visiting the
+              blog categories list in the menu. Use this list to edit or delete
+              categories as needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConfirmCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Confirm Create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

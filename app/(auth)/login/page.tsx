@@ -98,7 +98,7 @@ export default function LoginPage() {
         variant: "destructive",
       });
     } finally {
-      form.reset(defaultValues);
+      // Pastikan loading dimatikan dalam kondisi apa pun
       setLoading(false);
     }
   };

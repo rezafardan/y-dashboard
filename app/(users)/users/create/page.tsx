@@ -26,6 +26,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -399,259 +400,273 @@ export default function CreateUserPage() {
 
         <CardContent>
           <Form {...form}>
-            <form>
-              {/* USERNAME */}
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Username"
-                        autoComplete="username"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Username must be lowercase, contain no spaces, and only
-                      include letters, numbers, or underscores.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* FULLNAME */}
-              <FormField
-                control={form.control}
-                name="fullname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fullname</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Fullname"
-                        autoComplete="fullname"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Fullname must be lowercase, contain spaces, and only
-                      include letters, numbers, or underscores.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* EMAIL */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        autoComplete="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Ensure your email is in the correct format and avoid using
-                      temporary email domains (e.g., tempmail.com).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* PASSWORD */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Password must be at least 6 characters long and contain at
-                      least one uppercase letter, one number, and one special
-                      character (!@#$%^&*).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* CONFIRM PASSWORD */}
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Confirm your password"
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Make sure the confirmation password matches the one you
-                      entered above.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* ROLE */}
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role (required)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
-                        <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
-                        <SelectItem value={UserRole.SUBSCRIBER}>
-                          SUBSCRIBER
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Select a role for the user. Role selection is required.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* PROFILE PICTURE */}
-              <FormField
-                control={form.control}
-                name="profileImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profile Image</FormLabel>
-                    <div className="relative bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md">
-                      {!image && <p className="text-sm">Upload an image</p>}
-                      {image && !isCropped && (
-                        <Cropper
-                          src={image}
-                          style={{ height: "100%", width: "100%" }}
-                          initialAspectRatio={1}
-                          aspectRatio={1}
-                          guides={false}
-                          ref={cropperRef}
-                        />
-                      )}
-                      {isCropped && croppedImage && (
-                        <Image
-                          loading="eager"
-                          src={croppedImage}
-                          alt="Cropped"
-                          className="w-full h-full rounded-full p-1"
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                      )}
-                    </div>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        handleImageChange(e);
-                        field.onChange(e.target.files?.[0]);
-                      }}
-                      className="mt-4"
-                    />
-                    {image && !isCropped && (
-                      <Button
-                        type="button"
-                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
-                        onClick={cropImage}
-                      >
-                        Crop Image
-                      </Button>
+            <form className="">
+              <div className="flex md:flex-row gap-4 justify-start">
+                <div className="md:max-w-md space-y-4">
+                  {/* USERNAME */}
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Username"
+                            autoComplete="username"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Username must be lowercase, contain no spaces, and
+                          only include letters, numbers, or underscores.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    {isCropped && (
-                      <Button
-                        type="button"
-                        className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
-                        onClick={resetCrop}
-                      >
-                        Reset Crop
-                      </Button>
+                  />
+
+                  {/* FULLNAME */}
+                  <FormField
+                    control={form.control}
+                    name="fullname"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fullname</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Fullname"
+                            autoComplete="fullname"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Fullname must be lowercase, contain spaces, and only
+                          include letters, numbers, or underscores.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <FormDescription>
-                      Upload an image file (PNG, JPG, JPEG, or GIF) with a
-                      maximum size of 2MB.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  />
 
-              {/* SUBMIT */}
-              <LoadingButton
-                loading={loading}
-                type="button"
-                className="w-full my-4"
-                onClick={handleSubmitButtonClick}
-                disabled={
-                  !form.formState.isValid || form.formState.isSubmitting
-                }
-              >
-                Submit
-              </LoadingButton>
+                  {/* EMAIL */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Email"
+                            autoComplete="email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Ensure your email is in the correct format and avoid
+                          using temporary email domains (e.g., tempmail.com).
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* ALERT DIALOG */}
-              <AlertDialog
-                open={showConfirmDialog}
-                onOpenChange={setShowConfirmDialog}
-              >
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Please confirm if you want to create a new user with the
-                      details provided.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleConfirmCancel}>
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmSubmit}>
-                      Confirm Create
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                  {/* PASSWORD */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Password"
+                            autoComplete="new-password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Password must be at least 6 characters long, including
+                          one uppercase letter, one number, and one special
+                          character (!@#$%^&*).
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* CONFIRM PASSWORD */}
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Confirm your password"
+                            autoComplete="new-password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Make sure the confirmation password matches the one
+                          you entered above.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* ROLE */}
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Role</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a role (required)" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={UserRole.AUTHOR}>
+                              AUTHOR
+                            </SelectItem>
+                            <SelectItem value={UserRole.EDITOR}>
+                              EDITOR
+                            </SelectItem>
+                            <SelectItem value={UserRole.SUBSCRIBER}>
+                              SUBSCRIBER
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Select a role for the user. Role selection is
+                          required.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="md:w-72">
+                  {/* PROFILE PICTURE */}
+                  <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profile Image</FormLabel>
+                        <div className="relative bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md">
+                          {!image && <p className="text-sm">Upload an image</p>}
+                          {image && !isCropped && (
+                            <Cropper
+                              src={image}
+                              style={{ height: "100%", width: "100%" }}
+                              initialAspectRatio={1}
+                              aspectRatio={1}
+                              guides={false}
+                              ref={cropperRef}
+                            />
+                          )}
+                          {isCropped && croppedImage && (
+                            <Image
+                              loading="eager"
+                              src={croppedImage}
+                              alt="Cropped"
+                              className="w-full h-full rounded-full p-1"
+                              layout="fill"
+                              objectFit="cover"
+                            />
+                          )}
+                        </div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            handleImageChange(e);
+                            field.onChange(e.target.files?.[0]);
+                          }}
+                          className="mt-4"
+                        />
+                        {image && !isCropped && (
+                          <Button
+                            type="button"
+                            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded w-full"
+                            onClick={cropImage}
+                          >
+                            Crop Image
+                          </Button>
+                        )}
+                        {isCropped && (
+                          <Button
+                            type="button"
+                            className="mt-2 px-4 py-2 bg-yellow-500 text-white rounded w-full"
+                            onClick={resetCrop}
+                          >
+                            Reset Crop
+                          </Button>
+                        )}
+                        <FormDescription>
+                          Upload an image file (PNG, JPG, JPEG, or GIF) with a
+                          maximum size of 2MB.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </form>
           </Form>
+
+          <CardFooter>
+            {/* SUBMIT */}
+            <LoadingButton
+              loading={loading}
+              type="button"
+              className="w-full my-4"
+              onClick={handleSubmitButtonClick}
+              disabled={!form.formState.isValid || form.formState.isSubmitting}
+            >
+              Submit
+            </LoadingButton>
+          </CardFooter>
+
+          {/* ALERT DIALOG */}
+          <AlertDialog
+            open={showConfirmDialog}
+            onOpenChange={setShowConfirmDialog}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Please confirm if you want to create a new user with the
+                  details provided.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleConfirmCancel}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmSubmit}>
+                  Confirm Create
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>

@@ -38,6 +38,7 @@ import Dropcursor from "@tiptap/extension-dropcursor";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import { getBlogByIdService } from "@/services/blogServices";
+import { Separator } from "@/components/ui/separator";
 
 interface Tag {
   name: string;
@@ -111,6 +112,7 @@ export default function ViewBlogPage() {
         <CardDescription>
           Explore the full details of the selected blog.
         </CardDescription>
+        <Separator />
       </CardHeader>
 
       <CardContent>

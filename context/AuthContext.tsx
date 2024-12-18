@@ -13,10 +13,10 @@ interface AuthContextType {
   id: string | null;
   role: UserRole | null;
   setRole: (role: UserRole | null) => void;
-  isAuthenticated: boolean;
-  setIsAuthenticated: (auth: boolean) => void;
   username: string;
   profileImage: string | null;
+  isAuthenticated: boolean;
+  setIsAuthenticated: (auth: boolean) => void;
   loginUser: (userData: {
     id: string;
     username: string;

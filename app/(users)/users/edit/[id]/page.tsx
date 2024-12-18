@@ -10,14 +10,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { getUserByIdService } from "@/services/userServices";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 
 export default function ViewUserPage() {
   const params = useParams();
   const id = params?.id;
+  const router = useRouter();
 
   const fetcher = async () => {
     if (!id) return null;
@@ -58,6 +60,7 @@ export default function ViewUserPage() {
         <CardDescription>
           View detailed information about the selected user.
         </CardDescription>
+        <Separator />
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -112,8 +115,12 @@ export default function ViewUserPage() {
 
       {/* Buttons */}
       <CardFooter className="flex justify-between mt-4">
-        <Button variant="outline" className="px-6">
-          Back To User List
+        <Button
+          variant="outline"
+          className="px-6"
+          onClick={() => router.back()}
+        >
+          Back
         </Button>
         <Button className="px-6" disabled>
           Save

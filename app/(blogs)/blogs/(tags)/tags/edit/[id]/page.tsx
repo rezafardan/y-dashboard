@@ -18,8 +18,6 @@ export default function EditTagPage() {
   const params = useParams(); // Gunakan useParams() untuk mendapatkan id
   const id = params?.id; // Pastikan id tersedia
 
-  console.log(id);
-
   const fetcher = async () => {
     if (!id) return null;
     return getTagByIdService(id); // Replace with your API service

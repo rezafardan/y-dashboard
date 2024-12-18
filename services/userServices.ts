@@ -73,3 +73,15 @@ export const checkUsernameAvailability = async (
     return false;
   }
 };
+
+// NOT YET
+export const viewUserProfileService = async () => {
+  const result = await axiosInstance.get("user/me");
+  return result.data.data;
+};
+
+// NOT YET
+export const editUserProfileService = async (data: any) => {
+  const result = await axiosInstance.patch("user/me", data);
+  return result.data;
+};

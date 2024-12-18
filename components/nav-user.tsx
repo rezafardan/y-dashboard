@@ -115,7 +115,7 @@ export function NavUser({
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => {
-              router.push(`/users/edit/${user.id}`);
+              router.push(`/profile/edit`);
             }}
           >
             <UserPen />

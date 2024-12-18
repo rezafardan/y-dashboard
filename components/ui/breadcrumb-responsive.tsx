@@ -61,7 +61,8 @@ export default function BreadcrumbResponsive() {
         {items.map((item, index) => (
           <React.Fragment key={index}>
             <BreadcrumbItem>
-              <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+              {/* href={item.href} */}
+              <BreadcrumbLink>{item.label}</BreadcrumbLink>
             </BreadcrumbItem>
             {index < items.length - 1 && <BreadcrumbSeparator />}
           </React.Fragment>
