@@ -49,9 +49,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { ApiErrorResponse } from "@/models/error";
 
 export default function EditUserProfilePage() {
+  // TOAST
+  const { toast } = useToast();
   const { loginUser } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -94,7 +100,17 @@ export default function EditUserProfilePage() {
 
         setLoading(false);
       } catch (error) {
-        setError("Error fetching user data");
+        // ERROR HANDLER
+        const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+        const errorMessage =
+          apiError.response?.data?.message ||
+          (error instanceof Error
+            ? error.message
+            : "An unexpected error occurred");
+
+        // TOAST MESSAGE FROM API
+      } finally {
         setLoading(false);
       }
     };
@@ -133,7 +149,6 @@ export default function EditUserProfilePage() {
       const formData = new FormData();
       const result = await editUserProfileService(formData);
 
-      console.log(result);
       if (result.status === 200) {
         // Update session storage atau AuthContext setelah berhasil
         loginUser({
@@ -144,9 +159,30 @@ export default function EditUserProfilePage() {
         });
         router.push("/"); // Arahkan ke halaman profil setelah berhasil update
       }
+
+      toast({
+        description: result.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
     } catch (error) {
       setError("Error updating profile");
-      console.error("Error updating profile:", error);
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        action: <ToastClose />,
+        duration: 4000,
+      });
     }
   };
 

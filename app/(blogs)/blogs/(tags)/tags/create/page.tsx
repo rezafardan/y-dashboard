@@ -229,7 +229,6 @@ export default function CreateCategoryPage() {
     });
   };
 
-  console.log(tags);
   if (isLoading) return <p>Loading...</p>;
   if (tagsError) return <p>Error loading data tags</p>;
 

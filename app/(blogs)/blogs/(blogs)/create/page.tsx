@@ -320,8 +320,7 @@ export default function CreateBlogPage() {
                             src={coverImage}
                             alt="Preview"
                             className="w-full h-full"
-                            layout="fill"
-                            objectFit="cover"
+                            fill
                           />
                         </div>
                       ) : (
@@ -427,7 +426,7 @@ export default function CreateBlogPage() {
                       defaultOptions={tags || []}
                       onSearch={mockSearch}
                       hidePlaceholderWhenSelected
-                      creatable
+                      creatable={role === "AUTHOR" ? false : true}
                       loadingIndicator={
                         <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
                           loading...

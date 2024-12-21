@@ -20,6 +20,34 @@ export const tagSchema = z.object({
     .min(3, { message: "Tag name must be at least 3 characters" })
     .max(50, { message: "Tag name cannot exceed 50 characters" }),
 });
+
+export const editTagSchema = z.object({
+  id: z.string().optional(),
+  name: z
+    .string()
+    .min(3, { message: "Tag name must be at least 3 characters" })
+    .max(50, { message: "Tag name cannot exceed 50 characters" }),
+});
+
+export const editCategorySchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, { message: "Name must be at least 3 characters." })
+    .max(12, { message: "Name must not exceed 12 characters." })
+    .regex(/^[A-Za-z ]+$/, {
+      message: "Name should only contain letters and must not contain numbers.",
+    })
+    .transform((name) => name.toUpperCase()),
+
+  // SCHEMA FOR DESCRIPTION VALIDATION
+  description: z
+    .string()
+    .trim()
+    .min(10, { message: "Description must be at least 10 characters." })
+    .max(100, { message: "Description must not exceed 100 characters." }),
+});
+
 // BLOG SCHEMA
 export const newBlogSchema = z.object({
   title: z
@@ -81,7 +109,7 @@ export const editUserSchema = z.object({
     .optional(),
 
   // SCHEMA FOR PASSWORD CONFIRM VALIDATION
-  confirmPassword: z.string(),
+  confirmPassword: z.string().optional(),
 
   // SCHEMA FOR ROLE VALIDATION
   role: z

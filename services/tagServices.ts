@@ -16,12 +16,10 @@ export const getTagByIdService = async (id: any): Promise<any> => {
   return result.data.data;
 };
 
-// export const editTagService = async (
-//   id: string,
-// ):  => {
-//   const result = await axiosInstance.patch(`user/${id}`, formEditUser);
-//   return result.data.data;
-// };
+export const editTagService = async (id: any, formEditUser: any) => {
+  const result = await axiosInstance.patch(`tag/${id}`, formEditUser);
+  return result.data;
+};
 
 export const deleteTagService = async (id: string) => {
   const result = await axiosInstance.delete(`tag/${id}`);

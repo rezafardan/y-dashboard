@@ -30,12 +30,9 @@ export const createCategoryService = async (
 };
 
 // NOT YET
-export const editCategoryService = async (
-  id: string,
-  formEditCategory: any
-): Promise<editCategoryData[]> => {
+export const editCategoryService = async (id: any, formEditCategory: any) => {
   const result = await axiosInstance.patch(`category/${id}`, formEditCategory);
-  return result.data.data;
+  return result.data;
 };
 
 // DONE

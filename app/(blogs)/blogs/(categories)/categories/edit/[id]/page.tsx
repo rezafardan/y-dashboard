@@ -9,57 +9,237 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { getCategoryById } from "@/services/categoryServices";
-import { getTagByIdService } from "@/services/tagServices";
-import { getUserByIdService } from "@/services/userServices";
-import Image from "next/image";
-import { useParams } from "next/navigation";
+import { editCategorySchema, editTagSchema } from "@/models/formSchema";
+import { editTagService, getTagByIdService } from "@/services/tagServices";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import useSWR from "swr";
+import { z } from "zod";
+import { LoadingButton } from "@/components/ui/loading-button";
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+import { ToastClose } from "@/components/ui/toast";
+import { ApiErrorResponse } from "@/models/error";
+import {
+  editCategoryService,
+  getCategoryById,
+} from "@/services/categoryServices";
 
 export default function EditCategoryPage() {
+  // TOAST
+  const { toast } = useToast();
   const params = useParams(); // Gunakan useParams() untuk mendapatkan id
   const id = params?.id; // Pastikan id tersedia
+  const router = useRouter();
 
-  const fetcher = async () => {
-    if (!id) return null;
-    return getCategoryById(id); // Replace with your API service
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // ALERT DIALOG
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const defaultValues = {
+    name: "",
+    description: "",
   };
 
-  const {
-    data: category,
-    error,
-    isLoading,
-  } = useSWR(id ? `/tag/${id}` : null, fetcher);
+  const form = useForm<z.infer<typeof editCategorySchema>>({
+    resolver: zodResolver(editCategorySchema),
+    defaultValues,
+    shouldFocusError: false,
+    mode: "onChange",
+  });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error fetching blog data: {error.message}</p>;
-  if (!category) return <p>No content available...</p>;
+  const fetchCategoryData = async () => {
+    try {
+      const result = await getCategoryById(id);
+      form.reset({
+        name: result.name || "",
+        description: result.description || "",
+      });
+      setLoading(false);
+    } catch (error) {
+      setError("Error fetching user data");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoryData();
+  }, [form]);
+
+  const handleEditButtonClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelButtonClick = () => {
+    setIsEditing(false);
+    form.reset(); // Reset form to the initial values
+  };
+
+  // SUBMIT FORM BUTTON
+  const handleSubmitButtonClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
+  const handleConfirmSubmit = () => {
+    form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
+  };
+
+  // CANCEL BUTTON
+  const handleConfirmCancel = () => {
+    setShowConfirmDialog(false);
+  };
+
+  // Fungsi untuk mengirimkan data form
+  const onSubmit = async (values: z.infer<typeof editTagSchema>) => {
+    try {
+      const result = await editCategoryService(id, values);
+
+      fetchCategoryData();
+      toast({
+        description: result.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
+
+      setIsEditing(false);
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        action: <ToastClose />,
+        duration: 4000,
+      });
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Details</CardTitle>
+        <CardTitle>Category Details</CardTitle>
         <CardDescription>
           Explore the full details of the selected blog.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
-        <Button>Back To User List</Button>
-        <Card className="lg:px-32">
-          <CardHeader>
-            <CardTitle></CardTitle>
-            <CardDescription></CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Input value={category.name || "Not Found"} disabled />
-            <Button>Edit</Button>
-            <Button>Back To User List</Button>
-          </CardContent>
-          <CardFooter></CardFooter>
-        </Card>
+        <Form {...form}>
+          <form className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Tag name"
+                      autoComplete="name"
+                      disabled={!isEditing}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Description"
+                      autoComplete="description"
+                      disabled={!isEditing}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
       </CardContent>
+      <CardFooter className="flex justify-between">
+        <LoadingButton variant="outline" onClick={() => router.back()}>
+          Back
+        </LoadingButton>
+        {!isEditing ? (
+          <Button onClick={handleEditButtonClick}>Edit Category</Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleCancelButtonClick}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitButtonClick}>Save Changes</Button>
+          </div>
+        )}
+      </CardFooter>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please confirm if you want to create a new user with the details
+              provided.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConfirmCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Confirm Create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
