@@ -43,7 +43,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tiptap } from "@/components/tiptap/tiptap-editor";
-import MultipleSelector from "@/components/ui/multiple-selector";
+import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
 import { RefreshCcw } from "lucide-react";
 
 // FORM HANDLER
@@ -216,6 +216,10 @@ export default function CreateBlogPage() {
       form.setValue("publishedAt", new Date());
     }
 
+    if (status === BlogStatus.SCHEDULE) {
+      form.setValue("publishedAt", new Date());
+    }
+
     if (
       status === BlogStatus.SCHEDULE &&
       publishedAt &&
@@ -243,6 +247,24 @@ export default function CreateBlogPage() {
   if (categoriesError) return <p>Error loading data categories</p>;
   if (isLoadingTags) return <p>Loading...</p>;
   if (tagsError) return <p>Error loading data tags</p>;
+
+  const mockSearch = async (value: string): Promise<Option[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (value.trim() === null) {
+          // Jika input kosong, kembalikan semua tag
+          resolve(tags || []);
+          return;
+        }
+        // Filter tag berdasarkan nilai input
+        const res =
+          tags?.filter((tag: any) =>
+            tag.name.toLowerCase().includes(value.toLowerCase())
+          ) || [];
+        resolve(res);
+      }, 500); // Debouncing 500ms
+    });
+  };
 
   return (
     <Card>
@@ -287,7 +309,7 @@ export default function CreateBlogPage() {
               name="coverImageId"
               render={() => (
                 <FormItem>
-                  <FormLabel>Main Image</FormLabel>
+                  <FormLabel>Cover Image</FormLabel>
                   <FormControl>
                     <div className="flex flex-col gap-2">
                       {/* Image Preview */}
@@ -394,20 +416,29 @@ export default function CreateBlogPage() {
                   <FormControl>
                     <MultipleSelector
                       {...field}
-                      value={form.watch("tags")}
-                      defaultOptions={tags}
                       placeholder={
                         role === "AUTHOR"
                           ? "Select existing tag"
                           : "Create a new tag, or select existing tag"
                       }
+                      {...field}
+                      value={form.watch("tags")}
+                      onChange={(value) => field.onChange(value)}
+                      defaultOptions={tags || []}
+                      onSearch={mockSearch}
                       hidePlaceholderWhenSelected
-                      creatable={role === "AUTHOR" ? false : true}
+                      creatable
+                      loadingIndicator={
+                        <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
+                          loading...
+                        </p>
+                      }
                       emptyIndicator={
                         <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
                           No results found
                         </p>
                       }
+                      inputProps={{ maxLength: 50 }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -506,9 +537,6 @@ export default function CreateBlogPage() {
                       }
                     />
                   </FormControl>
-                  <Button variant="outline">
-                    <RefreshCcw />
-                  </Button>
                   <FormMessage />
                   <FormDescription>
                     Choose the date and time you want to publish this blog.

@@ -56,9 +56,8 @@ const newCategorySchema = z.object({
     .trim()
     .min(3, { message: "Name must be at least 3 characters." })
     .max(12, { message: "Name must not exceed 12 characters." })
-    .regex(/^[A-Za-z]+$/, {
-      message:
-        "Name should only contain letters and must not contain spaces or numbers.",
+    .regex(/^[A-Za-z ]+$/, {
+      message: "Name should only contain letters and must not contain numbers.",
     })
     .transform((name) => name.toUpperCase()),
 

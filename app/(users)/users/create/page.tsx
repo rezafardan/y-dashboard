@@ -586,8 +586,7 @@ export default function CreateUserPage() {
                               src={croppedImage}
                               alt="Cropped"
                               className="w-full h-full rounded-full p-1"
-                              layout="fill"
-                              objectFit="cover"
+                              fill
                             />
                           )}
                         </div>

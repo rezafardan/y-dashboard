@@ -384,7 +384,7 @@ const MultipleSelector = React.forwardRef<
             onChange?.(newOptions);
           }}
         >
-          {`Create "${inputValue}"`}
+          {`Create new tag:  "${inputValue}"`}
         </CommandItem>
       );
 
