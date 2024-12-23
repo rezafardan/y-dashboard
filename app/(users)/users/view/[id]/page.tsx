@@ -66,9 +66,9 @@ export default function ViewUserPage() {
         <Separator />
       </CardHeader>
 
-      <CardContent className="space-y-6 md:space-y-0 md:flex md:flex-row md:justify-start md:items-center md:gap-4">
+      <CardContent>
         {/* User Image */}
-        <div className="flex justify-center md:ml-6">
+        <div>
           {user?.profileImage ? (
             <div className="relative w-48 h-48 aspect-square rounded-full overflow-hidden border border-gray-300">
               <img

@@ -30,11 +30,11 @@ export const createUserService = async (
 
 // NOT YET
 export const editUserService = async (
-  id: string,
-  formEditUser: editUserData
-): Promise<editUserData[]> => {
-  const result = await axiosInstance.patch(`user/${id}`, formEditUser);
-  return result.data.data;
+  id: any,
+  data: FormData
+): Promise<editUserData> => {
+  const result = await axiosInstance.patch(`user/${id}`, data);
+  return result.data;
 };
 
 // DONE

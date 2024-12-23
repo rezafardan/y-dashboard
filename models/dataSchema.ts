@@ -36,6 +36,7 @@ export interface CreateUserData {
   message: any;
   id: string;
   username: string;
+  fullname: string;
   email: string;
   passwordHash: string;
   role: string;
@@ -44,13 +45,14 @@ export interface CreateUserData {
 // DONE
 
 export interface editUserData {
+  message: any;
   id: string;
   username: string;
+  fullname: string;
   email: string;
   passwordHash: string;
   role: string;
   profileImage: string;
-  createdAt: Date;
 }
 // NOT YET
 

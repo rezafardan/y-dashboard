@@ -202,7 +202,7 @@ export default function CreateBlogPage() {
   };
 
   useEffect(() => {
-    const status = form.getValues("status");
+    const status = form.watch("status");
     const publishedAt = form.getValues("publishedAt");
 
     if (status === BlogStatus.DRAFT) {
@@ -218,6 +218,9 @@ export default function CreateBlogPage() {
 
     if (status === BlogStatus.SCHEDULE) {
       form.setValue("publishedAt", new Date());
+    } else {
+      // Jika status bukan 'SCHEDULE', disable tanggal publikasi
+      form.setValue("publishedAt", undefined);
     }
 
     if (
@@ -529,10 +532,10 @@ export default function CreateBlogPage() {
                       locale={id}
                       granularity="minute"
                       disabled={
-                        // Disable saat status DRAFT atau PUBLISH
                         !form.getValues("status") ||
                         form.getValues("status") === BlogStatus.DRAFT ||
-                        form.getValues("status") === BlogStatus.PUBLISH
+                        (form.getValues("status") === BlogStatus.PUBLISH &&
+                          !form.getValues("publishedAt"))
                       }
                     />
                   </FormControl>
