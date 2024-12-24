@@ -18,7 +18,11 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import useSWR from "swr";
-import { getAllCategoriesService } from "@/services/categoryServices";
+import {
+  getAllCategoriesService,
+  getCategoriesWithBlogCount,
+} from "@/services/categoryServices";
+import { useEffect, useState } from "react";
 
 // const chartData = [
 //   { category: "SPORT", blogs: 186 },
@@ -38,40 +42,56 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function GrowthBlogByCategoryChart() {
-  const { data: categories, error } = useSWR(
-    "/api/category",
-    getAllCategoriesService
-  );
+  const [chartData, setChartData] = useState<
+    { category: string; blogs: number }[]
+  >([]);
 
-  if (error) return <div>Error loading data.</div>;
-  if (!categories) return <div>Loading...</div>;
-
-  const chartData = categories.reduce((acc, blog) => {
-    // Mengambil tanggal posting dalam format yyyy-mm-dd
-    const date = new Date(blog.createdAt).toLocaleDateString();
-
-    // Menyusun data untuk jumlah post per hari
-    const dayData = acc.find((item) => item.date === date);
-    if (dayData) {
-      dayData.posts += 1;
-    } else {
-      acc.push({
-        date,
-        posts: 1,
-      });
+  // Fetch data from API
+  const fetchData = async () => {
+    const result = await getCategoriesWithBlogCount();
+    if (result && result.data) {
+      // Filter out categories that have no blogs
+      const data = result.data
+        .filter((category: any) => category._count.Blogs > 0) // filter out categories with 0 blogs
+        .map((category: any) => ({
+          category: category.name,
+          blogs: category._count.Blogs,
+        }));
+      setChartData(data);
     }
+  };
 
-    return acc;
-  }, [] as { date: string; posts: number }[]);
+  // UseEffect to fetch data when component mounts
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  chartData.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  // const chartData = categories.reduce((acc, blog) => {
+  //   // Mengambil tanggal posting dalam format yyyy-mm-dd
+  //   const date = new Date(blog.createdAt).toLocaleDateString();
+
+  //   // Menyusun data untuk jumlah post per hari
+  //   const dayData = acc.find((item) => item.date === date);
+  //   if (dayData) {
+  //     dayData.posts += 1;
+  //   } else {
+  //     acc.push({
+  //       date,
+  //       posts: 1,
+  //     });
+  //   }
+
+  //   return acc;
+  // }, [] as { date: string; posts: number }[]);
+
+  // chartData.sort(
+  //   (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  // );
 
   return (
     <Card>
       <CardHeader className="border-b py-5">
-        <CardTitle>Blogs per Category (Dummy Data)</CardTitle>
+        <CardTitle>Blogs per Category</CardTitle>
         <CardDescription>Showing total blog by category</CardDescription>
       </CardHeader>
       <CardContent className="pb-0 my-10">
@@ -95,14 +115,14 @@ export function GrowthBlogByCategoryChart() {
           </RadarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
+      {/* <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
         </div>
         <div className="flex items-center gap-2 leading-none text-muted-foreground">
           January - June 2024
         </div>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 }

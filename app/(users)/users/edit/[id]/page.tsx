@@ -374,11 +374,13 @@ export default function EditUserDataPage() {
                         {...field}
                       />
                     ) : (
-                      <img
-                        src={image || "/"}
-                        alt="Profile"
-                        className="w-full h-full object-cover rounded-full"
-                      />
+                      <div className="w-full h-full relative bg-foregroundrelative bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
+                        <img
+                          src={image || "/"}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full p-1"
+                        />
+                      </div>
                     )}
 
                     <FormMessage />

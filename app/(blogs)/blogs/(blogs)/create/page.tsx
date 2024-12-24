@@ -205,32 +205,14 @@ export default function CreateBlogPage() {
     const status = form.watch("status");
     const publishedAt = form.getValues("publishedAt");
 
-    if (status === BlogStatus.DRAFT) {
+    if (status === BlogStatus.PUBLISH) {
       form.setValue("publishedAt", new Date());
+    } else if (status === BlogStatus.SCHEDULE) {
+      if (!publishedAt || new Date(publishedAt) < new Date()) {
+        form.setValue("publishedAt", new Date());
+      }
     }
-
-    if (
-      (status === BlogStatus.PUBLISH || status === BlogStatus.SCHEDULE) &&
-      !publishedAt
-    ) {
-      form.setValue("publishedAt", new Date());
-    }
-
-    if (status === BlogStatus.SCHEDULE) {
-      form.setValue("publishedAt", new Date());
-    } else {
-      // Jika status bukan 'SCHEDULE', disable tanggal publikasi
-      form.setValue("publishedAt", undefined);
-    }
-
-    if (
-      status === BlogStatus.SCHEDULE &&
-      publishedAt &&
-      new Date(publishedAt) < new Date()
-    ) {
-      form.setValue("publishedAt", new Date());
-    }
-  }, [form, form.getValues("status")]);
+  }, [form, form.watch("status")]);
 
   // FETCH DATA CATEGORIES AND DATA TAGS
   const fetcherCategories = () => getAllCategoriesService();
@@ -471,16 +453,6 @@ export default function CreateBlogPage() {
                     </FormControl>
                     <SelectContent>
                       <SelectItem
-                        value={BlogStatus.DRAFT}
-                        disabled={
-                          form.getValues("publishedAt") &&
-                          new Date(form.getValues("publishedAt") as Date) >
-                            new Date()
-                        }
-                      >
-                        {BlogStatus.DRAFT}
-                      </SelectItem>
-                      <SelectItem
                         value={BlogStatus.PUBLISH}
                         disabled={
                           form.getValues("publishedAt") &&
@@ -577,7 +549,7 @@ export default function CreateBlogPage() {
       </CardContent>
 
       {/* SUBMIT */}
-      <CardFooter>
+      <CardFooter className="flex justify-between">
         <LoadingButton
           loading={loading}
           type="button"
@@ -585,6 +557,14 @@ export default function CreateBlogPage() {
           disabled={!form.formState.isValid || form.formState.isSubmitting}
         >
           Submit
+        </LoadingButton>
+        <LoadingButton
+          loading={loading}
+          type="button"
+          onClick={handleSubmitButtonClick}
+          disabled={!form.formState.isValid || form.formState.isSubmitting}
+        >
+          Save To Draft
         </LoadingButton>
       </CardFooter>
 

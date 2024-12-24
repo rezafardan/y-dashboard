@@ -83,7 +83,7 @@ const columns: ColumnDef<UserDataResponse>[] = [
           <Avatar className="h-10 w-10">
             {profileImage ? (
               <AvatarImage
-                src={`http://localhost:3001/${profileImage}`} // CHANGE URL API ON PRODUCTION
+                src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${profileImage}`} // CHANGE URL API ON PRODUCTION
                 alt="Profile"
               />
             ) : (

@@ -40,3 +40,8 @@ export const deleteCategoryService = async (id: string) => {
   const result = await axiosInstance.delete(`category/${id}`);
   return result.data;
 };
+
+export const getCategoriesWithBlogCount = async () => {
+  const result = await axiosInstance.get("category/categories-with-blog-count");
+  return result.data;
+};
