@@ -255,6 +255,7 @@ export default function CreateUserPage() {
 
   const handleCroppedImage = (file: File) => {
     form.setValue("profileImage", file);
+    setCroppedFile(file);
   };
 
   // SUBMIT FORM BUTTON
@@ -316,7 +317,6 @@ export default function CreateUserPage() {
       // RESET FORM AND IMAGE STATES ON SUCCESS
       form.reset();
       setImage(null);
-
       setCroppedFile(null);
     } catch (error) {
       // ERROR HANDLER
@@ -513,7 +513,11 @@ export default function CreateUserPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Profile Image</FormLabel>
-                    <ImageCropper onImageCropped={handleCroppedImage} />
+                    <ImageCropper
+                      initialImage={image || undefined}
+                      onImageCropped={handleCroppedImage}
+                      {...field}
+                    />
                     <FormDescription>
                       Upload an image file (PNG, JPG, JPEG, or GIF) with a
                       maximum size of 2MB.

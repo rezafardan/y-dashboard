@@ -34,12 +34,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // API SERVICE
 import { loginService } from "@/services/authServices";
 
-import { useAuth } from "@/context/AuthContext";
-
 // TOAST
 import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
 import { ApiErrorResponse } from "@/models/error";
+import { useAuth } from "@/context/AuthContext";
 
 // LOGIN SCHEMA
 const loginSchema = z.object({

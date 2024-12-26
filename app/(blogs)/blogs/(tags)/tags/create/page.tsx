@@ -110,14 +110,12 @@ export default function CreateCategoryPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newTagSchema>) => {
-    console.log(values);
     try {
       setLoading(true);
       setError(null);
 
       // SEND TO API
       const result = await createTagService(values);
-      console.log(result);
 
       // TOAST MESSAGE FROM API
       toast({

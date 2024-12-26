@@ -230,8 +230,6 @@ export default function EditUserDataPage() {
         profileImage: result.profileImage || "",
       });
 
-      console.log(result);
-
       setImage(`${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.profileImage}`);
     } catch (error) {
       console.log(error);
@@ -246,6 +244,7 @@ export default function EditUserDataPage() {
 
   const handleCroppedImage = (file: File) => {
     form.setValue("profileImage", file);
+    setCroppedFile(file);
   };
 
   const handleEditButtonClick = () => {

@@ -226,6 +226,13 @@ const BlogActionCell = ({ blog }: { blog: BlogDataResponse }) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
+            router.push(`/blogs/edit/${blog.id}`);
+          }}
+        >
+          Edit Blog
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
             router.push(`/blogs/view/${blog.id}`);
           }}
         >
