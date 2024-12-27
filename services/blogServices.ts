@@ -46,3 +46,8 @@ export const deleteBlogService = async (id: string) => {
   const result = await axiosInstance.delete(`blog/${id}`);
   return result.data;
 };
+
+export const editBlogService = async (id: any, data: any) => {
+  const result = await axiosInstance.patch(`blog/${id}`, data);
+  return result.data;
+};

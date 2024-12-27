@@ -135,9 +135,11 @@ export const Tiptap = ({
 
   useEffect(() => {
     if (reset && editor) {
-      editor.commands.setContent("");
+      editor.commands.setContent(""); // Reset content
+    } else if (content && editor) {
+      editor.commands.setContent(JSON.parse(content)); // Set content
     }
-  }, [reset, editor]);
+  }, [reset, content, editor]);
 
   return (
     <div className="flex flex-col justify-stretch gap-2 ">

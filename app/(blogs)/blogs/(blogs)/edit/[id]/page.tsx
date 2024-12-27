@@ -56,6 +56,7 @@ import { newBlogSchema, BlogStatus } from "@/models/formSchema";
 import {
   createBlogService,
   createCoverImage,
+  editBlogService,
   getBlogByIdService,
 } from "@/services/blogServices";
 import { getAllTagsService } from "@/services/tagServices";
@@ -68,11 +69,10 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastClose } from "@/components/ui/toast";
 
 // DATE SETTER
-import { id } from "date-fns/locale";
+import { id as dateId } from "date-fns/locale";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
-import { json } from "stream/consumers";
 
 export default function EditBlogPage() {
   // CONTEXT
@@ -99,8 +99,6 @@ export default function EditBlogPage() {
   const fetchBlogData = async () => {
     try {
       const result = await getBlogByIdService(id);
-      console.log(result);
-      console.log(JSON.stringify(result.content));
 
       form.reset({
         title: result.title || "",
@@ -116,7 +114,10 @@ export default function EditBlogPage() {
       });
 
       // Preview cover image
-      setCoverImage(result.coverImage?.url || null);
+
+      setCoverImage(
+        `${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.coverImage.filepath}`
+      );
     } catch (error) {
       console.log(error);
     }
@@ -195,7 +196,7 @@ export default function EditBlogPage() {
       setLoading(true);
 
       // SEND TO API
-      const result = await createBlogService(values);
+      const result = await editBlogService(id, values);
 
       // TOAST MESSAGE FROM API
       toast({
@@ -338,12 +339,11 @@ export default function EditBlogPage() {
                       {/* Image Preview */}
                       {coverImage ? (
                         <div className="relative w-full aspect-video rounded-md overflow-hidden">
-                          <Image
+                          <img
                             loading="eager"
                             src={coverImage}
                             alt="Preview"
                             className="w-full h-full"
-                            fill
                           />
                         </div>
                       ) : (
@@ -540,6 +540,7 @@ export default function EditBlogPage() {
                       }}
                       displayFormat={{ hour24: "PPP HH:mm" }}
                       granularity="minute"
+                      locale={dateId}
                       disabled={
                         !form.getValues("status") ||
                         form.getValues("status") === BlogStatus.DRAFT ||
