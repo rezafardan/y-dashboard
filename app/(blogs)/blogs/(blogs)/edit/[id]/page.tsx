@@ -72,11 +72,13 @@ import { ToastClose } from "@/components/ui/toast";
 import { id as dateId } from "date-fns/locale";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { blogStatus } from "@/models/dataSchema";
 
 export default function EditBlogPage() {
   // CONTEXT
   const { role } = useAuth();
+  const router = useRouter();
 
   const { id } = useParams();
 
@@ -100,9 +102,10 @@ export default function EditBlogPage() {
     try {
       const result = await getBlogByIdService(id);
 
+      console.log(result.coverImageId);
       form.reset({
         title: result.title || "",
-        coverImageId: result.coverImage.filepath || "",
+        coverImageId: result.coverImageId || "",
         content: JSON.stringify(result.content) || "",
         status: result.status || "",
         categoryId: result.category?.id || "",
@@ -115,9 +118,14 @@ export default function EditBlogPage() {
 
       // Preview cover image
 
-      setCoverImage(
-        `${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.coverImage.filepath}`
-      );
+      if (result.status === "DRAFT") {
+        form.setValue("status", BlogStatus.PUBLISH);
+      }
+      if (result.coverImage && result.coverImage.filepath) {
+        setCoverImage(
+          `${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.coverImage.filepath}`
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -137,7 +145,6 @@ export default function EditBlogPage() {
         formData.append("coverimage", file);
 
         const response = await createCoverImage(formData);
-
         const imageId = response.data.id;
 
         form.setValue("coverImageId", imageId);
@@ -188,6 +195,8 @@ export default function EditBlogPage() {
     setShowConfirmDialog(true);
   };
 
+  console.log(form.watch());
+
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     // CHECK VALUE
@@ -218,6 +227,8 @@ export default function EditBlogPage() {
       if (fileInput) {
         fileInput.value = "";
       }
+
+      router.push(`/blogs/view/${id}`);
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };

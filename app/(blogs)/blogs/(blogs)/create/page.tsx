@@ -67,6 +67,7 @@ import { ToastClose } from "@/components/ui/toast";
 import { id } from "date-fns/locale";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { blogStatus } from "@/models/dataSchema";
 
 export default function CreateBlogPage() {
   // CONTEXT
@@ -153,6 +154,7 @@ export default function CreateBlogPage() {
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     // CHECK VALUE
 
+    console.log("Clicked");
     try {
       setLoading(true);
 
@@ -201,18 +203,53 @@ export default function CreateBlogPage() {
     }
   };
 
-  useEffect(() => {
-    const status = form.watch("status");
-    const publishedAt = form.getValues("publishedAt");
+  const onSaveToDraft = async () => {
+    // CHECK VALUE
 
-    if (status === BlogStatus.PUBLISH) {
-      form.setValue("publishedAt", new Date());
-    } else if (status === BlogStatus.SCHEDULE) {
-      if (!publishedAt || new Date(publishedAt) < new Date()) {
-        form.setValue("publishedAt", new Date());
-      }
+    try {
+      setLoading(true);
+
+      const draftValues = {
+        ...form.getValues(),
+        status: BlogStatus.DRAFT,
+      };
+
+      console.log(draftValues);
+
+      // SEND TO API
+      const result = await createBlogService(draftValues);
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: result.message,
+        action: <ToastClose />,
+        duration: 4000,
+      });
+
+      // RESET FORM
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        action: <ToastClose />,
+        duration: 4000,
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [form, form.watch("status")]);
+  };
+
+  console.log(form.watch());
 
   // FETCH DATA CATEGORIES AND DATA TAGS
   const fetcherCategories = () => getAllCategoriesService();
@@ -233,7 +270,7 @@ export default function CreateBlogPage() {
   if (isLoadingTags) return <p>Loading...</p>;
   if (tagsError) return <p>Error loading data tags</p>;
 
-  const mockSearch = async (value: string): Promise<Option[]> => {
+  const tagSearch = async (value: string): Promise<Option[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         if (value.trim() === null) {
@@ -266,7 +303,7 @@ export default function CreateBlogPage() {
 
       <CardContent>
         <Form {...form}>
-          <form>
+          <form className="space-y-4">
             {/* TITLE */}
             <FormField
               control={form.control}
@@ -276,15 +313,11 @@ export default function CreateBlogPage() {
                   <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Input your blog title here..."
                       {...field}
+                      placeholder="Input your blog title here..."
                     />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Enter the title of your blog. A minimum of 3 characters is
-                    required for better clarity and appeal.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -303,7 +336,7 @@ export default function CreateBlogPage() {
                           <Image
                             loading="eager"
                             src={coverImage}
-                            alt="Preview"
+                            alt="Cover image preview"
                             className="w-full h-full"
                             fill
                           />
@@ -318,17 +351,12 @@ export default function CreateBlogPage() {
                       <Input
                         type="file"
                         accept="image/*"
-                        name="mainImageId"
+                        name="coverImageId"
                         onChange={handleImageChange}
-                        placeholder="Upload your image"
                       />
                     </div>
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Upload an image file (PNG, JPG, JPEG, or GIF) with a maximum
-                    file size of 5MB.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -348,11 +376,6 @@ export default function CreateBlogPage() {
                     />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Add the main content of your blog here. A minimum of 1
-                    character is required to provide enough information to your
-                    readers.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -364,7 +387,11 @@ export default function CreateBlogPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    {...field}
+                    onValueChange={field.onChange}
+                    // value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Category" />
@@ -382,10 +409,6 @@ export default function CreateBlogPage() {
                   </Select>
 
                   <FormMessage />
-                  <FormDescription>
-                    Select an appropriate category for your blog. You must
-                    choose at least one category.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -400,18 +423,18 @@ export default function CreateBlogPage() {
                   <FormControl>
                     <MultipleSelector
                       {...field}
+                      value={form.watch("tags")}
+                      onChange={(value) => field.onChange(value)}
+                      defaultOptions={tags || []}
+                      onSearch={tagSearch}
+                      hidePlaceholderWhenSelected
+                      creatable={role === "AUTHOR" ? false : true}
+                      inputProps={{ maxLength: 50 }}
                       placeholder={
                         role === "AUTHOR"
                           ? "Select existing tag"
                           : "Create a new tag, or select existing tag"
                       }
-                      {...field}
-                      value={form.watch("tags")}
-                      onChange={(value) => field.onChange(value)}
-                      defaultOptions={tags || []}
-                      onSearch={mockSearch}
-                      hidePlaceholderWhenSelected
-                      creatable={role === "AUTHOR" ? false : true}
                       loadingIndicator={
                         <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
                           loading...
@@ -422,14 +445,9 @@ export default function CreateBlogPage() {
                           No results found
                         </p>
                       }
-                      inputProps={{ maxLength: 50 }}
                     />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Add a relevant tag to your blog to make it easier to
-                    discover. Tags must be at least 3 characters long.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -442,9 +460,14 @@ export default function CreateBlogPage() {
                 <FormItem>
                   <FormLabel>Status</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    key={field.value ? "with-value" : "without-value"}
+                    {...field}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      if (value) {
+                        form.setValue("publishedAt", new Date());
+                      }
+                    }}
+                    // value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -452,14 +475,7 @@ export default function CreateBlogPage() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem
-                        value={BlogStatus.PUBLISH}
-                        disabled={
-                          form.getValues("publishedAt") &&
-                          new Date(form.getValues("publishedAt") as Date) >
-                            new Date()
-                        }
-                      >
+                      <SelectItem value={BlogStatus.PUBLISH}>
                         {BlogStatus.PUBLISH}
                       </SelectItem>
                       <SelectItem value={BlogStatus.SCHEDULE}>
@@ -468,10 +484,6 @@ export default function CreateBlogPage() {
                     </SelectContent>
                   </Select>
                   <FormMessage />
-                  <FormDescription>
-                    Choose the publication status: DRAFT for a draft, SCHEDULE
-                    to schedule, or PUBLISH to publish immediately.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -481,41 +493,52 @@ export default function CreateBlogPage() {
               control={form.control}
               name="publishedAt"
               render={({ field }) => (
-                <FormItem className="flex w-72 flex-col gap-2">
+                <FormItem>
                   <FormLabel>Date Publish</FormLabel>
                   <FormControl>
                     <DateTimePicker
                       value={field.value || new Date()}
                       onChange={(date) => {
-                        if (form.getValues("status") === BlogStatus.PUBLISH) {
-                          field.onChange(new Date());
-                        } else if (
-                          form.getValues("status") === BlogStatus.SCHEDULE
-                        ) {
-                          if (date && date < new Date()) {
-                            form.setValue("status", BlogStatus.PUBLISH);
-                          } else if (date && date > new Date()) {
-                            form.setValue("status", BlogStatus.SCHEDULE);
-                          }
-                          field.onChange(date);
+                        // Periksa apakah `date` terdefinisi
+                        if (!date) {
+                          toast({
+                            description: "Invalid date selection.",
+                            variant: "destructive",
+                          });
+                          return;
                         }
+
+                        const status = form.watch("status");
+                        const today = new Date();
+
+                        // Validasi untuk status PUBLISH
+                        if (status === BlogStatus.PUBLISH && date > today) {
+                          toast({
+                            description: "Publish date cannot be after today.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        // Validasi untuk status SCHEDULE
+                        if (status === BlogStatus.SCHEDULE && date < today) {
+                          toast({
+                            description:
+                              "Scheduled date cannot be before today.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        field.onChange(date);
                       }}
                       displayFormat={{ hour24: "PPP HH:mm" }}
                       locale={id}
                       granularity="minute"
-                      disabled={
-                        !form.getValues("status") ||
-                        form.getValues("status") === BlogStatus.DRAFT ||
-                        (form.getValues("status") === BlogStatus.PUBLISH &&
-                          !form.getValues("publishedAt"))
-                      }
+                      disabled={!form.getValues("status")}
                     />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Choose the date and time you want to publish this blog.
-                    Adjust the schedule as needed.
-                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -530,10 +553,6 @@ export default function CreateBlogPage() {
                     <FormLabel className="text-base">
                       Allow users to comment
                     </FormLabel>
-                    <FormDescription>
-                      Enable this option to allow users to comment on your blog,
-                      or leave it unchecked to disable comments.
-                    </FormDescription>
                   </div>
                   <FormControl>
                     <Switch
@@ -558,12 +577,7 @@ export default function CreateBlogPage() {
         >
           Submit
         </LoadingButton>
-        <LoadingButton
-          loading={loading}
-          type="button"
-          onClick={handleSubmitButtonClick}
-          disabled={!form.formState.isValid || form.formState.isSubmitting}
-        >
+        <LoadingButton loading={loading} type="button" onClick={onSaveToDraft}>
           Save To Draft
         </LoadingButton>
       </CardFooter>
