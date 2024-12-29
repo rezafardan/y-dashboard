@@ -23,6 +23,7 @@ export interface LoginResponse {
 export interface UserDataResponse {
   id: string;
   username: string;
+  fullname: string;
   email: string;
   role: string;
   profileImage: string;

@@ -1,6 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+// COMPONENT
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -9,114 +15,100 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { ChevronLeft, UserPen } from "lucide-react";
+
+// SERVICE
+import useSWR from "swr";
 import { getUserByIdService } from "@/services/userServices";
-import Image from "next/image";
+
+// ROUTING
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import useSWR from "swr";
+
+// MODELS
+import { UserDataResponse } from "@/models/dataSchema";
 
 export default function ViewUserPage() {
-  const params = useParams();
-  const id = params?.id;
-
+  // ROUTER
   const router = useRouter();
 
-  const fetcher = async () => {
-    if (!id) return null;
-    return getUserByIdService(id);
+  // GET PARAMS
+  const { id } = useParams();
+
+  // FETCH USER DATA
+  const [userData, setUserData] = useState<UserDataResponse | null>(null);
+  const fetchUserData = async () => {
+    try {
+      const result = await getUserByIdService(id);
+
+      setUserData(result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useSWR(id ? `/user/${id}` : null, fetcher);
-
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-gray-500 text-lg">Loading...</p>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-red-500 text-lg">
-          Error fetching user data: {error.message}
-        </p>
-      </div>
-    );
-  if (!user)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-gray-500 text-lg">No content available...</p>
-      </div>
-    );
+  useEffect(() => {
+    fetchUserData();
+  }, [id]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Edit User Data Details</CardTitle>
+        <CardTitle>User Profile Detail</CardTitle>
         <CardDescription>
-          View detailed information about the selected user.
+          Review and manage detailed user information.
         </CardDescription>
         <Separator />
       </CardHeader>
 
-      <CardContent>
-        {/* User Image */}
-        <div>
-          {user?.profileImage ? (
-            <div className="relative w-48 h-48 aspect-square rounded-full overflow-hidden border border-gray-300">
+      <CardContent className="md:flex gap-6 w-full">
+        {/* PROFILE IMAGE */}
+        <div className="flex items-center justify-center md:justify-normal mb-4">
+          {userData?.profileImage ? (
+            <div className="relative w-60 h-60 aspect-square rounded-full overflow-hidden border dark:border-secondary">
               <img
-                src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${user.profileImage}`}
-                alt={user.username || "User Image"}
+                src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${userData?.profileImage}`}
+                alt={userData?.username || "User Image"}
               />
             </div>
           ) : (
-            <div className="w-48 h-48 flex aspect-square items-center justify-center rounded-full bg-gray-100 border border-gray-300">
-              <p className="text-gray-500">No Image Available</p>
+            <div className="w-60 h-60 flex aspect-square items-center justify-center rounded-full bg-muted dark:bg-background">
+              <p className="text-secondary dark:text-primary">
+                No Profile Picture
+              </p>
             </div>
           )}
         </div>
 
-        {/* User Info */}
-        <div className="space-y-2">
+        {/* USER DATA */}
+        <div className="space-y-4 md:w-full">
           <div>
             <Label>Username</Label>
-            <Input value={user.username || "Not Found"} disabled />
+            <Input value={userData?.username || "Unavailable"} disabled />
           </div>
           <div>
             <Label>Full Name</Label>
-            <Input value={user.fullname || "Not Found"} disabled />
+            <Input value={userData?.fullname || "Unavailable"} disabled />
           </div>
           <div>
             <Label>Email</Label>
-            <Input value={user.email || "Not Found"} disabled />
+            <Input value={userData?.email || "Unavailable"} disabled />
           </div>
           <div>
             <Label>Role</Label>
-            <Input value={user.role || "Not Found"} disabled />
+            <Input value={userData?.role || "Unavailable"} disabled />
           </div>
         </div>
       </CardContent>
 
-      {/* Buttons */}
-      <CardFooter className="flex justify-between mt-4 md:max-w-lg">
-        <Button
-          variant="outline"
-          className="px-6"
-          onClick={() => router.back()}
-        >
+      {/* BUTTON */}
+      <CardFooter className="flex justify-between">
+        <Button variant="outline" onClick={() => router.back()}>
+          <ChevronLeft />
           Back
         </Button>
-        <Button
-          className="px-6"
-          onClick={() => router.push(`/users/edit/${id}`)}
-        >
+        <Button onClick={() => router.push(`/users/edit/${id}`)}>
+          <UserPen />
           Edit User
         </Button>
       </CardFooter>

@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LoadingButton } from "@/components/ui/loading-button";
+import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,6 +29,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ChevronLeft, HardDriveUpload } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -44,135 +54,29 @@ import {
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
 
 // DEBOUNCE
 import debounce from "lodash/debounce";
 
 // IMAGE CROPPER
-import { Cropper } from "react-cropper";
-import "cropperjs/dist/cropper.css";
-import { Separator } from "@/components/ui/separator";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ApiErrorResponse } from "@/models/error";
-import Image from "next/image";
 import ImageCropper from "@/components/image-cropper/image-cropper";
 
-// ENUM FOR USER ROLE
-enum UserRole {
-  AUTHOR = "AUTHOR",
-  EDITOR = "EDITOR",
-  SUBSCRIBER = "SUBSCRIBER",
-  ADMINISTRATOR = "ADMINISTRATOR",
-}
+// MODELS
+import { ApiErrorResponse } from "@/models/error";
+import { newUserSchema, UserRole } from "@/models/formSchema";
 
-// USER SCHEMA
-const newUserSchema = z
-  .object({
-    // SCHEMA FOR USERNAME VALIDATION
-    username: z
-      .string()
-      .min(4, { message: "Username minimum 4 characters" })
-      .max(14, { message: "Username maximum 14 characters" })
-      .refine((val) => !val.includes(" "), {
-        message: "Username cannot contain spaces",
-      })
-      .refine((val) => val === val.toLowerCase(), {
-        message: "Username must be lowercase",
-      })
-      .refine((val) => /^[a-z0-9_]+$/.test(val), {
-        message:
-          "Username can only contain lowercase letters, numbers and underscore",
-      }),
-
-    fullname: z
-      .string()
-      .min(4, { message: "Fullname minimum 4 character" })
-      .max(30, { message: "Fullname maximum 30 characters" })
-      .refine((val) => /^[a-z ]+$/.test(val), {
-        message: "Fullname can only contain lowercase letters and spaces",
-      }),
-
-    // SCHEMA FOR EMAIL VALIDATION
-    email: z
-      .string()
-      .email({ message: "Invalid email format" })
-      .min(1, { message: "Email is required" })
-      .max(100, { message: "Email is too long" })
-      .refine((email) => !email.endsWith("@tempmail.com"), {
-        message: "Temporary emails are not allowed",
-      })
-      .refine((email) => !email.endsWith("@yopmail.com"), {
-        message: "This email domain is not allowed",
-      }),
-
-    // SCHEMA FOR PASSWORD VALIDATION
-    password: z
-      .string()
-      .min(6, { message: "Password must be at least 6 characters" })
-      .refine((password) => /[A-Z]/.test(password), {
-        message: "Password must contain an uppercase letter",
-      })
-      .refine((password) => /[0-9]/.test(password), {
-        message: "Password must contain a number",
-      })
-      .refine((password) => /[!@#$%^&*]/.test(password), {
-        message: "Password must contain a special character (!@#$%^&*)",
-      }),
-
-    // SCHEMA FOR PASSWORD CONFIRM VALIDATION
-    confirmPassword: z.string(),
-
-    // SCHEMA FOR ROLE VALIDATION
-    role: z
-      .nativeEnum(UserRole)
-      .optional()
-      .refine((role) => role !== undefined, {
-        message: "Role selection is required",
-      }),
-
-    // SCHEMA FOR PROFILE IMAGE VALIDATION
-    profileImage: z.instanceof(File).optional(),
-  })
-
-  // SCHEMA FOR BANNED USER VALIDATION
-  .refine(
-    (data) => {
-      const bannedUsernames = ["administrator", "author", "editor"];
-      return !bannedUsernames.includes(data.username.toLowerCase());
-    },
-    {
-      message: "Username is not available",
-      path: ["username"],
-    }
-  )
-  // SCHEMA FOR PASSWORD CONFIRM VALIDATION
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+// ROUTING
+import { useRouter } from "next/navigation";
 
 export default function CreateUserPage() {
+  // ROUTER
+  const router = useRouter();
+
   // TOAST
   const { toast } = useToast();
 
-  // LOADING BUTTON
-  const [loading, setLoading] = useState(false);
-
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-  // ERROR HANDLER
-  const [error, setError] = useState<string | null>(null);
 
   // DEBOUNCE USERNAME
   const [usernameStatus, setUsernameStatus] = useState<string>("");
@@ -180,6 +84,7 @@ export default function CreateUserPage() {
   // CROPPER
   const [image, setImage] = useState<string | null>(null);
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
+  const [isImageCropped, setIsImageCropped] = useState<Boolean>(false);
 
   // FORM HANDLER
   const defaultValues = {
@@ -199,7 +104,7 @@ export default function CreateUserPage() {
     mode: "onChange",
   });
 
-  // DEBOUNCE FETCHING USERNAME DATA
+  // DEBOUNCE FETCH USERNAME DATA
   const debouncedUsernameCheck = useCallback(
     debounce(async (username: string) => {
       if (username.length >= 4) {
@@ -228,13 +133,11 @@ export default function CreateUserPage() {
     }, 500),
     [form]
   );
-
   useEffect(() => {
     return () => {
       debouncedUsernameCheck.cancel();
     };
   }, [debouncedUsernameCheck]);
-
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === "username") {
@@ -252,10 +155,13 @@ export default function CreateUserPage() {
   }, [form, debouncedUsernameCheck]);
 
   // CROP IMAGE
-
   const handleCroppedImage = (file: File) => {
     form.setValue("profileImage", file);
     setCroppedFile(file);
+  };
+
+  const handleCropStatusChange = (status: boolean) => {
+    setIsImageCropped(status);
   };
 
   // SUBMIT FORM BUTTON
@@ -263,13 +169,13 @@ export default function CreateUserPage() {
     setShowConfirmDialog(true);
   };
 
-  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
+  // CONFIRM BUTTON AFTER ALERT DIALOG
   const handleConfirmSubmit = () => {
     form.handleSubmit(onSubmit)();
     setShowConfirmDialog(false);
   };
 
-  // CANCEL BUTTON
+  // CANCEL BUTTON ALERT DIALOG
   const handleConfirmCancel = () => {
     setShowConfirmDialog(false);
   };
@@ -277,11 +183,8 @@ export default function CreateUserPage() {
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newUserSchema>) => {
     try {
-      setLoading(true);
-      setError(null);
-
       // ERROR IF IMAGE NOT CROPPING
-      if (!croppedFile && image) {
+      if (!croppedFile && !isImageCropped && image) {
         toast({
           description: "Please crop the image before submitting",
           variant: "destructive",
@@ -289,6 +192,7 @@ export default function CreateUserPage() {
         return;
       }
 
+      // SETTING UP FORMDATA
       const formData = new FormData();
 
       // ADD THE CROPPED IMAGE TO FORM DATA IF IT EXISTS
@@ -304,13 +208,12 @@ export default function CreateUserPage() {
         }
       });
 
-      // SEND TO API
+      // API SERVICE
       const result = await createUserService(formData);
 
       // TOAST MESSAGE FROM API
       toast({
         description: result.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
@@ -318,24 +221,22 @@ export default function CreateUserPage() {
       form.reset();
       setImage(null);
       setCroppedFile(null);
+      setIsImageCropped(false);
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
           ? error.message
           : "An unexpected error occurred");
+
       // TOAST MESSAGE FROM API
       toast({
         description: errorMessage,
         variant: "destructive",
-        action: <ToastClose />,
         duration: 4000,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -346,227 +247,215 @@ export default function CreateUserPage() {
           <CardTitle>Create A New User</CardTitle>
           <CardDescription>
             Fill in the required fields to create a new user. Provide a unique
-            username, a secure password, a valid email address, assign a role,
-            and optionally upload a profile photo to complete the registration.
+            username, a fullname, a secure password, a valid email address,
+            assign a role, and optionally upload a profile photo to complete the
+            registration.
           </CardDescription>
           <Separator />
         </CardHeader>
 
         <CardContent>
           <Form {...form}>
-            <form className="">
-              {/* USERNAME */}
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Username"
-                        autoComplete="username"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Username must be lowercase, contain no spaces, and only
-                      include letters, numbers, or underscores.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* FULLNAME */}
-              <FormField
-                control={form.control}
-                name="fullname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fullname</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Fullname"
-                        autoComplete="fullname"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Fullname must be lowercase, contain spaces, and only
-                      include letters, numbers, or underscores.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* EMAIL */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        autoComplete="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Ensure your email is in the correct format and avoid using
-                      temporary email domains (e.g., tempmail.com).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* PASSWORD */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Password must be at least 6 characters long, including one
-                      uppercase letter, one number, and one special character
-                      (!@#$%^&*).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* CONFIRM PASSWORD */}
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Confirm your password"
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Make sure the confirmation password matches the one you
-                      entered above.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* ROLE */}
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role (required)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value={UserRole.ADMINISTRATOR}>
-                          ADMINISTRATOR
-                        </SelectItem>
-                        <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
-                        <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
-                        <SelectItem value={UserRole.SUBSCRIBER}>
-                          SUBSCRIBER
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Select a role for the user. Role selection is required.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+            <form className="md:flex gap-6 w-full">
               {/* PROFILE PICTURE */}
               <FormField
                 control={form.control}
                 name="profileImage"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profile Image</FormLabel>
+                  <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mb-4">
                     <ImageCropper
                       initialImage={image || undefined}
                       onImageCropped={handleCroppedImage}
+                      onCropStatusChange={handleCropStatusChange}
+                      className="w-72 h-72 md:w-60 md:h-60 mb-8"
                       {...field}
                     />
-                    <FormDescription>
-                      Upload an image file (PNG, JPG, JPEG, or GIF) with a
-                      maximum size of 2MB.
-                    </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="pt-12" />
                   </FormItem>
                 )}
               />
+
+              {/* USER DATA */}
+              <div className="space-y-4 md:w-full">
+                {/* USERNAME */}
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Username"
+                          autoComplete="username"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* FULLNAME */}
+                <FormField
+                  control={form.control}
+                  name="fullname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fullname</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Fullname"
+                          autoComplete="fullname"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* EMAIL */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          autoComplete="email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* PASSWORD */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          autoComplete="new-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* CONFIRM PASSWORD */}
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Confirm your password"
+                          autoComplete="new-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* ROLE */}
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role (required)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value={UserRole.ADMINISTRATOR}>
+                            ADMINISTRATOR
+                          </SelectItem>
+                          <SelectItem value={UserRole.AUTHOR}>
+                            AUTHOR
+                          </SelectItem>
+                          <SelectItem value={UserRole.EDITOR}>
+                            EDITOR
+                          </SelectItem>
+                          <SelectItem value={UserRole.SUBSCRIBER}>
+                            SUBSCRIBER
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </form>
           </Form>
-
-          <CardFooter>
-            {/* SUBMIT */}
-            <LoadingButton
-              loading={loading}
-              type="button"
-              className="w-full my-4"
-              onClick={handleSubmitButtonClick}
-              disabled={!form.formState.isValid || form.formState.isSubmitting}
-            >
-              Submit
-            </LoadingButton>
-          </CardFooter>
-
-          {/* ALERT DIALOG */}
-          <AlertDialog
-            open={showConfirmDialog}
-            onOpenChange={setShowConfirmDialog}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Please confirm if you want to create a new user with the
-                  details provided.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={handleConfirmCancel}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmSubmit}>
-                  Confirm Create
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </CardContent>
+
+        {/* BUTTON */}
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex"
+          >
+            <ChevronLeft />
+            Back
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmitButtonClick}
+            disabled={!form.formState.isValid || form.formState.isSubmitting}
+          >
+            <HardDriveUpload />
+            Submit
+          </Button>
+        </CardFooter>
       </Card>
+
+      {/* ALERT DIALOG */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please confirm if you want to create a new user with the details
+              provided.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConfirmCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Confirm Create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

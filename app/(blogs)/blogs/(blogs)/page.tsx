@@ -156,6 +156,7 @@ const columns: ColumnDef<BlogDataResponse>[] = [
 ];
 
 const BlogActionCell = ({ blog }: { blog: BlogDataResponse }) => {
+  // ROUTER
   const router = useRouter();
 
   // TOAST

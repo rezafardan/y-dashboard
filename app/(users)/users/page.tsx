@@ -25,7 +25,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import {
+  MoreHorizontal,
+  View,
+  UserPen,
+  UserX,
+  Trash,
+  UserPlus,
+} from "lucide-react";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -172,6 +179,7 @@ const columns: ColumnDef<UserDataResponse>[] = [
 ];
 
 const UserActionCell = ({ user }: { user: UserDataResponse }) => {
+  // ROUTER
   const router = useRouter();
 
   // TOAST
@@ -306,7 +314,7 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 p-0 border">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal />
         </Button>
@@ -314,33 +322,41 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+
         <DropdownMenuItem
           onClick={() => {
             router.push(`/users/view/${user.id}`);
           }}
         >
-          View Detail
+          <View />
+          View User Detail
         </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={() => {
             router.push(`/users/edit/${user.id}`);
           }}
         >
+          <UserPen />
           Edit User
         </DropdownMenuItem>
+
         {user.deletedAt !== null && (
           <DropdownMenuItem onClick={() => handleRestoreClick(user)}>
+            <UserPlus />
             Restore User
           </DropdownMenuItem>
         )}
 
         {user.deletedAt !== null ? null : (
           <DropdownMenuItem onClick={() => handleSoftDeleteClick(user)}>
+            <UserX />
             Soft Delete User
           </DropdownMenuItem>
         )}
 
         <DropdownMenuItem onClick={() => handlePermanentDeleteClick(user)}>
+          <Trash />
           Permanent Delete User
         </DropdownMenuItem>
       </DropdownMenuContent>
