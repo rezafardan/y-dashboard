@@ -195,11 +195,111 @@ export const editUserSchema = z.object({
   profileImage: z.union([z.string(), z.instanceof(File), z.null()]).optional(),
 });
 
+// SCHEMA FOR EDIT PROFILE DATA
+// ROUTE => /profile
+
+// USER SCHEMA
+export const editProfileSchema = z.object({
+  // SCHEMA FOR USERNAME VALIDATION
+  username: z
+    .string()
+    .min(4, { message: "Username minimum 4 characters" })
+    .max(14, { message: "Username maximum 14 characters" })
+    .refine((val) => !val.includes(" "), {
+      message: "Username cannot contain spaces",
+    })
+    .refine((val) => val === val.toLowerCase(), {
+      message: "Username must be lowercase",
+    })
+    .refine((val) => /^[a-z0-9_]+$/.test(val), {
+      message:
+        "Username can only contain lowercase letters, numbers and underscore",
+    })
+    .optional(),
+
+  fullname: z
+    .string()
+    .min(4, { message: "Fullname minimum 4 character" })
+    .max(30, { message: "Fullname maximum 30 characters" })
+    .refine((val) => /^[a-z ]+$/.test(val), {
+      message: "Fullname can only contain lowercase letters and spaces",
+    })
+    .optional(),
+
+  // SCHEMA FOR EMAIL VALIDATION
+  email: z
+    .string()
+    .email({ message: "Invalid email format" })
+    .min(1, { message: "Email is required" })
+    .max(100, { message: "Email is too long" })
+    .refine((email) => !email.endsWith("@tempmail.com"), {
+      message: "Temporary emails are not allowed",
+    })
+    .refine((email) => !email.endsWith("@yopmail.com"), {
+      message: "This email domain is not allowed",
+    })
+    .optional(),
+
+  password: z
+    .string()
+    .optional()
+    .refine(
+      (password) => {
+        // Jika password ada, pastikan panjangnya minimal 6 karakter
+        if (password && password.length < 6) {
+          return false;
+        }
+        return true; // Validasi sukses jika password tidak ada atau panjangnya cukup
+      },
+      {
+        message: "Password must be at least 6 characters",
+      }
+    )
+    .refine(
+      (password) => {
+        if (password) {
+          // Hanya terapkan regex validation jika password ada
+          return (
+            /[A-Z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /[!@#$%^&*]/.test(password)
+          );
+        }
+        return true; // Jika password tidak ada, abaikan regex validation
+      },
+      {
+        message:
+          "Password must contain an uppercase letter, a number, and a special character (!@#$%^&*)",
+      }
+    ),
+
+  // SCHEMA FOR PASSWORD CONFIRM VALIDATION
+  confirmPassword: z.string(),
+
+  // SCHEMA FOR ROLE VALIDATION
+  role: z
+    .nativeEnum(UserRole)
+    .optional()
+    .refine((role) => role !== undefined, {
+      message: "Role selection is required",
+    })
+    .optional(),
+
+  // SCHEMA FOR PROFILE IMAGE VALIDATION
+  profileImage: z
+    .union([
+      z.string(), // Untuk URL gambar
+      z.instanceof(File), // Untuk file unggahan
+      z.null(), // Untuk nilai kosong
+    ])
+    .optional(), // Nilai tidak wajib
+});
+
 // === ROUTE => PROFILE
 
 // SCHEMA FOR EDIT USER DATA
 // ROUTE => /user/profile/
-export const editProfileSchema = z.object({
+export const edistProfileSchema = z.object({
   username: z.string().optional(),
   fullname: z
     .string()

@@ -54,7 +54,6 @@ import { useToast } from "@/hooks/use-toast";
 
 // IMAGE CROPPER
 import ImageCropper from "@/components/image-cropper/image-cropper";
-import "cropperjs/dist/cropper.css";
 
 // MODELS
 import { ApiErrorResponse } from "@/models/error";
@@ -185,15 +184,17 @@ export default function EditUserDataPage() {
   const onSubmit = async (values: z.infer<typeof editUserSchema>) => {
     try {
       // GET CURRENT DATA
-      const currentValues = form.getValues();
+      const currentValues = await getUserByIdService(id);
 
       // CHECK CHANGED DATA
       const isChanged =
-        values.username !== currentValues.username ||
-        values.fullname !== currentValues.fullname ||
-        values.email !== currentValues.email ||
-        values.role !== currentValues.role ||
-        croppedFile !== null;
+        values.username !== currentValues?.username ||
+        values.fullname !== currentValues?.fullname ||
+        values.email !== currentValues?.email ||
+        values.role !== currentValues?.role ||
+        croppedFile !== null ||
+        (!!croppedFile && isImageCropped) ||
+        values.password !== "";
 
       // NO DATA CHANGED, SHOW TOAST
       if (!isChanged) {
@@ -282,7 +283,7 @@ export default function EditUserDataPage() {
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Edit User Profile</CardTitle>
+          <CardTitle>Edit User Profile Data</CardTitle>
           <CardDescription>Edit the user profile details</CardDescription>
           <Separator />
         </CardHeader>

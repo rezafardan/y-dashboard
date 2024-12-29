@@ -5,23 +5,15 @@ import React, { useEffect, useState } from "react";
 // COMPONENT
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LoadingButton } from "@/components/ui/loading-button";
+import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -30,30 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-// FORM HANDLER
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-
-// API SERVICE
-import {
-  checkUsernameAvailability,
-  createUserService,
-  editUserProfileService,
-  editUserService,
-  getUserByIdService,
-  viewUserProfileService,
-} from "@/services/userServices";
-
-// TOAST
-import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
-
-// IMAGE CROPPER
-import { Cropper } from "react-cropper";
-import "cropperjs/dist/cropper.css";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,144 +32,51 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ApiErrorResponse } from "@/models/error";
-import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+
+// FORM HANDLER
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+// API SERVICE
+import {
+  editUserProfileService,
+  viewUserProfileService,
+} from "@/services/userServices";
+
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+
+// IMAGE CROPPER
 import ImageCropper from "@/components/image-cropper/image-cropper";
-import { useAuth } from "@/context/AuthContext";
 
-// ENUM FOR USER ROLE
-enum UserRole {
-  AUTHOR = "AUTHOR",
-  EDITOR = "EDITOR",
-  SUBSCRIBER = "SUBSCRIBER",
-  ADMINISTRATOR = "ADMINISTRATOR",
-}
+// MODELS
+import { ApiErrorResponse } from "@/models/error";
+import { editProfileSchema } from "@/models/formSchema";
 
-// USER SCHEMA
-const newUserSchema = z.object({
-  // SCHEMA FOR USERNAME VALIDATION
-  username: z
-    .string()
-    .min(4, { message: "Username minimum 4 characters" })
-    .max(14, { message: "Username maximum 14 characters" })
-    .refine((val) => !val.includes(" "), {
-      message: "Username cannot contain spaces",
-    })
-    .refine((val) => val === val.toLowerCase(), {
-      message: "Username must be lowercase",
-    })
-    .refine((val) => /^[a-z0-9_]+$/.test(val), {
-      message:
-        "Username can only contain lowercase letters, numbers and underscore",
-    })
-    .optional(),
+// ROUTING
+import { useRouter } from "next/navigation";
+import { ChevronLeft, UserCheck, UserPen } from "lucide-react";
+import { UserDataResponse } from "@/models/dataSchema";
 
-  fullname: z
-    .string()
-    .min(4, { message: "Fullname minimum 4 character" })
-    .max(30, { message: "Fullname maximum 30 characters" })
-    .refine((val) => /^[a-z ]+$/.test(val), {
-      message: "Fullname can only contain lowercase letters and spaces",
-    })
-    .optional(),
+export default function EditProfileDataPage() {
+  // ROUTER
+  const router = useRouter();
 
-  // SCHEMA FOR EMAIL VALIDATION
-  email: z
-    .string()
-    .email({ message: "Invalid email format" })
-    .min(1, { message: "Email is required" })
-    .max(100, { message: "Email is too long" })
-    .refine((email) => !email.endsWith("@tempmail.com"), {
-      message: "Temporary emails are not allowed",
-    })
-    .refine((email) => !email.endsWith("@yopmail.com"), {
-      message: "This email domain is not allowed",
-    })
-    .optional(),
-
-  password: z
-    .string()
-    .optional()
-    .refine(
-      (password) => {
-        // Jika password ada, pastikan panjangnya minimal 6 karakter
-        if (password && password.length < 6) {
-          return false;
-        }
-        return true; // Validasi sukses jika password tidak ada atau panjangnya cukup
-      },
-      {
-        message: "Password must be at least 6 characters",
-      }
-    )
-    .refine(
-      (password) => {
-        if (password) {
-          // Hanya terapkan regex validation jika password ada
-          return (
-            /[A-Z]/.test(password) &&
-            /[0-9]/.test(password) &&
-            /[!@#$%^&*]/.test(password)
-          );
-        }
-        return true; // Jika password tidak ada, abaikan regex validation
-      },
-      {
-        message:
-          "Password must contain an uppercase letter, a number, and a special character (!@#$%^&*)",
-      }
-    ),
-
-  // SCHEMA FOR PASSWORD CONFIRM VALIDATION
-  confirmPassword: z.string(),
-
-  // SCHEMA FOR ROLE VALIDATION
-  role: z
-    .nativeEnum(UserRole)
-    .optional()
-    .refine((role) => role !== undefined, {
-      message: "Role selection is required",
-    })
-    .optional(),
-
-  // SCHEMA FOR PROFILE IMAGE VALIDATION
-  profileImage: z
-    .union([
-      z.string(), // Untuk URL gambar
-      z.instanceof(File), // Untuk file unggahan
-      z.null(), // Untuk nilai kosong
-    ])
-    .optional(), // Nilai tidak wajib
-});
-
-export default function EditUserDataPage() {
-  const { role } = useAuth();
   // TOAST
   const { toast } = useToast();
-
-  const { id } = useParams();
-
-  const [isEditing, setIsEditing] = useState(false);
-
-  // LOADING BUTTON
-  const [loading, setLoading] = useState(false);
 
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // ERROR HANDLER
-  const [error, setError] = useState<string | null>(null);
-
-  // DEBOUNCE USERNAME
-  const [usernameStatus, setUsernameStatus] = useState<string>("");
-
-  // CROPPER
-
+  // IMAGE CROPPER
   const [image, setImage] = useState<string | null>(null);
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
+  const [isImageCropped, setIsImageCropped] = useState<Boolean>(false);
 
-  const router = useRouter();
+  // EDIT BUTTON
+  const [isEditing, setIsEditing] = useState(false);
+
   // FORM HANDLER
   const defaultValues = {
     username: "",
@@ -213,28 +88,48 @@ export default function EditUserDataPage() {
     profileImage: undefined,
   };
 
-  const form = useForm<z.infer<typeof newUserSchema>>({
-    resolver: zodResolver(newUserSchema),
+  const form = useForm<z.infer<typeof editProfileSchema>>({
+    resolver: zodResolver(editProfileSchema),
     defaultValues,
     shouldFocusError: false,
     mode: "onChange",
   });
 
+  // FETCH USER DATA
   const fetchUserData = async () => {
     try {
+      // API SERVICE
       const result = await viewUserProfileService();
 
-      form.reset({
-        username: result.username || "",
-        fullname: result.fullname || "",
-        email: result.email || "",
-        role: result.role || "",
-        profileImage: result.profileImage || "",
-      });
+      // RESULT USER DATA FROM API SERVICE
+      const userData = {
+        username: result?.username || "",
+        fullname: result?.fullname || "",
+        email: result?.email || "",
+        role: result?.role || "",
+        profileImage: result?.profileImage || "",
+      };
 
+      // SEND DATA TO FORM
+      form.reset(userData);
+
+      // SET PROFILE IMAGE
       setImage(`${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.profileImage}`);
     } catch (error) {
-      console.log(error);
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        duration: 4000,
+      });
     }
   };
 
@@ -243,16 +138,21 @@ export default function EditUserDataPage() {
   }, [form]);
 
   // CROP IMAGE
-
   const handleCroppedImage = (file: File) => {
-    form.setValue("profileImage", file);
     setCroppedFile(file);
   };
 
+  const handleCropStatusChange = (status: boolean) => {
+    setIsImageCropped(status);
+  };
+
+  // BUTTON HANDLER
+  // EDIT BUTTON
   const handleEditButtonClick = () => {
     setIsEditing(true);
   };
 
+  // CANCEL EDIT BUTTON
   const handleCancelButtonClick = () => {
     setIsEditing(false);
     form.reset(); // Reset form to the initial values
@@ -263,32 +163,60 @@ export default function EditUserDataPage() {
     setShowConfirmDialog(true);
   };
 
-  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
+  // CONFIRM BUTTON AFTER ALERT DIALOG
   const handleConfirmSubmit = () => {
     form.handleSubmit(onSubmit)();
     setShowConfirmDialog(false);
   };
 
-  // CANCEL BUTTON
+  // CANCEL BUTTON ALERT DIALOG
   const handleConfirmCancel = () => {
     setShowConfirmDialog(false);
   };
 
   // HANDLING SUBMIT FORM
-  const onSubmit = async (values: z.infer<typeof newUserSchema>) => {
+  const onSubmit = async (values: z.infer<typeof editProfileSchema>) => {
     try {
-      setLoading(true);
-      setError(null);
+      // GET CURRENT DATA
+      const currentValues = await viewUserProfileService();
 
-      // Buat FormData untuk mengirim data
+      // CHECK CHANGED DATA
+      const isChanged =
+        values.username !== currentValues?.username ||
+        values.fullname !== currentValues?.fullname ||
+        values.email !== currentValues?.email ||
+        values.role !== currentValues?.role ||
+        croppedFile !== null ||
+        values.password !== "";
+
+      // NO DATA CHANGED, SHOW TOAST
+      if (!isChanged) {
+        toast({
+          description: "No data has been changed.",
+          variant: "destructive",
+          duration: 4000,
+        });
+        return;
+      }
+
+      // NOT CROPPING IMAGE, SHOW TOAST
+      if (croppedFile && !isImageCropped) {
+        toast({
+          description: "Please crop the image before submit.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // SETTING UP FORMDATA
       const formData = new FormData();
 
-      // Cek jika ada perubahan pada profileImage
+      // ADD THE CROPPED IMAGE TO FORM DATA IF IT EXISTS
       if (croppedFile) {
         formData.append("profileImage", croppedFile);
       }
 
-      // Kirim password hanya jika ada perubahan
+      // SEND PASSWORD IF CHANGED
       if (values.password && values.password !== "") {
         if (values.password !== values.confirmPassword) {
           toast({
@@ -300,22 +228,20 @@ export default function EditUserDataPage() {
         formData.append("password", values.password);
       }
 
-      // Menghapus password dan confirmPassword dari objek values yang akan dikirim
+      // REMOVE CONFIRM PASSWORD AND ADD OTHER FIELD TO FORM DATA
       const { confirmPassword, password, ...otherData } = values;
-
-      // Hanya kirim data yang bukan null atau undefined
       Object.entries(otherData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, value);
         }
       });
 
+      // API SERVICE
       const result = await editUserProfileService(formData);
 
       // TOAST MESSAGE FROM API
       toast({
         description: result.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
@@ -323,26 +249,26 @@ export default function EditUserDataPage() {
       form.reset();
       setImage(null);
       setCroppedFile(null);
-      setIsEditing(false); // Exit editing mode
+      setIsImageCropped(false);
+      setIsEditing(false);
+
+      // RE-FETCH DATA
       await fetchUserData();
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
           ? error.message
           : "An unexpected error occurred");
+
       // TOAST MESSAGE FROM API
       toast({
         description: errorMessage,
         variant: "destructive",
-        action: <ToastClose />,
         duration: 4000,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -350,197 +276,210 @@ export default function EditUserDataPage() {
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Create A New User</CardTitle>
-          <CardDescription>
-            Fill in the required fields to create a new user. Provide a unique
-            username, a secure password, a valid email address, assign a role,
-            and optionally upload a profile photo to complete the registration.
-          </CardDescription>
+          <CardTitle>Edit Profile Data</CardTitle>
+          <CardDescription>Edit my profile data.</CardDescription>
           <Separator />
         </CardHeader>
 
         <CardContent>
           <Form {...form}>
-            <form className="max-w-md">
+            <form className="md:flex gap-6 w-full">
+              {/* PROFILE IMAGE */}
               <FormField
                 control={form.control}
                 name="profileImage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Profile Image</FormLabel>
                     {isEditing ? (
                       <ImageCropper
                         initialImage={image || undefined}
                         onImageCropped={handleCroppedImage}
+                        onCropStatusChange={handleCropStatusChange}
+                        className="w-72 h-72 md:w-60 md:h-60 mb-8"
                         {...field}
                       />
                     ) : (
-                      <div className="w-full h-full relative bg-foregroundrelative bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
-                        <img
-                          src={image || "/"}
-                          alt="Profile"
-                          className="w-full h-full object-cover rounded-full p-1"
-                        />
+                      <div className="relative w-60 h-60 bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
+                        {image ? (
+                          <img
+                            src={image}
+                            alt="Profile Picture"
+                            className="w-60 h-60 object-cover rounded-full p-1"
+                          />
+                        ) : (
+                          <p className="text-secondary dark:text-primary">
+                            No Profile Picture
+                          </p>
+                        )}
                       </div>
                     )}
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* USERNAME */}
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Username"
-                        autoComplete="username"
-                        disabled
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <FormMessage />
+                    <FormMessage className="pt-12" />
                   </FormItem>
                 )}
               />
 
-              {/* FULLNAME */}
-              <FormField
-                control={form.control}
-                name="fullname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fullname</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Fullname"
-                        autoComplete="fullname"
-                        disabled={!isEditing}
-                        {...field}
-                      />
-                    </FormControl>
+              {/* USER DATA */}
+              <div className="space-y-4 md:w-full">
+                {/* USERNAME */}
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Username"
+                          autoComplete="username"
+                          disabled
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                {/* FULLNAME */}
+                <FormField
+                  control={form.control}
+                  name="fullname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fullname</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Fullname"
+                          autoComplete="fullname"
+                          disabled={!isEditing}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* EMAIL */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        autoComplete="email"
-                        disabled={!isEditing}
-                        {...field}
-                      />
-                    </FormControl>
+                {/* EMAIL */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          autoComplete="email"
+                          disabled={!isEditing}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                {/* PASSWORD */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          autoComplete="new-password"
+                          disabled={!isEditing}
+                          required={false}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* PASSWORD */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        autoComplete="new-password"
-                        disabled={!isEditing}
-                        required={false}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* CONFIRM PASSWORD */}
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Confirm your password"
-                        autoComplete="new-password"
-                        disabled={!isEditing}
-                        required={false}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                {/* CONFIRM PASSWORD */}
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Confirm your password"
+                          autoComplete="new-password"
+                          disabled={!isEditing}
+                          required={false}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </form>
           </Form>
-
-          <CardFooter className="flex justify-between">
-            <LoadingButton variant="outline" onClick={() => router.back()}>
-              Back
-            </LoadingButton>
-            {!isEditing ? (
-              <Button onClick={handleEditButtonClick}>Edit User</Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleCancelButtonClick}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSubmitButtonClick}>Save Changes</Button>
-              </div>
-            )}
-          </CardFooter>
-
-          {/* ALERT DIALOG */}
-          <AlertDialog
-            open={showConfirmDialog}
-            onOpenChange={setShowConfirmDialog}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Create User</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Please confirm if you want to create a new user with the
-                  details provided.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={handleConfirmCancel}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmSubmit}>
-                  Confirm Create
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </CardContent>
+
+        {/* BUTTON */}
+        <CardFooter
+          className={!isEditing ? "flex justify-between" : "justify-end"}
+        >
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className={!isEditing ? "md:flex" : "hidden"}
+          >
+            <ChevronLeft />
+            Back
+          </Button>
+          {!isEditing ? (
+            <Button onClick={handleEditButtonClick}>
+              <UserPen />
+              Edit User
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancelButtonClick}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmitButtonClick}>
+                <UserCheck />
+                Save Changes
+              </Button>
+            </div>
+          )}
+        </CardFooter>
       </Card>
+
+      {/* ALERT DIALOG */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Save Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please confirm if you want to save the changes to the your
+              profile.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConfirmCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Confirm Save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
