@@ -299,7 +299,6 @@ export default function BlogsPage() {
             disabled={!table.getCanPreviousPage()}
           >
             <CircleChevronLeft />
-            Previous
           </Button>
 
           <Button
@@ -309,7 +308,6 @@ export default function BlogsPage() {
             disabled={!table.getCanNextPage()}
           >
             <CircleChevronRight />
-            Next
           </Button>
         </div>
       </div>

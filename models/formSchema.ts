@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-// ENUM FOR STATUS BLOG
-export enum BlogStatus {
-  DRAFT = "DRAFT",
-  PUBLISH = "PUBLISH",
-  SCHEDULE = "SCHEDULE",
-}
-
 // === ROUTE => USER
 // ENUM FOR USER ROLE
 export enum UserRole {
@@ -378,6 +371,30 @@ export const editTagSchema = z.object({
     .max(50, { message: "Tag name cannot exceed 50 characters" }),
 });
 
+// SCHEMA FOR CREATE CATEGORY DATA
+// ROUTE => /blogs/category/create
+
+// CATEGORY SCHEMA
+export const newCategorySchema = z.object({
+  // SCHEMA FOR TITLE VALIDATION
+  name: z
+    .string()
+    .trim()
+    .min(3, { message: "Name must be at least 3 characters." })
+    .max(12, { message: "Name must not exceed 12 characters." })
+    .regex(/^[A-Za-z ]+$/, {
+      message: "Name should only contain letters and must not contain numbers.",
+    })
+    .transform((name) => name.toUpperCase()),
+
+  // SCHEMA FOR DESCRIPTION VALIDATION
+  description: z
+    .string()
+    .trim()
+    .min(10, { message: "Description must be at least 10 characters." })
+    .max(100, { message: "Description must not exceed 100 characters." }),
+});
+
 export const editCategorySchema = z.object({
   name: z
     .string()
@@ -396,6 +413,13 @@ export const editCategorySchema = z.object({
     .min(10, { message: "Description must be at least 10 characters." })
     .max(100, { message: "Description must not exceed 100 characters." }),
 });
+
+// ENUM FOR STATUS BLOG
+export enum BlogStatus {
+  DRAFT = "DRAFT",
+  PUBLISH = "PUBLISH",
+  SCHEDULE = "SCHEDULE",
+}
 
 // BLOG SCHEMA
 export const newBlogSchema = z.object({

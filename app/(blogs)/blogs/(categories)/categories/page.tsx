@@ -23,7 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import {
+  CircleChevronLeft,
+  CircleChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Trash,
+} from "lucide-react";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -50,9 +56,11 @@ import {
   getAllCategoriesService,
 } from "@/services/categoryServices";
 
-// SCHEMA
+// MODELS
 import { CategoriesDataResponse, User } from "@/models/dataSchema";
 import { ApiErrorResponse } from "@/models/error";
+
+// ROUTING
 import { useRouter } from "next/navigation";
 
 // TABLE HEADER
@@ -129,7 +137,9 @@ const CategoryActionCell = ({
 }: {
   category: CategoriesDataResponse;
 }) => {
+  // ROUTER
   const router = useRouter();
+
   // TOAST
   const { toast } = useToast();
 
@@ -159,7 +169,7 @@ const CategoryActionCell = ({
         duration: 4000,
       });
 
-      // REFRESH TABLE
+      // AUTO REFRESH AFTER ACTIONS
       mutate((prevCategories: CategoriesDataResponse[] | undefined) => {
         if (Array.isArray(prevCategories)) {
           return prevCategories.filter((item) => item.id !== category.id);
@@ -169,12 +179,12 @@ const CategoryActionCell = ({
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
           ? error.message
           : "An unexpected error occurred");
+
       // TOAST
       toast({
         description: errorMessage,
@@ -188,7 +198,7 @@ const CategoryActionCell = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 p-0 border">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal />
         </Button>
@@ -196,14 +206,18 @@ const CategoryActionCell = ({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+
         <DropdownMenuItem
           onClick={() => {
             router.push(`/blogs/categories/edit/${category.id}`);
           }}
         >
+          <Pencil />
           Edit Category
         </DropdownMenuItem>
+
         <DropdownMenuItem onClick={handleDeleteClick}>
+          <Trash />
           Delete Category
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -216,7 +230,7 @@ const CategoryActionCell = ({
             <AlertDialogDescription>
               Are you sure you want to delete this category? This action is
               irreversible and will permanently remove the category and its
-              associated data from our servers. Proceed carefully.
+              associated data from our servers. Please proceed with caution.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -300,7 +314,7 @@ export default function CategoryPage() {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            <CircleChevronLeft />
           </Button>
           <Button
             variant="outline"
@@ -308,7 +322,7 @@ export default function CategoryPage() {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            <CircleChevronRight />
           </Button>
         </div>
       </div>

@@ -472,7 +472,6 @@ export default function UsersPage() {
             disabled={!table.getCanPreviousPage()}
           >
             <CircleChevronLeft />
-            Previous
           </Button>
 
           <Button
@@ -482,7 +481,6 @@ export default function UsersPage() {
             disabled={!table.getCanNextPage()}
           >
             <CircleChevronRight />
-            Next
           </Button>
         </div>
       </div>

@@ -164,7 +164,7 @@ export default function CreateCategoryPage() {
       <CardContent>
         <Form {...form}>
           <form>
-            {/* CATEGORY NAME */}
+            {/* TAG NAME */}
             <FormField
               control={form.control}
               name="tags"

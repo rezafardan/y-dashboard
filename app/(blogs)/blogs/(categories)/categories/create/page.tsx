@@ -4,19 +4,19 @@ import React, { useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
-import { LoadingButton } from "@/components/ui/loading-button";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ChevronLeft, CloudUpload } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -41,58 +42,37 @@ import { useForm } from "react-hook-form";
 // API SERVICE
 import { createCategoryService } from "@/services/categoryServices";
 
-// ERROR SCHEMA
-import { ApiErrorResponse } from "@/models/error";
-
 // TOAST
 import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
 
-// CATEGORY SCHEMA
-const newCategorySchema = z.object({
-  // SCHEMA FOR TITLE VALIDATION
-  name: z
-    .string()
-    .trim()
-    .min(3, { message: "Name must be at least 3 characters." })
-    .max(12, { message: "Name must not exceed 12 characters." })
-    .regex(/^[A-Za-z ]+$/, {
-      message: "Name should only contain letters and must not contain numbers.",
-    })
-    .transform((name) => name.toUpperCase()),
+// MODELS
+import { ApiErrorResponse } from "@/models/error";
+import { newCategorySchema } from "@/models/formSchema";
 
-  // SCHEMA FOR DESCRIPTION VALIDATION
-  description: z
-    .string()
-    .trim()
-    .min(10, { message: "Description must be at least 10 characters." })
-    .max(100, { message: "Description must not exceed 100 characters." }),
-});
+// ROUTING
+import { useRouter } from "next/navigation";
 
 export default function CreateCategoryPage() {
+  // ROUTER
+  const router = useRouter();
+
   // TOAST
   const { toast } = useToast();
 
-  // LOADING BUTTON
-  const [loading, setLoading] = useState(false);
-
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-  // ERROR HANDLER
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [error, setError] = useState<string | null>(null);
 
   // FORM HANDLER
   const defaultValues = {
     name: "",
     description: "",
   };
+
   const form = useForm<z.infer<typeof newCategorySchema>>({
     resolver: zodResolver(newCategorySchema),
     defaultValues,
     shouldFocusError: false,
-    mode: "all",
+    mode: "onChange",
   });
 
   // SUBMIT FORM BUTTON
@@ -100,13 +80,13 @@ export default function CreateCategoryPage() {
     setShowConfirmDialog(true);
   };
 
-  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
+  // CONFIRM BUTTON AFTER ALERT DIALOG
   const handleConfirmSubmit = () => {
     form.handleSubmit(onSubmit)();
     setShowConfirmDialog(false);
   };
 
-  // CANCEL BUTTON
+  // CANCEL BUTTON ALERT DIALOG
   const handleConfirmCancel = () => {
     setShowConfirmDialog(false);
   };
@@ -114,16 +94,12 @@ export default function CreateCategoryPage() {
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newCategorySchema>) => {
     try {
-      setLoading(true);
-      setError(null);
-
       // SEND TO API
       const result = await createCategoryService(values);
 
       // TOAST MESSAGE FROM API
       toast({
         description: result.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
@@ -132,7 +108,6 @@ export default function CreateCategoryPage() {
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
@@ -143,11 +118,8 @@ export default function CreateCategoryPage() {
       toast({
         description: errorMessage,
         variant: "destructive",
-        action: <ToastClose />,
         duration: 4000,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -177,11 +149,6 @@ export default function CreateCategoryPage() {
                   <FormControl>
                     <Input placeholder="Category name" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Provide a name for the category. Use 3-12 characters, and
-                    make sure it&apos;s clear and descriptive. Only letters, are
-                    allowed.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -197,53 +164,55 @@ export default function CreateCategoryPage() {
                   <FormControl>
                     <Input placeholder="Description of category" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Write a description for the category. It should be 10-100
-                    characters long, providing readers with an idea of what this
-                    category is about.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* SUBMIT */}
-            <LoadingButton
-              loading={loading}
-              type="button"
-              onClick={handleSubmitButtonClick}
-              disabled={!form.formState.isValid || form.formState.isSubmitting}
-            >
-              Submit
-            </LoadingButton>
-
-            {/* ALERT DIALOG  */}
-            <AlertDialog
-              open={showConfirmDialog}
-              onOpenChange={setShowConfirmDialog}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Once the category is created, you can manage it by visiting
-                    the blog categories list in the menu. Use this list to edit
-                    or delete categories as needed.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={handleConfirmCancel}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction onClick={handleConfirmSubmit}>
-                    Confirm Create
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </form>
         </Form>
       </CardContent>
+
+      {/* BUTTON */}
+      <CardFooter className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="flex"
+        >
+          <ChevronLeft />
+          Back
+        </Button>
+        <Button
+          type="button"
+          onClick={handleSubmitButtonClick}
+          disabled={!form.formState.isValid || form.formState.isSubmitting}
+        >
+          <CloudUpload />
+          Submit
+        </Button>
+      </CardFooter>
+
+      {/* ALERT DIALOG  */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once the category is created, you can manage it by visiting the
+              blog categories list in the menu. Use this list to edit or delete
+              categories as needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConfirmCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Confirm Create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

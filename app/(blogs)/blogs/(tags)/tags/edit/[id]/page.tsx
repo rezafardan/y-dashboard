@@ -83,12 +83,15 @@ export default function EditTagPage() {
   // FETCH TAG DATA
   const fetchTagData = async () => {
     try {
+      // API SERVICE
       const result = await getTagByIdService(id);
 
+      // RESULT TAG DATA FROM API SERVICE
       const tagData = {
         name: result.name || "",
       };
 
+      // SEND DATA TO FORM
       form.reset(tagData);
     } catch (error) {
       // ERROR HANDLER
@@ -121,7 +124,7 @@ export default function EditTagPage() {
   // CANCEL EDIT BUTTON
   const handleCancelButtonClick = () => {
     setIsEditing(false);
-    form.reset(); // Reset form to the initial values
+    form.reset();
   };
 
   // SUBMIT FORM BUTTON
@@ -186,6 +189,7 @@ export default function EditTagPage() {
       <CardContent>
         <Form {...form}>
           <form className="space-y-6">
+            {/* TAG NAME */}
             <FormField
               control={form.control}
               name="name"
