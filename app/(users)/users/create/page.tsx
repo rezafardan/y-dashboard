@@ -39,7 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, HardDriveUpload } from "lucide-react";
+import { ChevronLeft, CloudUpload } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -430,7 +430,7 @@ export default function CreateUserPage() {
             onClick={handleSubmitButtonClick}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            <HardDriveUpload />
+            <CloudUpload />
             Submit
           </Button>
         </CardFooter>

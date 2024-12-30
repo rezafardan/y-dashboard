@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ChevronLeft, UserCheck, UserPen } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -56,8 +57,6 @@ import { editProfileSchema } from "@/models/formSchema";
 
 // ROUTING
 import { useRouter } from "next/navigation";
-import { ChevronLeft, UserCheck, UserPen } from "lucide-react";
-import { UserDataResponse } from "@/models/dataSchema";
 
 export default function EditProfileDataPage() {
   // ROUTER
