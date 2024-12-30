@@ -241,200 +241,191 @@ export default function CreateUserPage() {
   };
 
   return (
-    <div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Create A New User</CardTitle>
-          <CardDescription>
-            Fill in the required fields to create a new user. Provide a unique
-            username, a fullname, a secure password, a valid email address,
-            assign a role, and optionally upload a profile photo to complete the
-            registration.
-          </CardDescription>
-          <Separator />
-        </CardHeader>
+    <Card>
+      <CardHeader>
+        <CardTitle>Create A New User</CardTitle>
+        <CardDescription>
+          Fill in the required fields to create a new user. Provide a unique
+          username, a fullname, a secure password, a valid email address, assign
+          a role, and optionally upload a profile photo to complete the
+          registration.
+        </CardDescription>
+        <Separator />
+      </CardHeader>
 
-        <CardContent>
-          <Form {...form}>
-            <form className="md:flex gap-6 w-full">
-              {/* PROFILE PICTURE */}
+      <CardContent>
+        <Form {...form}>
+          <form className="md:flex gap-6 w-full">
+            {/* PROFILE PICTURE */}
+            <FormField
+              control={form.control}
+              name="profileImage"
+              render={({ field }) => (
+                <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mb-4">
+                  <ImageCropper
+                    initialImage={image || undefined}
+                    onImageCropped={handleCroppedImage}
+                    onCropStatusChange={handleCropStatusChange}
+                    className="w-72 h-72 md:w-60 md:h-60 mb-8"
+                    {...field}
+                  />
+                  <FormMessage className="pt-12" />
+                </FormItem>
+              )}
+            />
+
+            {/* USER DATA */}
+            <div className="space-y-4 md:w-full">
+              {/* USERNAME */}
               <FormField
                 control={form.control}
-                name="profileImage"
+                name="username"
                 render={({ field }) => (
-                  <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mb-4">
-                    <ImageCropper
-                      initialImage={image || undefined}
-                      onImageCropped={handleCroppedImage}
-                      onCropStatusChange={handleCropStatusChange}
-                      className="w-72 h-72 md:w-60 md:h-60 mb-8"
-                      {...field}
-                    />
-                    <FormMessage className="pt-12" />
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Username"
+                        autoComplete="username"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* USER DATA */}
-              <div className="space-y-4 md:w-full">
-                {/* USERNAME */}
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
+              {/* FULLNAME */}
+              <FormField
+                control={form.control}
+                name="fullname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fullname</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Fullname"
+                        autoComplete="fullname"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* EMAIL */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Email"
+                        autoComplete="email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* PASSWORD */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* CONFIRM PASSWORD */}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm your password"
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* ROLE */}
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <Input
-                          placeholder="Username"
-                          autoComplete="username"
-                          {...field}
-                        />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role (required)" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        <SelectItem value={UserRole.ADMINISTRATOR}>
+                          ADMINISTRATOR
+                        </SelectItem>
+                        <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
+                        <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
+                        <SelectItem value={UserRole.SUBSCRIBER}>
+                          SUBSCRIBER
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </form>
+        </Form>
+      </CardContent>
 
-                {/* FULLNAME */}
-                <FormField
-                  control={form.control}
-                  name="fullname"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fullname</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Fullname"
-                          autoComplete="fullname"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* EMAIL */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          autoComplete="email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* PASSWORD */}
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          autoComplete="new-password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* CONFIRM PASSWORD */}
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Confirm your password"
-                          autoComplete="new-password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* ROLE */}
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a role (required)" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value={UserRole.ADMINISTRATOR}>
-                            ADMINISTRATOR
-                          </SelectItem>
-                          <SelectItem value={UserRole.AUTHOR}>
-                            AUTHOR
-                          </SelectItem>
-                          <SelectItem value={UserRole.EDITOR}>
-                            EDITOR
-                          </SelectItem>
-                          <SelectItem value={UserRole.SUBSCRIBER}>
-                            SUBSCRIBER
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-
-        {/* BUTTON */}
-        <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex"
-          >
-            <ChevronLeft />
-            Back
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmitButtonClick}
-            disabled={!form.formState.isValid || form.formState.isSubmitting}
-          >
-            <CloudUpload />
-            Submit
-          </Button>
-        </CardFooter>
-      </Card>
+      {/* BUTTON */}
+      <CardFooter className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="flex"
+        >
+          <ChevronLeft />
+          Back
+        </Button>
+        <Button
+          type="button"
+          onClick={handleSubmitButtonClick}
+          disabled={!form.formState.isValid || form.formState.isSubmitting}
+        >
+          <CloudUpload />
+          Submit
+        </Button>
+      </CardFooter>
 
       {/* ALERT DIALOG */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -456,6 +447,6 @@ export default function CreateUserPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Card>
   );
 }

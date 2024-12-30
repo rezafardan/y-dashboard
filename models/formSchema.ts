@@ -362,6 +362,14 @@ export const tagSchema = z.object({
     .max(50, { message: "Tag name cannot exceed 50 characters" }),
 });
 
+export const newTagSchema = z.object({
+  // SCHEMA FOR TITLE VALIDATION
+  tags: z
+    .array(tagSchema)
+    .min(1, { message: "Input tag with minimun 1 tag" })
+    .max(5, { message: "Input tag with maximum 5 tag" }),
+});
+
 export const editTagSchema = z.object({
   id: z.string().optional(),
   name: z

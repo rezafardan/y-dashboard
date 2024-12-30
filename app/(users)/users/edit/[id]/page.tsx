@@ -280,230 +280,224 @@ export default function EditUserDataPage() {
   };
 
   return (
-    <div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit User Profile Data</CardTitle>
-          <CardDescription>Edit the user profile details</CardDescription>
-          <Separator />
-        </CardHeader>
+    <Card>
+      <CardHeader>
+        <CardTitle>Edit User Profile Data</CardTitle>
+        <CardDescription>Edit the user profile details</CardDescription>
+        <Separator />
+      </CardHeader>
 
-        <CardContent>
-          <Form {...form}>
-            <form className="md:flex gap-6 w-full">
-              {/* PROFILE IMAGE */}
+      <CardContent>
+        <Form {...form}>
+          <form className="md:flex gap-6 w-full">
+            {/* PROFILE IMAGE */}
+            <FormField
+              control={form.control}
+              name="profileImage"
+              render={({ field }) => (
+                <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mb-4">
+                  {isEditing ? (
+                    <ImageCropper
+                      initialImage={image || undefined}
+                      onImageCropped={handleCroppedImage}
+                      onCropStatusChange={handleCropStatusChange}
+                      className="w-72 h-72 md:w-60 md:h-60 mb-8"
+                      {...field}
+                    />
+                  ) : (
+                    <div className="relative w-60 h-60 bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt="Profile Picture"
+                          className="w-60 h-60 object-cover rounded-full p-1"
+                        />
+                      ) : (
+                        <p className="text-secondary dark:text-primary">
+                          No Profile Picture
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <FormMessage className="pt-12" />
+                </FormItem>
+              )}
+            />
+
+            {/* USER DATA */}
+            <div className="space-y-4 md:w-full">
+              {/* USERNAME */}
               <FormField
                 control={form.control}
-                name="profileImage"
+                name="username"
                 render={({ field }) => (
-                  <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mb-4">
-                    {isEditing ? (
-                      <ImageCropper
-                        initialImage={image || undefined}
-                        onImageCropped={handleCroppedImage}
-                        onCropStatusChange={handleCropStatusChange}
-                        className="w-72 h-72 md:w-60 md:h-60 mb-8"
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Username"
+                        autoComplete="username"
+                        disabled
                         {...field}
                       />
-                    ) : (
-                      <div className="relative w-60 h-60 bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
-                        {image ? (
-                          <img
-                            src={image}
-                            alt="Profile Picture"
-                            className="w-60 h-60 object-cover rounded-full p-1"
-                          />
-                        ) : (
-                          <p className="text-secondary dark:text-primary">
-                            No Profile Picture
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    <FormMessage className="pt-12" />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* USER DATA */}
-              <div className="space-y-4 md:w-full">
-                {/* USERNAME */}
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Username"
-                          autoComplete="username"
-                          disabled
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* FULLNAME */}
-                <FormField
-                  control={form.control}
-                  name="fullname"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fullname</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Fullname"
-                          autoComplete="fullname"
-                          disabled={!isEditing}
-                          {...field}
-                        />
-                      </FormControl>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* EMAIL */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          autoComplete="email"
-                          disabled={!isEditing}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* PASSWORD */}
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          autoComplete="new-password"
-                          disabled={!isEditing}
-                          required={false}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* CONFIRM PASSWORD */}
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Confirm your password"
-                          autoComplete="new-password"
-                          disabled={!isEditing}
-                          required={false}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* ROLE */}
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
+              {/* FULLNAME */}
+              <FormField
+                control={form.control}
+                name="fullname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fullname</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Fullname"
+                        autoComplete="fullname"
                         disabled={!isEditing}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a role (required)" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value={UserRole.AUTHOR}>
-                            AUTHOR
-                          </SelectItem>
-                          <SelectItem value={UserRole.EDITOR}>
-                            EDITOR
-                          </SelectItem>
-                          <SelectItem value={UserRole.SUBSCRIBER}>
-                            SUBSCRIBER
-                          </SelectItem>
-                          <SelectItem value={UserRole.ADMINISTRATOR}>
-                            ADMINISTRATOR
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </form>
-          </Form>
-        </CardContent>
+                        {...field}
+                      />
+                    </FormControl>
 
-        {/* BUTTON */}
-        <CardFooter
-          className={!isEditing ? "flex justify-between" : "justify-end"}
-        >
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className={!isEditing ? "md:flex" : "hidden"}
-          >
-            <ChevronLeft />
-            Back
-          </Button>
-          {!isEditing ? (
-            <Button onClick={handleEditButtonClick}>
-              <UserPen />
-              Edit User
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCancelButtonClick}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmitButtonClick}>
-                <UserCheck />
-                Save Changes
-              </Button>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* EMAIL */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Email"
+                        autoComplete="email"
+                        disabled={!isEditing}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* PASSWORD */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        autoComplete="new-password"
+                        disabled={!isEditing}
+                        required={false}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* CONFIRM PASSWORD */}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm your password"
+                        autoComplete="new-password"
+                        disabled={!isEditing}
+                        required={false}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* ROLE */}
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!isEditing}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role (required)" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={UserRole.AUTHOR}>AUTHOR</SelectItem>
+                        <SelectItem value={UserRole.EDITOR}>EDITOR</SelectItem>
+                        <SelectItem value={UserRole.SUBSCRIBER}>
+                          SUBSCRIBER
+                        </SelectItem>
+                        <SelectItem value={UserRole.ADMINISTRATOR}>
+                          ADMINISTRATOR
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          )}
-        </CardFooter>
-      </Card>
+          </form>
+        </Form>
+      </CardContent>
+
+      {/* BUTTON */}
+      <CardFooter
+        className={!isEditing ? "flex justify-between" : "justify-end"}
+      >
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className={!isEditing ? "md:flex" : "hidden"}
+        >
+          <ChevronLeft />
+          Back
+        </Button>
+        {!isEditing ? (
+          <Button onClick={handleEditButtonClick}>
+            <UserPen />
+            Edit User
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleCancelButtonClick}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitButtonClick}>
+              <UserCheck />
+              Save Changes
+            </Button>
+          </div>
+        )}
+      </CardFooter>
 
       {/* ALERT DIALOG */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -525,6 +519,6 @@ export default function EditUserDataPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Card>
   );
 }

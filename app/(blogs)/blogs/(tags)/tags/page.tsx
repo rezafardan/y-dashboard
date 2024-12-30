@@ -23,7 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import {
+  CircleChevronLeft,
+  CircleChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Trash,
+} from "lucide-react";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
@@ -45,11 +51,13 @@ import {
 } from "@tanstack/react-table";
 
 // SERVICE
-
-// SCHEMA
-import { BlogDataResponse, TagDataResponse, User } from "@/models/dataSchema";
 import { deleteTagService, getAllTagsService } from "@/services/tagServices";
+
+// MODELS
+import { BlogDataResponse, TagDataResponse, User } from "@/models/dataSchema";
 import { ApiErrorResponse } from "@/models/error";
+
+// ROUTING
 import { useRouter } from "next/navigation";
 
 // TABLE HEADER
@@ -113,7 +121,9 @@ const columns: ColumnDef<TagDataResponse>[] = [
 ];
 
 const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
+  // ROUTER
   const router = useRouter();
+
   // TOAST
   const { toast } = useToast();
 
@@ -143,7 +153,7 @@ const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
         duration: 4000,
       });
 
-      // REFRESH TABLE
+      // AUTO REFRESH AFTER ACTIONS
       mutate((prevBlogs: BlogDataResponse[] | undefined) => {
         if (Array.isArray(prevBlogs)) {
           return prevBlogs.filter((item) => item.id !== tag.id);
@@ -153,12 +163,12 @@ const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
           ? error.message
           : "An unexpected error occurred");
+
       // TOAST
       toast({
         description: errorMessage,
@@ -172,7 +182,7 @@ const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 p-0 border">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal />
         </Button>
@@ -180,14 +190,18 @@ const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+
         <DropdownMenuItem
           onClick={() => {
             router.push(`/blogs/tags/edit/${tag.id}`);
           }}
         >
+          <Pencil />
           Edit Tag
         </DropdownMenuItem>
+
         <DropdownMenuItem onClick={handleDeleteClick}>
+          <Trash />
           Delete Tag
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -196,10 +210,10 @@ const TagActionCell = ({ tag }: { tag: TagDataResponse }) => {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Blog Deletion</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Tag Deletion</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this blog? This action is
-              irreversible and will permanently remove the blog and its
+              Are you sure you want to delete this tag? This action is
+              irreversible and will permanently remove the tag and its
               associated data from our servers. Please proceed with caution.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -284,14 +298,17 @@ export default function BlogsPage() {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
+            <CircleChevronLeft />
             Previous
           </Button>
+
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
+            <CircleChevronRight />
             Next
           </Button>
         </div>

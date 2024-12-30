@@ -32,6 +32,8 @@ import {
   UserX,
   Trash,
   UserPlus,
+  CircleChevronLeft,
+  CircleChevronRight,
 } from "lucide-react";
 
 // TOAST
@@ -61,9 +63,11 @@ import {
   restoreSoftDeleteUserService,
 } from "@/services/userServices";
 
-// SCHEMA
+// MODELS
 import { UserDataResponse } from "@/models/dataSchema";
 import { ApiErrorResponse } from "@/models/error";
+
+// ROUTING
 import { useRouter } from "next/navigation";
 
 // TABLE HEADER
@@ -239,7 +243,6 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
@@ -293,7 +296,6 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
       } catch (error) {
         // ERROR HANDLER
         const apiError = error as { response?: { data?: ApiErrorResponse } };
-
         const errorMessage =
           apiError.response?.data?.message ||
           (error instanceof Error
@@ -469,14 +471,17 @@ export default function UsersPage() {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
+            <CircleChevronLeft />
             Previous
           </Button>
+
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
+            <CircleChevronRight />
             Next
           </Button>
         </div>
