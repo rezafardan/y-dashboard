@@ -1,13 +1,16 @@
 "use client";
 
 import React, { Fragment, useEffect, useState } from "react";
+import Image from "next/image";
 
 // COMPONENT
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Tiptap } from "@/components/tiptap/tiptap-editor";
+import { Separator } from "@/components/ui/separator";
+import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Card,
   CardContent,
@@ -19,7 +22,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -42,78 +44,48 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tiptap } from "@/components/tiptap/tiptap-editor";
-import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
-import { RefreshCcw } from "lucide-react";
+import { ChevronLeft, ClipboardList, CloudUpload } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { newBlogSchema, BlogStatus } from "@/models/formSchema";
 
-// SERVICE
+// API SERVICE
 import { createBlogService, createCoverImage } from "@/services/blogServices";
 import { getAllTagsService } from "@/services/tagServices";
 import { getAllCategoriesService } from "@/services/categoryServices";
 import useSWR from "swr";
-import { ApiErrorResponse } from "@/models/error";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
+
+// MODELS
+import { ApiErrorResponse } from "@/models/error";
+import { newBlogSchema, BlogStatus } from "@/models/formSchema";
 
 // DATE SETTER
-import { id } from "date-fns/locale";
+import { id as dateId } from "date-fns/locale";
+
+// CONTEXT
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { blogStatus } from "@/models/dataSchema";
+import { useRouter } from "next/navigation";
 
 export default function CreateBlogPage() {
+  // ROUTER
+  const router = useRouter();
+
   // CONTEXT
   const { role } = useAuth();
 
   // TOAST
   const { toast } = useToast();
 
-  // LOADING BUTTON
-  const [loading, setLoading] = useState(false);
-
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // RESET TIPTAP EDITOR
   const [shouldResetEditor, setShouldResetEditor] = useState(false);
-
-  // =========================================== //
-
-  const [coverImage, setCoverImage] = useState<string | null>(null);
-
-  const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        const formData = new FormData();
-        formData.append("coverimage", file);
-
-        const response = await createCoverImage(formData);
-
-        const imageId = response.data.id;
-
-        form.setValue("coverImageId", imageId);
-        setCoverImage(URL.createObjectURL(file));
-      } catch (error) {
-        toast({
-          description: "Failed to upload image",
-          variant: "destructive",
-          action: <ToastClose />,
-          duration: 4000,
-        });
-      }
-    }
-  };
 
   // FORM HANDLER
   const defaultValues = {
@@ -123,7 +95,7 @@ export default function CreateBlogPage() {
     status: undefined,
     tags: undefined,
     categoryId: "",
-    allowComment: true,
+    allowComment: undefined,
     publishedAt: undefined,
   };
 
@@ -131,18 +103,49 @@ export default function CreateBlogPage() {
     resolver: zodResolver(newBlogSchema),
     defaultValues,
     shouldFocusError: false,
-    mode: "all",
+    mode: "onChange",
   });
 
-  // FUNC CONFIRM CREATE AFTER ALERT DIALOG
-  const handleConfirmSubmit = () => {
-    form.handleSubmit(onSubmit)();
-    setShowConfirmDialog(false);
-  };
+  // LISTENER IMAGE CHANGE
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        // SETTING UP FORMDATA
+        const formData = new FormData();
 
-  // CANCEL BUTTON
-  const handleConfirmCancel = () => {
-    setShowConfirmDialog(false);
+        // ADD THE COVER IMAGE TO FORMDATA
+        formData.append("coverimage", file);
+
+        // API SERVICE
+        const result = await createCoverImage(formData);
+
+        // ADD IMAGE TO FORM
+        const imageId = result.data.id;
+        form.setValue("coverImageId", imageId);
+
+        // SET COVER IMAGE TO STATES
+        setCoverImage(URL.createObjectURL(file));
+      } catch (error) {
+        // ERROR HANDLER
+        const apiError = error as { response?: { data?: ApiErrorResponse } };
+        const errorMessage =
+          apiError.response?.data?.message ||
+          (error instanceof Error
+            ? error.message
+            : "An unexpected error occurred");
+
+        // TOAST MESSAGE FROM API
+        toast({
+          description: errorMessage,
+          variant: "destructive",
+          duration: 4000,
+        });
+      }
+    }
   };
 
   // SUBMIT FORM BUTTON
@@ -150,31 +153,35 @@ export default function CreateBlogPage() {
     setShowConfirmDialog(true);
   };
 
+  // CONFIRM BUTTON AFTER ALERT DIALOG
+  const handleConfirmSubmit = () => {
+    form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
+  };
+
+  // CANCEL BUTTON ALERT DIALOG
+  const handleConfirmCancel = () => {
+    setShowConfirmDialog(false);
+  };
+
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
-    // CHECK VALUE
-
-    console.log("Clicked");
     try {
-      setLoading(true);
-
-      // SEND TO API
+      // API SERVICE
       const result = await createBlogService(values);
 
       // TOAST MESSAGE FROM API
       toast({
         description: result.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
-      // RESET FORM
+      // RESET FORM AND IMAGE STATES ON SUCCESS
       form.reset(defaultValues);
       form.setValue("tags", []);
       form.setValue("status", undefined);
       setCoverImage(null);
       setShouldResetEditor(true);
-
       const fileInput = document.querySelector(
         'input[type="file"]'
       ) as HTMLInputElement;
@@ -184,7 +191,6 @@ export default function CreateBlogPage() {
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
@@ -195,42 +201,33 @@ export default function CreateBlogPage() {
       toast({
         description: errorMessage,
         variant: "destructive",
-        action: <ToastClose />,
         duration: 4000,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
   const onSaveToDraft = async () => {
-    // CHECK VALUE
-
     try {
-      setLoading(true);
-
+      // SETTING UP DRAFT VALUE AND CHANGE BLOG STATUS TO DRAFT ON SAVE
       const draftValues = {
         ...form.getValues(),
         status: BlogStatus.DRAFT,
       };
 
-      console.log(draftValues);
-
-      // SEND TO API
+      // API SERVICE
       const result = await createBlogService(draftValues);
 
       // TOAST MESSAGE FROM API
       toast({
         description: result.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
       // RESET FORM
+      router.push("/blogs");
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
@@ -241,56 +238,83 @@ export default function CreateBlogPage() {
       toast({
         description: errorMessage,
         variant: "destructive",
-        action: <ToastClose />,
         duration: 4000,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
   console.log(form.watch());
 
-  // FETCH DATA CATEGORIES AND DATA TAGS
-  const fetcherCategories = () => getAllCategoriesService();
+  // FETCH DATA CATEGORIES
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const fetchCategoriesData = async () => {
+    try {
+      // API SERVICE
+      const result = await getAllCategoriesService();
+
+      // RESULT CATEGORIES DATA FROM API SERVICE
+      const categoriesData = result.map((category) => ({
+        id: category.id,
+        name: category.name,
+      }));
+
+      // SET CATEGORIES
+      setCategories(categoriesData);
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        duration: 4000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoriesData();
+  }, []);
+
+  // FETCH DATA TAGS
   const fetcherTags = () => getAllTagsService();
-  const {
-    data: categories,
-    error: categoriesError,
-    isLoading: isLoadingCategories,
-  } = useSWR("/category", fetcherCategories);
   const {
     data: tags,
     error: tagsError,
     isLoading: isLoadingTags,
   } = useSWR("/tag", fetcherTags);
 
-  if (isLoadingCategories) return <p>Loading...</p>;
-  if (categoriesError) return <p>Error loading data categories</p>;
-  if (isLoadingTags) return <p>Loading...</p>;
-  if (tagsError) return <p>Error loading data tags</p>;
-
+  // DEBOUNCE FETCH TAGS DATA
   const tagSearch = async (value: string): Promise<Option[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         if (value.trim() === null) {
-          // Jika input kosong, kembalikan semua tag
           resolve(tags || []);
           return;
         }
-        // Filter tag berdasarkan nilai input
+
         const res =
           tags?.filter((tag: any) =>
             tag.name.toLowerCase().includes(value.toLowerCase())
           ) || [];
         resolve(res);
-      }, 500); // Debouncing 500ms
+      }, 500);
     });
   };
 
+  if (isLoadingTags) return <p>Loading...</p>;
+  if (tagsError) return <p>Error loading data tags</p>;
+
   return (
     <Card>
-      {/* HEADER */}
       <CardHeader>
         <CardTitle>Create A New Blog</CardTitle>
         <CardDescription>
@@ -299,6 +323,7 @@ export default function CreateBlogPage() {
           engaging and informative blog. Ensure all inputs meet the requirements
           so your blog is ready for publishing.
         </CardDescription>
+        <Separator />
       </CardHeader>
 
       <CardContent>
@@ -322,6 +347,7 @@ export default function CreateBlogPage() {
               )}
             />
 
+            {/* COVER IMAGE */}
             <FormField
               control={form.control}
               name="coverImageId"
@@ -330,7 +356,6 @@ export default function CreateBlogPage() {
                   <FormLabel>Cover Image</FormLabel>
                   <FormControl>
                     <div className="flex flex-col gap-2">
-                      {/* Image Preview */}
                       {coverImage ? (
                         <div className="relative w-full aspect-video rounded-md overflow-hidden">
                           <Image
@@ -380,168 +405,175 @@ export default function CreateBlogPage() {
               )}
             />
 
-            {/* CATEGORY */}
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    {...field}
-                    onValueChange={field.onChange}
-                    // value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories!.map((item, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <SelectItem value={item.id}>{item.name}</SelectItem>
-                          </Fragment>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* TAG */}
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tag</FormLabel>
-                  <FormControl>
-                    <MultipleSelector
+            <div className="flex-row md:flex space-y-4 md:space-y-0 md:space-x-4">
+              {/* CATEGORY */}
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Category</FormLabel>
+                    <Select
                       {...field}
-                      value={form.watch("tags")}
-                      onChange={(value) => field.onChange(value)}
-                      defaultOptions={tags || []}
-                      onSearch={tagSearch}
-                      hidePlaceholderWhenSelected
-                      creatable={role === "AUTHOR" ? false : true}
-                      inputProps={{ maxLength: 50 }}
-                      placeholder={
-                        role === "AUTHOR"
-                          ? "Select existing tag"
-                          : "Create a new tag, or select existing tag"
-                      }
-                      loadingIndicator={
-                        <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
-                          loading...
-                        </p>
-                      }
-                      emptyIndicator={
-                        <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
-                          No results found
-                        </p>
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      onValueChange={field.onChange}
+                      // value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories!.map((item, index) => {
+                          return (
+                            <Fragment key={index}>
+                              <SelectItem value={item.id}>
+                                {item.name}
+                              </SelectItem>
+                            </Fragment>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
 
-            {/* STATUS */}
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    {...field}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      if (value) {
-                        form.setValue("publishedAt", new Date());
-                      }
-                    }}
-                    // value={field.value}
-                  >
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* TAG */}
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Tag</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Status" />
-                      </SelectTrigger>
+                      <MultipleSelector
+                        {...field}
+                        value={form.watch("tags")}
+                        onChange={(value) => field.onChange(value)}
+                        defaultOptions={tags || []}
+                        onSearch={tagSearch}
+                        hidePlaceholderWhenSelected
+                        creatable={role === "AUTHOR" ? false : true}
+                        placeholder={
+                          role === "AUTHOR"
+                            ? "Select existing tag"
+                            : "Create a new tag, or select existing tag"
+                        }
+                        loadingIndicator={
+                          <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
+                            loading...
+                          </p>
+                        }
+                        emptyIndicator={
+                          <p className="text-center leading-6 text-gray-600 dark:text-gray-400">
+                            No results found
+                          </p>
+                        }
+                        inputProps={{ maxLength: 50 }}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value={BlogStatus.PUBLISH}>
-                        {BlogStatus.PUBLISH}
-                      </SelectItem>
-                      <SelectItem value={BlogStatus.SCHEDULE}>
-                        {BlogStatus.SCHEDULE}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            {/* DATE PICKER */}
-            <FormField
-              control={form.control}
-              name="publishedAt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date Publish</FormLabel>
-                  <FormControl>
-                    <DateTimePicker
-                      value={field.value || new Date()}
-                      onChange={(date) => {
-                        // Periksa apakah `date` terdefinisi
-                        if (!date) {
-                          toast({
-                            description: "Invalid date selection.",
-                            variant: "destructive",
-                          });
-                          return;
+            <div className="flex-row md:flex space-y-4 md:space-y-0 md:space-x-4">
+              {/* STATUS */}
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Status</FormLabel>
+                    <Select
+                      {...field}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value) {
+                          form.setValue("publishedAt", new Date());
                         }
-
-                        const status = form.watch("status");
-                        const today = new Date();
-
-                        // Validasi untuk status PUBLISH
-                        if (status === BlogStatus.PUBLISH && date > today) {
-                          toast({
-                            description: "Publish date cannot be after today.",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-
-                        // Validasi untuk status SCHEDULE
-                        if (status === BlogStatus.SCHEDULE && date < today) {
-                          toast({
-                            description:
-                              "Scheduled date cannot be before today.",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-
-                        field.onChange(date);
                       }}
-                      displayFormat={{ hour24: "PPP HH:mm" }}
-                      locale={id}
-                      granularity="minute"
-                      disabled={!form.getValues("status")}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      // value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={BlogStatus.PUBLISH}>
+                          {BlogStatus.PUBLISH}
+                        </SelectItem>
+                        <SelectItem value={BlogStatus.SCHEDULE}>
+                          {BlogStatus.SCHEDULE}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* DATE PICKER */}
+              <FormField
+                control={form.control}
+                name="publishedAt"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Date Publish</FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        value={field.value || new Date()}
+                        onChange={(date) => {
+                          // Periksa apakah `date` terdefinisi
+                          if (!date) {
+                            toast({
+                              description: "Invalid date selection.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          const status = form.watch("status");
+                          const today = new Date();
+
+                          // Validasi untuk status PUBLISH
+                          if (status === BlogStatus.PUBLISH && date > today) {
+                            toast({
+                              description:
+                                "Publish date cannot be after today.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          // Validasi untuk status SCHEDULE
+                          if (status === BlogStatus.SCHEDULE && date < today) {
+                            toast({
+                              description:
+                                "Scheduled date cannot be before today.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          field.onChange(date);
+                        }}
+                        displayFormat={{ hour24: "PPP HH:mm" }}
+                        locale={dateId}
+                        granularity="minute"
+                        disabled={!form.getValues("status")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* ALLOW COMMENT */}
             <FormField
@@ -551,7 +583,7 @@ export default function CreateBlogPage() {
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-background dark:bg-background">
                   <div className="space-y-0.5 ">
                     <FormLabel className="text-base">
-                      Allow users to comment
+                      Allow viewers to comment
                     </FormLabel>
                   </div>
                   <FormControl>
@@ -567,29 +599,42 @@ export default function CreateBlogPage() {
         </Form>
       </CardContent>
 
-      {/* SUBMIT */}
-      <CardFooter className="flex justify-between">
-        <LoadingButton
-          loading={loading}
-          type="button"
-          onClick={handleSubmitButtonClick}
-          disabled={!form.formState.isValid || form.formState.isSubmitting}
+      {/* BUTTON */}
+      <CardFooter className="flex-col-reverse md:flex-row md:justify-between gap-4">
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="flex self-end"
         >
-          Submit
-        </LoadingButton>
-        <LoadingButton loading={loading} type="button" onClick={onSaveToDraft}>
-          Save To Draft
-        </LoadingButton>
+          <ChevronLeft />
+          Back
+        </Button>
+
+        <div className="flex self-end gap-2">
+          <Button variant="outline" onClick={onSaveToDraft} className="flex">
+            <ClipboardList />
+            Save To Draft
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleSubmitButtonClick}
+            disabled={!form.formState.isValid || form.formState.isSubmitting}
+          >
+            <CloudUpload />
+            Submit
+          </Button>
+        </div>
       </CardFooter>
 
+      {/* ALERT DIALOG */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Create Blog</AlertDialogTitle>
             <AlertDialogDescription>
-              Once the category is created, you can manage it by visiting the
-              blog categories list in the menu. Use this list to edit or delete
-              categories as needed.
+              Once the blog is created, you can manage it by visiting the blog
+              list in the menu. Use this list to edit or delete blog as needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

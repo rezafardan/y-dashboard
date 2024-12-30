@@ -18,7 +18,6 @@ import {
 import { ChevronLeft, UserPen } from "lucide-react";
 
 // SERVICE
-import useSWR from "swr";
 import { getUserByIdService } from "@/services/userServices";
 
 // ROUTING
@@ -63,7 +62,7 @@ export default function ViewUserPage() {
 
       <CardContent className="md:flex gap-6 w-full">
         {/* PROFILE IMAGE */}
-        <div className="flex items-center justify-center md:justify-normal mb-4">
+        <div className="flex items-center justify-center md:justify-normal mt-2 mb-4">
           {userData?.profileImage ? (
             <div className="relative w-60 h-60 aspect-square rounded-full overflow-hidden border dark:border-secondary">
               <img

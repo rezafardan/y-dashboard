@@ -24,11 +24,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import {
+  CircleChevronLeft,
+  CircleChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Trash,
+  View,
+} from "lucide-react";
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
 
 // DATA TABLE
 import useSWR, { mutate } from "swr";
@@ -48,10 +54,12 @@ import {
 // SERVICE
 import { deleteBlogService, getAllBlogsService } from "@/services/blogServices";
 
-// SCHEMA
+// MODELS
 import { BlogDataResponse, User } from "@/models/dataSchema";
-import { useRouter } from "next/navigation";
 import { ApiErrorResponse } from "@/models/error";
+
+// ROUTING
+import { useRouter } from "next/navigation";
 
 // TABLE HEADER
 const columns: ColumnDef<BlogDataResponse>[] = [
@@ -62,7 +70,7 @@ const columns: ColumnDef<BlogDataResponse>[] = [
       <DataTableColumnHeader column={column} title="Title" />
     ),
     cell: ({ row }) => (
-      <div className="max-w-32 truncate sm:max-w-sm md:max-w-[26rem]">
+      <div className="max-w-40 truncate md:max-w-sm">
         {row.getValue("title")}
       </div>
     ),
@@ -117,7 +125,6 @@ const columns: ColumnDef<BlogDataResponse>[] = [
         return <div>DRAFT</div>;
       }
 
-      // Pastikan publishedAt adalah string atau number yang valid sebelum membuat objek Date
       const formattedDate = new Date(publishedAt as string | number);
 
       return (
@@ -184,7 +191,6 @@ const BlogActionCell = ({ blog }: { blog: BlogDataResponse }) => {
       // TOAST
       toast({
         description: response.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
@@ -198,16 +204,15 @@ const BlogActionCell = ({ blog }: { blog: BlogDataResponse }) => {
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error
           ? error.message
           : "An unexpected error occurred");
+
       // TOAST
       toast({
         description: errorMessage,
-        action: <ToastClose />,
         duration: 4000,
         variant: "destructive",
       });
@@ -217,7 +222,7 @@ const BlogActionCell = ({ blog }: { blog: BlogDataResponse }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 p-0 border">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal />
         </Button>
@@ -225,21 +230,27 @@ const BlogActionCell = ({ blog }: { blog: BlogDataResponse }) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            router.push(`/blogs/edit/${blog.id}`);
-          }}
-        >
-          Edit Blog
-        </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={() => {
             router.push(`/blogs/view/${blog.id}`);
           }}
         >
+          <View />
           View Blog Detail
         </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() => {
+            router.push(`/blogs/edit/${blog.id}`);
+          }}
+        >
+          <Pencil />
+          Edit Blog
+        </DropdownMenuItem>
+
         <DropdownMenuItem onClick={handleDeleteClick}>
+          <Trash />
           Delete Blog
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -336,7 +347,7 @@ export default function BlogsPage() {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            <CircleChevronLeft />
           </Button>
           <Button
             variant="outline"
@@ -344,7 +355,7 @@ export default function BlogsPage() {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            <CircleChevronRight />
           </Button>
         </div>
       </div>

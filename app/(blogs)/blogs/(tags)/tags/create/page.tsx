@@ -53,7 +53,7 @@ import { newTagSchema } from "@/models/formSchema";
 // ROUTING
 import { useRouter } from "next/navigation";
 
-export default function CreateCategoryPage() {
+export default function CreateTagPage() {
   // ROUTER
   const router = useRouter();
 
@@ -132,17 +132,15 @@ export default function CreateCategoryPage() {
     return new Promise((resolve) => {
       setTimeout(() => {
         if (value.trim() === null) {
-          // Jika input kosong, kembalikan semua tag
           resolve(tags || []);
           return;
         }
-        // Filter tag berdasarkan nilai input
         const res =
           tags?.filter((tag: any) =>
             tag.name.toLowerCase().includes(value.toLowerCase())
           ) || [];
         resolve(res);
-      }, 500); // Debouncing 500ms
+      }, 500);
     });
   };
 

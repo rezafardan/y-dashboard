@@ -288,13 +288,13 @@ export default function EditProfileDataPage() {
                 control={form.control}
                 name="profileImage"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mt-2 mb-8">
                     {isEditing ? (
                       <ImageCropper
                         initialImage={image || undefined}
                         onImageCropped={handleCroppedImage}
                         onCropStatusChange={handleCropStatusChange}
-                        className="w-72 h-72 md:w-60 md:h-60 mb-8"
+                        className="w-60 h-60 mb-8"
                         {...field}
                       />
                     ) : (
@@ -443,7 +443,7 @@ export default function EditProfileDataPage() {
           {!isEditing ? (
             <Button onClick={handleEditButtonClick}>
               <UserPen />
-              Edit User
+              Edit Profile
             </Button>
           ) : (
             <div className="flex gap-2">

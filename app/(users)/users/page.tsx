@@ -38,7 +38,6 @@ import {
 
 // TOAST
 import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "@/components/ui/toast";
 
 // DATA TABLE
 import useSWR, { mutate } from "swr";
@@ -227,7 +226,6 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
       // TOAST
       toast({
         description: response.message,
-        action: <ToastClose />,
         duration: 4000,
       });
 
@@ -252,7 +250,6 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
       // TOAST
       toast({
         description: errorMessage,
-        action: <ToastClose />,
         duration: 4000,
         variant: "destructive",
       });
@@ -275,7 +272,6 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
         // TOAST
         toast({
           description: response.message,
-          action: <ToastClose />,
           duration: 4000,
         });
 
@@ -305,7 +301,6 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
         // TOAST
         toast({
           description: errorMessage,
-          action: <ToastClose />,
           duration: 4000,
           variant: "destructive",
         });
