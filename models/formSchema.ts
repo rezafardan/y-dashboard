@@ -427,6 +427,7 @@ export const newBlogSchema = z.object({
     .string()
     .min(3, { message: "Input with minimum 3 characters" })
     .max(100, { message: "Title can be up to 100 characters" }),
+  slug: z.string(),
   coverImageId: z.string(),
   content: z
     .string()

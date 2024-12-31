@@ -7,8 +7,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Tiptap } from "@/components/tiptap/tiptap-editor";
 import { Separator } from "@/components/ui/separator";
+import { Tiptap } from "@/components/tiptap/tiptap-editor";
 import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
@@ -69,6 +69,8 @@ import { id as dateId } from "date-fns/locale";
 
 // CONTEXT
 import { useAuth } from "@/context/AuthContext";
+
+// ROUTING
 import { useRouter } from "next/navigation";
 
 export default function CreateBlogPage() {
@@ -87,9 +89,13 @@ export default function CreateBlogPage() {
   // RESET TIPTAP EDITOR
   const [shouldResetEditor, setShouldResetEditor] = useState(false);
 
+  // COVER IMAGE STATES
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+
   // FORM HANDLER
   const defaultValues = {
     title: "",
+    slug: "",
     coverImageId: undefined,
     content: "",
     status: undefined,
@@ -107,7 +113,6 @@ export default function CreateBlogPage() {
   });
 
   // LISTENER IMAGE CHANGE
-  const [coverImage, setCoverImage] = useState<string | null>(null);
   const handleImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -164,11 +169,26 @@ export default function CreateBlogPage() {
     setShowConfirmDialog(false);
   };
 
+  // CREATE SLUG FROM TITLE
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-");
+  };
+
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     try {
+      // Generate slug dari title
+      const slug = generateSlug(values.title);
+
+      // Tambahkan slug ke values
+      const blogValues = { ...values, slug };
+
       // API SERVICE
-      const result = await createBlogService(values);
+      const result = await createBlogService(blogValues);
 
       // TOAST MESSAGE FROM API
       toast({
@@ -243,54 +263,24 @@ export default function CreateBlogPage() {
     }
   };
 
-  console.log(form.watch());
-
-  // FETCH DATA CATEGORIES
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
-  );
-  const fetchCategoriesData = async () => {
-    try {
-      // API SERVICE
-      const result = await getAllCategoriesService();
-
-      // RESULT CATEGORIES DATA FROM API SERVICE
-      const categoriesData = result.map((category) => ({
-        id: category.id,
-        name: category.name,
-      }));
-
-      // SET CATEGORIES
-      setCategories(categoriesData);
-    } catch (error) {
-      // ERROR HANDLER
-      const apiError = error as { response?: { data?: ApiErrorResponse } };
-      const errorMessage =
-        apiError.response?.data?.message ||
-        (error instanceof Error
-          ? error.message
-          : "An unexpected error occurred");
-
-      // TOAST MESSAGE FROM API
-      toast({
-        description: errorMessage,
-        variant: "destructive",
-        duration: 4000,
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchCategoriesData();
-  }, []);
-
-  // FETCH DATA TAGS
+  // FETCH DATA CATEGORIES AND DATA TAGS
+  const fetcherCategories = () => getAllCategoriesService();
   const fetcherTags = () => getAllTagsService();
+  const {
+    data: categories,
+    error: categoriesError,
+    isLoading: isLoadingCategories,
+  } = useSWR("/category", fetcherCategories);
   const {
     data: tags,
     error: tagsError,
     isLoading: isLoadingTags,
   } = useSWR("/tag", fetcherTags);
+
+  if (isLoadingCategories) return <p>Loading...</p>;
+  if (categoriesError) return <p>Error loading data categories</p>;
+  if (isLoadingTags) return <p>Loading...</p>;
+  if (tagsError) return <p>Error loading data tags</p>;
 
   // DEBOUNCE FETCH TAGS DATA
   const tagSearch = async (value: string): Promise<Option[]> => {
@@ -435,7 +425,6 @@ export default function CreateBlogPage() {
                         })}
                       </SelectContent>
                     </Select>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -619,7 +608,7 @@ export default function CreateBlogPage() {
           <Button
             type="button"
             onClick={handleSubmitButtonClick}
-            disabled={!form.formState.isValid || form.formState.isSubmitting}
+            // disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
             <CloudUpload />
             Submit

@@ -3,6 +3,11 @@
 import React, { useMemo } from "react";
 
 // COMPONENT
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -11,98 +16,70 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ChevronLeft, Copy, UserPen } from "lucide-react";
 
+// SERVICE
+import { getBlogByIdService } from "@/services/blogServices";
 import useSWR from "swr";
 
-import { useParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { generateHTML } from "@tiptap/html";
+// ROUTING
+import { useParams, useRouter } from "next/navigation";
 
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Heading from "@tiptap/extension-heading";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-import Underline from "@tiptap/extension-underline";
-import Strike from "@tiptap/extension-strike";
-import TextAlign from "@tiptap/extension-text-align";
-import Blockquote from "@tiptap/extension-blockquote";
-import CodeBlock from "@tiptap/extension-code-block";
-import Code from "@tiptap/extension-code";
-import BulletList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import ListItem from "@tiptap/extension-list-item";
-import HardBreak from "@tiptap/extension-hard-break";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import { getBlogByIdService } from "@/services/blogServices";
-import { Separator } from "@/components/ui/separator";
+// UTILS PARSING JSON TO HTML
+import { generateBlogHTML } from "@/utils/generateBlogHTML";
 
 interface Tag {
+  id: string;
   name: string;
 }
 
 export default function ViewBlogPage() {
-  const params = useParams(); // Gunakan useParams() untuk mendapatkan id
-  const id = params?.id; // Pastikan id tersedia
+  // ROUTER
+  const router = useRouter();
 
-  const fetcher = async () => {
-    if (!id) return null;
-    return getBlogByIdService(id); // Replace with your API service
-  };
+  // GET PARAMS
+  const { id } = useParams();
+
+  // FETCH DATA BLOG
+  const fetcherBlog = () => getBlogByIdService(id);
 
   const {
     data: blog,
     error,
     isLoading,
-  } = useSWR(id ? `/blogs/${id}` : null, fetcher);
+  } = useSWR(id ? `/blogs/${id}` : null, fetcherBlog);
 
-  // Pastikan pengecekan data dilakukan setelah hook dipanggil.
-  const output = useMemo(() => {
-    // Pastikan data blog sudah ada dan tidak sedang loading
+  const blogContent = useMemo(() => {
     if (!blog?.content) {
-      return null; // Jika data belum ada, return null tanpa melanjutkan proses generate
+      return "<p>No content available...</p>";
     }
 
-    // Jika data sudah ada, generate HTML
-    return generateHTML(blog.content, [
-      Document,
-      Paragraph,
-      Text,
-      Heading,
-      Bold,
-      Italic,
-      Underline,
-      Strike,
-      TextAlign,
-      Blockquote,
-      CodeBlock,
-      Code,
-      BulletList,
-      OrderedList,
-      ListItem,
-      HardBreak,
-      Dropcursor,
-      Link,
-      Image,
-    ]);
-  }, [blog?.content]); // Hanya memerlukan dependensi blog
+    return generateBlogHTML(blog.content);
+  }, [blog?.content]);
 
-  if (error) {
-    return <p>Error fetching blog data: {error.message}</p>;
+  const initials = blog?.user?.username
+    .split(" ")
+    .map((word: string) => word.charAt(0).toUpperCase())
+    .join("");
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent>
+          <p>Loading...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
-  const json = blog?.content;
-
-  // Menampilkan loading indicator saat data masih loading
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error fetching blog data: {error.message}</p>;
-  if (!blog) return <p>No content available...</p>;
-  // Jika tidak ada output, tampilkan pesan bahwa data belum tersedia
-  if (!output) {
-    return <p>No content available...</p>; // Data atau konten belum ada
+  if (error) {
+    return (
+      <Card>
+        <CardContent>
+          <p>Error fetching blog data: {error.message}</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -115,17 +92,57 @@ export default function ViewBlogPage() {
         <Separator />
       </CardHeader>
 
-      <CardContent>
-        <Card className="lg:px-32">
+      <CardContent className="p-0 flex overflow-visible">
+        <main className="w-full md:w-2/3">
+          {/* Konten Utama Blog */}
           <CardHeader>
+            {/* CATEGORY */}
+            <Badge variant="secondary" className="w-fit rounded mb-4">
+              {blog?.category?.name || "No Category"}
+            </Badge>
+
+            {/* TITLE */}
             <CardTitle>{blog?.title || "Untitled Blog"}</CardTitle>
+
+            {/* INFO */}
             <CardDescription>
-              Category:{" "}
-              <Badge variant="outline">
-                {blog?.category?.name || "No Category"}
-              </Badge>
+              <div className="flex items-center gap-1 mt-2">
+                <div>
+                  <Avatar className="h-6 w-6 aspect-square">
+                    <AvatarImage
+                      src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${blog?.user?.profileImage}`}
+                      alt={blog?.user?.username}
+                    />
+                    <AvatarFallback className="rounded-lg">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <p className="text-xs">{blog?.user?.username}</p>
+                <Separator orientation="vertical" className="h-3" />
+                <p className="text-xs">
+                  {blog?.publishedAt
+                    ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "Not Available"}
+                </p>
+                <Separator orientation="vertical" className="h-3" />
+                <p className="text-xs">
+                  {blog?.publishedAt
+                    ? new Date(blog.publishedAt).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Not Available"}
+                </p>
+              </div>
             </CardDescription>
+            <Separator />
           </CardHeader>
+
           <CardContent>
             {/* Menampilkan gambar utama */}
             {blog?.coverImageId ? (
@@ -144,54 +161,93 @@ export default function ViewBlogPage() {
             {/* Menampilkan konten blog */}
             <div
               className="prose-base mt-4 dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: output }} // Render the generated HTML
+              dangerouslySetInnerHTML={{ __html: blogContent }}
             />
+
+            <div className="mt-8">
+              {blog?.tags?.map((tag: Tag) => (
+                <Badge key={tag.id} className="mr-1 rounded">
+                  {tag.name}
+                </Badge>
+              )) || "No Tags"}
+            </div>
           </CardContent>
-          <CardFooter>
-            <div className="flex justify-between w-full text-sm text-gray-500">
-              {/* Menampilkan jumlah like dan view */}
+        </main>
 
-              <div className="flex flex-col max-w-sm">
-                <p>Creator: {blog?.user?.username}</p>
-                <p>
-                  Created At:{" "}
-                  {blog?.createdAt
-                    ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Not Available"}
-                </p>
-                <p>Total Likes: {blog?.likeCount}</p>
-                <p>Total Views: {blog?.viewCount}</p>
-                <p>
-                  Published Date:{" "}
-                  {blog?.publishedAt
-                    ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Not Available"}
-                </p>
-              </div>
+        {/* SIDE */}
+        <aside className="w-full md:w-1/3 h-auto">
+          <Card className="p-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Komentar</h3>
+              <ul>
+                {blog?.comments?.map((comment: any) => (
+                  <li key={comment.id} className="mb-3">
+                    <p className="font-bold text-sm">
+                      {comment.user?.username}
+                    </p>
+                    <p className="text-sm">{comment.content}</p>
+                  </li>
+                )) || <p>Tidak ada komentar.</p>}
+              </ul>
+            </div>
 
-              <div>
-                <p>
-                  Tag:{" "}
-                  {blog?.tags?.map((tag: Tag) => tag.name).join(", ") ||
-                    "No Tags"}
-                </p>
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Statistik Blog</h3>
+              <ul>
+                <li>Total Views: {blog?.views || 0}</li>
+                <li>Total Comments: {blog?.comments?.length || 0}</li>
+                <li>Total Shares: {blog?.shares || 0}</li>
+              </ul>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Log Aktivitas</h3>
+              <ul>
+                <li>
+                  Dibuat pada: {new Date(blog?.createdAt).toLocaleString()}
+                </li>
+                <li>
+                  Terakhir diedit oleh: {blog?.lastEditedBy || "Unknown"} pada{" "}
+                  {new Date(blog?.updatedAt).toLocaleString()}
+                </li>
+              </ul>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Link Blog</h3>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  readOnly
+                  value={`${process.env.NEXT_PUBLIC_BASE_URL}/blog/${blog?.slug}`}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/blog/${blog?.slug}`
+                    );
+                    alert("Link copied to clipboard!");
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </CardFooter>
-        </Card>
+          </Card>
+        </aside>
       </CardContent>
+
+      <CardFooter className="flex justify-between">
+        <Button variant="outline" onClick={() => router.back()}>
+          <ChevronLeft />
+          Back
+        </Button>
+        <Button onClick={() => router.push(`/blogs/edit/${id}`)}>
+          <UserPen />
+          Edit Blog
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

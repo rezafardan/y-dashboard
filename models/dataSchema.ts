@@ -90,6 +90,7 @@ export interface BlogDataResponse {
   id: string;
   status: blogStatus;
   title: string;
+  slug: string;
   content: string;
   mainImageId: string;
   allowComment: boolean;
