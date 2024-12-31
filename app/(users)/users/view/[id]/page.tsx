@@ -72,7 +72,7 @@ export default function ViewUserPage() {
             </div>
           ) : (
             <div className="w-60 h-60 flex aspect-square items-center justify-center rounded-full bg-muted dark:bg-background">
-              <p className="text-secondary dark:text-primary">
+              <p className="text-sm text-muted-foreground">
                 No Profile Picture
               </p>
             </div>

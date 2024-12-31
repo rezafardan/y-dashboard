@@ -291,7 +291,7 @@ export default function EditProfileDataPage() {
                   <FormItem className="flex md:flex-col items-center  justify-center md:items-start md:justify-start mt-2 mb-8">
                     {isEditing ? (
                       <ImageCropper
-                        initialImage={image || undefined}
+                        initialImage={image === undefined ? image : undefined}
                         onImageCropped={handleCroppedImage}
                         onCropStatusChange={handleCropStatusChange}
                         className="w-60 h-60 mb-8"
@@ -299,16 +299,18 @@ export default function EditProfileDataPage() {
                       />
                     ) : (
                       <div className="relative w-60 h-60 bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
-                        {image ? (
-                          <img
-                            src={image}
-                            alt="Profile Picture"
-                            className="w-60 h-60 object-cover rounded-full p-1"
-                          />
+                        {image === null ? (
+                          <div className="relative w-60 h-60 aspect-square rounded-full overflow-hidden border dark:border-secondary">
+                            <img
+                              src={image === undefined ? image : undefined}
+                            />
+                          </div>
                         ) : (
-                          <p className="text-secondary dark:text-primary">
-                            No Profile Picture
-                          </p>
+                          <div className="w-60 h-60 flex aspect-square items-center justify-center rounded-full bg-muted dark:bg-background">
+                            <p className="text-sm text-muted-foreground">
+                              No Profile Picture
+                            </p>
+                          </div>
                         )}
                       </div>
                     )}
@@ -386,7 +388,7 @@ export default function EditProfileDataPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>New Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -408,7 +410,7 @@ export default function EditProfileDataPage() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Confirm New Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"

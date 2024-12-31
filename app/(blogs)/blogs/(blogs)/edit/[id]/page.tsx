@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Fragment, useEffect, useState } from "react";
-import Image from "next/image";
 
 // COMPONENT
 import { Button } from "@/components/ui/button";
