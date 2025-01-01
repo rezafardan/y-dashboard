@@ -652,7 +652,7 @@ export default function CreateBlogPage() {
         </Button>
       </CardFooter>
 
-      {/* ALERT DIALOG */}
+      {/* ALERT DIALOG SUBMIT*/}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

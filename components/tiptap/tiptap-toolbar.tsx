@@ -379,6 +379,7 @@ export const Toolbar = ({ editor }: Props) => {
         {/* Dialog for Image Upload */}
         <Toggle
           size="sm"
+          pressed={false}
           onClick={() => setIsImageDialogOpen(true)}
           title="Upload Image"
         >

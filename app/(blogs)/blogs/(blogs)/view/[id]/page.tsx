@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChevronLeft, Copy, UserPen } from "lucide-react";
+import { Car, ChevronLeft, Copy, UserPen } from "lucide-react";
 
 // SERVICE
 import { getBlogByIdService } from "@/services/blogServices";
@@ -92,91 +92,97 @@ export default function ViewBlogPage() {
         <Separator />
       </CardHeader>
 
-      <CardContent className="p-0 flex overflow-visible">
-        <main className="w-full md:w-2/3">
-          {/* Konten Utama Blog */}
-          <CardHeader>
-            {/* CATEGORY */}
-            <Badge variant="secondary" className="w-fit rounded mb-4">
-              {blog?.category?.name || "No Category"}
-            </Badge>
+      <CardContent className="p-0 flex flex-col gap-4 md:gap-0 md:flex-row overflow-visible">
+        {/* MAIN CONTENT */}
+        <main className="w-full md:w-2/3 pl-4 pr-4 md:pr-2">
+          <Card>
+            {/* Konten utama blog */}
+            <CardHeader>
+              {/* CATEGORY */}
+              <Badge variant="secondary" className="w-fit rounded mb-2">
+                {blog?.category?.name || "No Category"}
+              </Badge>
 
-            {/* TITLE */}
-            <CardTitle>{blog?.title || "Untitled Blog"}</CardTitle>
+              {/* TITLE */}
+              <CardTitle>{blog?.title || "Untitled Blog"}</CardTitle>
 
-            {/* INFO */}
-            <CardDescription>
-              <div className="flex items-center gap-1 mt-2">
-                <div>
-                  <Avatar className="h-6 w-6 aspect-square">
-                    <AvatarImage
-                      src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${blog?.user?.profileImage}`}
-                      alt={blog?.user?.username}
-                    />
-                    <AvatarFallback className="rounded-lg">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+              {/* INFO */}
+              <CardDescription>
+                <div className="flex items-center gap-1 mt-2">
+                  <div>
+                    <Avatar className="h-6 w-6 aspect-square">
+                      <AvatarImage
+                        src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${blog?.user?.profileImage}`}
+                        alt={blog?.user?.username}
+                      />
+                      <AvatarFallback className="rounded-lg">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <p className="text-xs">{blog?.user?.username}</p>
+                  <Separator orientation="vertical" className="h-3" />
+                  <p className="text-xs">
+                    {blog?.publishedAt
+                      ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "Not Available"}
+                  </p>
+                  <Separator orientation="vertical" className="h-3" />
+                  <p className="text-xs">
+                    {blog?.publishedAt
+                      ? new Date(blog.publishedAt).toLocaleTimeString("id-ID", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Not Available"}
+                  </p>
                 </div>
-                <p className="text-xs">{blog?.user?.username}</p>
-                <Separator orientation="vertical" className="h-3" />
-                <p className="text-xs">
-                  {blog?.publishedAt
-                    ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : "Not Available"}
-                </p>
-                <Separator orientation="vertical" className="h-3" />
-                <p className="text-xs">
-                  {blog?.publishedAt
-                    ? new Date(blog.publishedAt).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Not Available"}
-                </p>
-              </div>
-            </CardDescription>
-            <Separator />
-          </CardHeader>
+              </CardDescription>
+              <Separator />
+            </CardHeader>
 
-          <CardContent>
-            {/* Menampilkan gambar utama */}
-            {blog?.coverImageId ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={`http://localhost:3001/${blog.coverImage?.filepath || ""}`}
-                alt={blog.title || "Blog Image"}
-                className="w-full h-full object-cover"
+            <CardContent>
+              {/* Cover image */}
+              {blog?.coverImageId ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`http://localhost:3001/${
+                    blog.coverImage?.filepath || ""
+                  }`}
+                  alt={blog.title || "Blog Image"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center rounded-md bg-gray-100">
+                  <p className="text-gray-500">No Image Available</p>
+                </div>
+              )}
+
+              {/* Blog content */}
+              <div
+                className="prose-base mt-4 dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: blogContent }}
               />
-            ) : (
-              <div className="w-full h-64 flex items-center justify-center rounded-md bg-gray-100">
-                <p className="text-gray-500">No Image Available</p>
+
+              <div className="mt-8">
+                {blog?.tags?.map((tag: Tag) => (
+                  <Badge key={tag.id} className="mr-1 rounded">
+                    {tag.name}
+                  </Badge>
+                )) || "No Tags"}
               </div>
-            )}
-
-            {/* Menampilkan konten blog */}
-            <div
-              className="prose-base mt-4 dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: blogContent }}
-            />
-
-            <div className="mt-8">
-              {blog?.tags?.map((tag: Tag) => (
-                <Badge key={tag.id} className="mr-1 rounded">
-                  {tag.name}
-                </Badge>
-              )) || "No Tags"}
-            </div>
-          </CardContent>
+            </CardContent>
+          </Card>
         </main>
 
-        {/* SIDE */}
-        <aside className="w-full md:w-1/3 h-auto">
+        {/* ASIDE */}
+        <aside className="w-full md:w-1/3 h-auto pl-4 md:pl-2 pr-4">
           <Card className="p-4">
+            {/* Komentar, statistik, log aktivitas, dan lainnya */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Komentar</h3>
               <ul>
@@ -191,6 +197,7 @@ export default function ViewBlogPage() {
               </ul>
             </div>
 
+            {/* Statistik */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Statistik Blog</h3>
               <ul>
@@ -200,6 +207,7 @@ export default function ViewBlogPage() {
               </ul>
             </div>
 
+            {/* Log aktivitas */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Log Aktivitas</h3>
               <ul>
@@ -213,6 +221,7 @@ export default function ViewBlogPage() {
               </ul>
             </div>
 
+            {/* Link blog */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Link Blog</h3>
               <div className="flex items-center gap-2">

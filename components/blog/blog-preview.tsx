@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { generateBlogHTML } from "@/utils/generateBlogHTML";
 import { Button } from "../ui/button";
 import { Fullscreen } from "lucide-react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 interface BlogPreviewProps {
   blog: any;
@@ -41,41 +42,94 @@ const BlogPreviewDialog = ({ blog, disabled = false }: BlogPreviewProps) => {
 
   return (
     <Dialog>
+      {/* TRIGGER BUTTON */}
       <DialogTrigger asChild>
         <Button variant="secondary" disabled={disabled} className="flex gap-2">
           <Fullscreen className="h-4 w-4" />
           Preview
         </Button>
       </DialogTrigger>
+
+      {/* DIALOG CONTAINER */}
       <DialogContent
-        className="max-w-4xl max-h-[80vh] overflow-y-auto w-[90vw] rounded-md"
+        className="max-w-4xl max-h-[80vh] overflow-y-auto w-[90vw] rounded-md p-4 md:p-6"
         aria-describedby="preview-description"
       >
+        {/* DIALOG HEADER */}
         <DialogHeader>
+          {/* TITLE */}
           <DialogTitle>Blog Preview</DialogTitle>
+
+          {/* DESCRIPTION */}
           <DialogDescription id="preview-description">
             Preview how your blog post will appear to readers. This is a draft
             view and can be edited before publishing.
           </DialogDescription>
         </DialogHeader>
-        <Card>
+
+        {/* CONTENT OF BLOG */}
+        <Card className="m-0">
+          {/* HEADER */}
           <CardHeader>
+            {/* CATEGORY */}
+            <Badge variant="outline" className="w-fit rounded mb-4">
+              {blog?.category?.name || "No Category"}
+            </Badge>
+
+            {/* TITLE */}
             <CardTitle>{blog?.title || "Untitled Blog"}</CardTitle>
+
+            {/* INFO */}
             <CardDescription>
-              Category:{" "}
-              <Badge variant="outline">
-                {blog?.category?.name || "No Category"}
-              </Badge>
+              {/* INFO CONTAINER */}
+              <div className="flex items-center gap-1 mt-2">
+                {/* AVATAR */}
+                <div>
+                  <Avatar className="h-6 w-6 aspect-square">
+                    <AvatarFallback className="rounded-lg">C</AvatarFallback>
+                  </Avatar>
+                </div>
+
+                {/* NAME CREATOR */}
+                <p className="text-[0.6rem]  md:text-xs">Creator Preview</p>
+
+                <Separator orientation="vertical" className="h-3" />
+
+                {/* DATE */}
+                <p className="text-[0.6rem]  md:text-xs">
+                  {blog?.publishedAt
+                    ? new Date(blog.publishedAt).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "Not Available"}
+                </p>
+
+                <Separator orientation="vertical" className="h-3" />
+
+                {/* TIME */}
+                <p className="text-[0.6rem] md:text-xs">
+                  {blog?.publishedAt
+                    ? new Date(blog.publishedAt).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Not Available"}
+                </p>
+              </div>
             </CardDescription>
             <Separator />
           </CardHeader>
+
           <CardContent>
+            {/* COVER IMAGE */}
             {blog?.coverImageId ? (
               <div className="relative w-full aspect-video mb-4">
                 <img
                   src={blog.coverImage?.filepath}
                   alt={blog.title || "Blog Image"}
-                  className="w-full h-full object-cover rounded-md"
+                  className="w-full h-full object-cover"
                 />
               </div>
             ) : (
@@ -84,34 +138,29 @@ const BlogPreviewDialog = ({ blog, disabled = false }: BlogPreviewProps) => {
               </div>
             )}
 
+            {/* CONTENT */}
             <div
               className="prose prose-sm md:prose-base lg:prose-lg max-w-none dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: content }}
             />
-          </CardContent>
-          <CardFooter>
-            <div className="flex flex-col md:flex-row justify-between w-full gap-4 text-sm text-gray-500">
-              <div className="space-y-1">
-                <p>Creator: {blog?.user?.username || "Preview"}</p>
-                <p>Created: {new Date().toLocaleString()}</p>
-                <p>
-                  Published:{" "}
-                  {blog?.publishedAt
-                    ? new Date(blog.publishedAt).toLocaleString()
-                    : "Not published"}
-                </p>
-              </div>
+
+            {/* TAG */}
+            <div className="mt-8">
               {blog?.tags && blog.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1">
                   {blog.tags.map((tag: any, index: number) => (
-                    <Badge key={index} variant="secondary">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="mr-1 rounded"
+                    >
                       {tag.name}
                     </Badge>
                   ))}
                 </div>
               )}
             </div>
-          </CardFooter>
+          </CardContent>
         </Card>
       </DialogContent>
     </Dialog>
