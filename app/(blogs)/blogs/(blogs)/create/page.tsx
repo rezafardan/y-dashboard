@@ -45,6 +45,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ChevronLeft, ClipboardList, CloudUpload } from "lucide-react";
+import BlogPreviewDialog from "@/components/blog/blog-preview";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -178,17 +179,20 @@ export default function CreateBlogPage() {
       .replace(/\s+/g, "-");
   };
 
+  // FORM WATCH SLUG
+  useEffect(() => {
+    const title = form.watch("title");
+    const slug = generateSlug(title);
+
+    // SET VALUE FORM WITH GENERATE SLUG FUNCTION
+    form.setValue("slug", slug, { shouldValidate: true });
+  }, [form.watch("title")]);
+
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     try {
-      // Generate slug dari title
-      const slug = generateSlug(values.title);
-
-      // Tambahkan slug ke values
-      const blogValues = { ...values, slug };
-
       // API SERVICE
-      const result = await createBlogService(blogValues);
+      const result = await createBlogService(values);
 
       // TOAST MESSAGE FROM API
       toast({
@@ -302,6 +306,20 @@ export default function CreateBlogPage() {
 
   if (isLoadingTags) return <p>Loading...</p>;
   if (tagsError) return <p>Error loading data tags</p>;
+
+  // PREVIEW BLOG DATA
+  const blogPreview = () => {
+    const formData = form.getValues();
+    return {
+      title: formData.title || "Untitled",
+      content: formData.content,
+      coverImageId: formData.coverImageId,
+      coverImage: coverImage ? { filepath: coverImage } : null,
+      category: categories?.find((cat) => cat.id === formData.categoryId),
+      tags: formData.tags || [],
+      publishedAt: formData.publishedAt,
+    };
+  };
 
   return (
     <Card>
@@ -564,56 +582,74 @@ export default function CreateBlogPage() {
               />
             </div>
 
-            {/* ALLOW COMMENT */}
-            <FormField
-              control={form.control}
-              name="allowComment"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-background dark:bg-background">
-                  <div className="space-y-0.5 ">
-                    <FormLabel className="text-base">
-                      Allow viewers to comment
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="flex-row md:flex space-y-4 md:space-y-0 md:space-x-4">
+              {/* ALLOW COMMENT */}
+              <FormField
+                control={form.control}
+                name="allowComment"
+                render={({ field }) => (
+                  <FormItem className="flex w-full flex-row items-center justify-between rounded-lg border p-4 bg-background dark:bg-background">
+                    <div className="space-y-0.5 ">
+                      <FormLabel className="text-sm">
+                        Allow viewers to comment
+                      </FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* DRAFT AND PREVIEW */}
+              <div className="flex gap-2 flex-row items-center justify-end rounded-lg border p-2 bg-background dark:bg-background">
+                {/* SAVE TO DRAFT */}
+                <Button
+                  variant="secondary"
+                  onClick={onSaveToDraft}
+                  disabled={
+                    form.watch("title").trim() === "" ||
+                    form.watch("content").trim() === ""
+                  }
+                  className="flex"
+                >
+                  <ClipboardList />
+                  Save To Draft
+                </Button>
+
+                {/* PRVIEW */}
+                <BlogPreviewDialog
+                  blog={blogPreview()}
+                  disabled={!form.watch("content")}
+                />
+              </div>
+            </div>
           </form>
         </Form>
       </CardContent>
 
       {/* BUTTON */}
-      <CardFooter className="flex-col-reverse md:flex-row md:justify-between gap-4">
+      <CardFooter className="flex justify-between">
         <Button
           variant="outline"
           onClick={() => router.back()}
-          className="flex self-end"
+          className="flex"
         >
           <ChevronLeft />
           Back
         </Button>
 
-        <div className="flex self-end gap-2">
-          <Button variant="outline" onClick={onSaveToDraft} className="flex">
-            <ClipboardList />
-            Save To Draft
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handleSubmitButtonClick}
-            // disabled={!form.formState.isValid || form.formState.isSubmitting}
-          >
-            <CloudUpload />
-            Submit
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={handleSubmitButtonClick}
+          disabled={!form.formState.isValid || form.formState.isSubmitting}
+        >
+          <CloudUpload />
+          Submit
+        </Button>
       </CardFooter>
 
       {/* ALERT DIALOG */}

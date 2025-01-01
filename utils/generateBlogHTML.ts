@@ -22,26 +22,40 @@ import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 
 // Fungsi untuk menghasilkan HTML dari konten blog
-export const generateBlogHTML = (content: any) => {
-  return generateHTML(content, [
-    Document,
-    Paragraph,
-    Text,
-    Heading,
-    Bold,
-    Italic,
-    Underline,
-    Strike,
-    TextAlign,
-    Blockquote,
-    CodeBlock,
-    Code,
-    BulletList,
-    OrderedList,
-    ListItem,
-    HardBreak,
-    Dropcursor,
-    Link,
-    Image,
-  ]);
+export const generateBlogHTML = (content: string) => {
+  try {
+    // Parse the content if it's a string
+    const parsedContent =
+      typeof content === "string" ? JSON.parse(content) : content;
+
+    // Check if we have a valid Tiptap JSON structure
+    if (!parsedContent || !parsedContent.type) {
+      return ""; // Return empty string for invalid content
+    }
+
+    return generateHTML(parsedContent, [
+      Document,
+      Paragraph,
+      Text,
+      Heading,
+      Bold,
+      Italic,
+      Underline,
+      Strike,
+      TextAlign,
+      Blockquote,
+      CodeBlock,
+      Code,
+      BulletList,
+      OrderedList,
+      ListItem,
+      HardBreak,
+      Dropcursor,
+      Link,
+      Image,
+    ]);
+  } catch (error) {
+    console.error("Error generating HTML:", error);
+    return ""; // Return empty string on error
+  }
 };
