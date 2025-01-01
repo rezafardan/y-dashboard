@@ -84,7 +84,7 @@ export default function CreateUserPage() {
   // CROPPER
   const [image, setImage] = useState<string | null>(null);
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
-  const [isImageCropped, setIsImageCropped] = useState<Boolean>(false);
+  const [isImageCropped, setIsImageCropped] = useState<Boolean>();
 
   // FORM HANDLER
   const defaultValues = {
@@ -221,7 +221,7 @@ export default function CreateUserPage() {
       form.reset();
       setImage(null);
       setCroppedFile(null);
-      setIsImageCropped(false);
+      setIsImageCropped(undefined);
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
@@ -266,7 +266,9 @@ export default function CreateUserPage() {
                     initialImage={image || undefined}
                     onImageCropped={handleCroppedImage}
                     onCropStatusChange={handleCropStatusChange}
-                    className="w-60 h-60 mb-8"
+                    className={`w-60 h-60 ${
+                      isImageCropped !== undefined ? "mb-24" : "mb-8"
+                    }`}
                     {...field}
                   />
                   <FormMessage className="pt-12" />

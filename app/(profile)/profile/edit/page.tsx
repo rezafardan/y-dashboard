@@ -71,7 +71,7 @@ export default function EditProfileDataPage() {
   // IMAGE CROPPER
   const [image, setImage] = useState<string | null>(null);
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
-  const [isImageCropped, setIsImageCropped] = useState<Boolean>(false);
+  const [isImageCropped, setIsImageCropped] = useState<Boolean>();
 
   // EDIT BUTTON
   const [isEditing, setIsEditing] = useState(false);
@@ -113,7 +113,13 @@ export default function EditProfileDataPage() {
       form.reset(userData);
 
       // SET PROFILE IMAGE
-      setImage(`${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.profileImage}`);
+      if (result?.profileImage && result.profileImage !== "null") {
+        setImage(
+          `${process.env.NEXT_PUBLIC_ASSETS_URL}/${result.profileImage}`
+        );
+      } else {
+        setImage(null);
+      }
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
@@ -248,7 +254,7 @@ export default function EditProfileDataPage() {
       form.reset();
       setImage(null);
       setCroppedFile(null);
-      setIsImageCropped(false);
+      setIsImageCropped(undefined);
       setIsEditing(false);
 
       // RE-FETCH DATA
@@ -294,16 +300,16 @@ export default function EditProfileDataPage() {
                         initialImage={image === undefined ? image : undefined}
                         onImageCropped={handleCroppedImage}
                         onCropStatusChange={handleCropStatusChange}
-                        className="w-60 h-60 mb-8"
+                        className={`w-60 h-60 ${
+                          isImageCropped !== undefined ? "mb-24" : "mb-8"
+                        }`}
                         {...field}
                       />
                     ) : (
                       <div className="relative w-60 h-60 bg-muted dark:bg-background aspect-square flex items-center justify-center rounded-md overflow-hidden">
-                        {image === null ? (
+                        {image && image !== null ? (
                           <div className="relative w-60 h-60 aspect-square rounded-full overflow-hidden border dark:border-secondary">
-                            <img
-                              src={image === undefined ? image : undefined}
-                            />
+                            <img src={image} />
                           </div>
                         ) : (
                           <div className="w-60 h-60 flex aspect-square items-center justify-center rounded-full bg-muted dark:bg-background">

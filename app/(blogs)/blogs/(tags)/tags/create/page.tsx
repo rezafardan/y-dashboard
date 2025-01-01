@@ -127,16 +127,24 @@ export default function CreateTagPage() {
   const fetcher = () => getAllTagsService();
   const { data: tags, error: tagsError, isLoading } = useSWR("/tag", fetcher);
 
+  // ADDED STATUS DISABLED TO DATA TAGS
+  const tagsDisabled = tags
+    ? tags.map((item: any) => ({
+        ...item,
+        disable: true,
+      }))
+    : [];
+
   // DEBOUNCE FETCH TAGS DATA
   const tagSearch = async (value: string): Promise<Option[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         if (value.trim() === null) {
-          resolve(tags || []);
+          resolve(tagsDisabled || []);
           return;
         }
         const res =
-          tags?.filter((tag: any) =>
+          tagsDisabled?.filter((tag: any) =>
             tag.name.toLowerCase().includes(value.toLowerCase())
           ) || [];
         resolve(res);
@@ -174,7 +182,7 @@ export default function CreateTagPage() {
                       {...field}
                       value={form.watch("tags")}
                       onChange={(value) => field.onChange(value)}
-                      defaultOptions={tags || []}
+                      defaultOptions={tagsDisabled}
                       onSearch={tagSearch}
                       placeholder="Create a new tag"
                       hidePlaceholderWhenSelected

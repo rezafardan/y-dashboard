@@ -11,6 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -75,6 +76,7 @@ const navMain = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { role } = useAuth();
+  const { isMobile } = useSidebar();
 
   // Filter menu berdasarkan role
   const filteredNavMain = navMain
@@ -121,7 +123,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     });
 
   return (
-    <Sidebar variant="sidebar" {...props}>
+    <Sidebar variant="sidebar" side={isMobile ? "right" : "left"} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
