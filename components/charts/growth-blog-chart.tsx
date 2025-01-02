@@ -67,7 +67,7 @@ export function GrowthBlogChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>New Blog Growth</CardTitle>
+        <CardTitle>New Blog Growth (filter by date created)</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent>

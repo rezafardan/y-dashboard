@@ -4,6 +4,7 @@ import React, { Fragment, useEffect, useState } from "react";
 import Image from "next/image";
 
 // COMPONENT
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -101,8 +102,8 @@ export default function CreateBlogPage() {
     content: "",
     status: undefined,
     tags: undefined,
-    categoryId: "",
-    allowComment: undefined,
+    categoryId: undefined,
+    allowComment: true,
     publishedAt: undefined,
   };
 
@@ -194,9 +195,22 @@ export default function CreateBlogPage() {
       // API SERVICE
       const result = await createBlogService(values);
 
+      // EXTRACT BLOG ID
+      const blogId = result?.data?.id;
+      const blogUrl = `/blogs/view/${blogId}`;
+
       // TOAST MESSAGE FROM API
       toast({
-        description: result.message,
+        description: (
+          <div>
+            {result.message}{" "}
+            {blogId && (
+              <Link href={blogUrl} className="underline">
+                view blog
+              </Link>
+            )}
+          </div>
+        ),
         duration: 4000,
       });
 
@@ -231,6 +245,20 @@ export default function CreateBlogPage() {
   };
 
   const onSaveToDraft = async () => {
+    // FORM VALIDATION
+    const isValid = await form.trigger(["title", "content", "categoryId"]);
+
+    // TOAST MESSAGE
+    if (!isValid) {
+      toast({
+        description:
+          "Please fill in all required fields before saving to draft.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      return;
+    }
+
     try {
       // SETTING UP DRAFT VALUE AND CHANGE BLOG STATUS TO DRAFT ON SAVE
       const draftValues = {
@@ -548,7 +576,6 @@ export default function CreateBlogPage() {
                           const status = form.watch("status");
                           const today = new Date();
 
-                          // Validasi untuk status PUBLISH
                           if (status === BlogStatus.PUBLISH && date > today) {
                             toast({
                               description:
@@ -558,7 +585,6 @@ export default function CreateBlogPage() {
                             return;
                           }
 
-                          // Validasi untuk status SCHEDULE
                           if (status === BlogStatus.SCHEDULE && date < today) {
                             toast({
                               description:
@@ -610,9 +636,11 @@ export default function CreateBlogPage() {
                 <Button
                   variant="secondary"
                   onClick={onSaveToDraft}
+                  type="button"
                   disabled={
                     form.watch("title").trim() === "" ||
-                    form.watch("content").trim() === ""
+                    form.watch("content").trim() === "" ||
+                    form.watch("categoryId") === ""
                   }
                   className="flex"
                 >

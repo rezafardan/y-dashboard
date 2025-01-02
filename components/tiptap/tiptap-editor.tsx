@@ -87,7 +87,9 @@ export const Tiptap = ({
       ListItem,
       Blockquote,
       CodeBlock,
-      TextAlign,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
       Dropcursor,
       Link.configure({
         openOnClick: true,
@@ -142,6 +144,7 @@ export const Tiptap = ({
       },
     },
     onUpdate: handleUpdate,
+    immediatelyRender: true,
   });
 
   useEffect(() => {

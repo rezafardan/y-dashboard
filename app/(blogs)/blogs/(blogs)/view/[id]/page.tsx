@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Car, ChevronLeft, Copy, UserPen } from "lucide-react";
+import { ChevronLeft, Copy, UserPen } from "lucide-react";
 
 // SERVICE
 import { getBlogByIdService } from "@/services/blogServices";
@@ -92,11 +92,10 @@ export default function ViewBlogPage() {
         <Separator />
       </CardHeader>
 
-      <CardContent className="p-0 flex flex-col gap-4 md:gap-0 md:flex-row overflow-visible">
+      <CardContent className="p-2 flex flex-col gap-4 md:gap-0 md:flex-row overflow-visible">
         {/* MAIN CONTENT */}
         <main className="w-full md:w-2/3 pl-4 pr-4 md:pr-2">
           <Card>
-            {/* Konten utama blog */}
             <CardHeader>
               {/* CATEGORY */}
               <Badge variant="secondary" className="w-fit rounded mb-2">
@@ -109,19 +108,23 @@ export default function ViewBlogPage() {
               {/* INFO */}
               <CardDescription>
                 <div className="flex items-center gap-1 mt-2">
-                  <div>
-                    <Avatar className="h-6 w-6 aspect-square">
-                      <AvatarImage
-                        src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${blog?.user?.profileImage}`}
-                        alt={blog?.user?.username}
-                      />
-                      <AvatarFallback className="rounded-lg">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
+                  {/* AVATAR */}
+                  <Avatar className="h-6 w-6 aspect-square">
+                    <AvatarImage
+                      src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${blog?.user?.profileImage}`}
+                      alt={blog?.user?.username}
+                    />
+                    <AvatarFallback className="rounded-lg">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* USERNAME */}
                   <p className="text-xs">{blog?.user?.username}</p>
+
                   <Separator orientation="vertical" className="h-3" />
+
+                  {/* DATE */}
                   <p className="text-xs">
                     {blog?.publishedAt
                       ? new Date(blog.createdAt).toLocaleDateString("id-ID", {
@@ -131,7 +134,10 @@ export default function ViewBlogPage() {
                         })
                       : "Not Available"}
                   </p>
+
                   <Separator orientation="vertical" className="h-3" />
+
+                  {/* TIME */}
                   <p className="text-xs">
                     {blog?.publishedAt
                       ? new Date(blog.publishedAt).toLocaleTimeString("id-ID", {
@@ -146,9 +152,8 @@ export default function ViewBlogPage() {
             </CardHeader>
 
             <CardContent>
-              {/* Cover image */}
+              {/* COVER IMAGE */}
               {blog?.coverImageId ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`http://localhost:3001/${
                     blog.coverImage?.filepath || ""
@@ -162,12 +167,13 @@ export default function ViewBlogPage() {
                 </div>
               )}
 
-              {/* Blog content */}
+              {/* BLOG CONTENT */}
               <div
                 className="prose-base mt-4 dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: blogContent }}
               />
 
+              {/* TAG */}
               <div className="mt-8">
                 {blog?.tags?.map((tag: Tag) => (
                   <Badge key={tag.id} className="mr-1 rounded">
@@ -182,9 +188,9 @@ export default function ViewBlogPage() {
         {/* ASIDE */}
         <aside className="w-full md:w-1/3 h-auto pl-4 md:pl-2 pr-4">
           <Card className="p-4">
-            {/* Komentar, statistik, log aktivitas, dan lainnya */}
+            {/* KOMENTAR */}
             <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Komentar</h3>
+              <h3 className="text-lg font-semibold">Commentar</h3>
               <ul>
                 {blog?.comments?.map((comment: any) => (
                   <li key={comment.id} className="mb-3">
@@ -193,13 +199,13 @@ export default function ViewBlogPage() {
                     </p>
                     <p className="text-sm">{comment.content}</p>
                   </li>
-                )) || <p>Tidak ada komentar.</p>}
+                )) || <p>No comments yet.</p>}
               </ul>
             </div>
 
-            {/* Statistik */}
+            {/* STATISTIC */}
             <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Statistik Blog</h3>
+              <h3 className="text-lg font-semibold">Blog Statistic</h3>
               <ul>
                 <li>Total Views: {blog?.views || 0}</li>
                 <li>Total Comments: {blog?.comments?.length || 0}</li>
@@ -207,21 +213,38 @@ export default function ViewBlogPage() {
               </ul>
             </div>
 
-            {/* Log aktivitas */}
+            {/* LOG ACTIVITY */}
             <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Log Aktivitas</h3>
+              <h3 className="text-lg font-semibold">Log Activity</h3>
               <ul>
                 <li>
-                  Dibuat pada: {new Date(blog?.createdAt).toLocaleString()}
+                  Published At:{" "}
+                  {blog?.publishedAt
+                    ? new Date(blog.publishedAt).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Not Available"}
                 </li>
                 <li>
-                  Terakhir diedit oleh: {blog?.lastEditedBy || "Unknown"} pada{" "}
-                  {new Date(blog?.updatedAt).toLocaleString()}
+                  Last Edited By:{" "}
+                  {blog?.updatedAt
+                    ? new Date(blog.updatedAt).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Not Available"}
                 </li>
               </ul>
             </div>
 
-            {/* Link blog */}
+            {/* BLOG LINK */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Link Blog</h3>
               <div className="flex items-center gap-2">
@@ -247,7 +270,8 @@ export default function ViewBlogPage() {
         </aside>
       </CardContent>
 
-      <CardFooter className="flex justify-between">
+      {/* BUTTON */}
+      <CardFooter className="flex justify-between mt-4">
         <Button variant="outline" onClick={() => router.back()}>
           <ChevronLeft />
           Back

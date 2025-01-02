@@ -3,6 +3,7 @@
 import React, { Fragment, useEffect, useState } from "react";
 
 // COMPONENT
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -42,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ChevronLeft, ClipboardList, CloudUpload, UserPen } from "lucide-react";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -73,7 +75,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // ROUTING
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, ClipboardList, CloudUpload, UserPen } from "lucide-react";
+import BlogPreviewDialog from "@/components/blog/blog-preview";
 
 export default function EditBlogPage() {
   // ROUTER
@@ -253,9 +255,22 @@ export default function EditBlogPage() {
       // API SERVICE
       const result = await editBlogService(id, values);
 
+      // EXTRACT BLOG ID
+      const blogId = result?.data?.id;
+      const blogUrl = `/blogs/view/${blogId}`;
+
       // TOAST MESSAGE FROM API
       toast({
-        description: result.message,
+        description: (
+          <div>
+            {result.message}{" "}
+            {blogId && (
+              <Link href={blogUrl} className="underline">
+                view blog
+              </Link>
+            )}
+          </div>
+        ),
         duration: 4000,
       });
 
@@ -327,6 +342,20 @@ export default function EditBlogPage() {
         resolve(res);
       }, 500);
     });
+  };
+
+  // PREVIEW BLOG DATA
+  const blogPreview = () => {
+    const formData = form.getValues();
+    return {
+      title: formData.title || "Untitled",
+      content: formData.content,
+      coverImageId: formData.coverImageId,
+      coverImage: coverImage ? { filepath: coverImage } : null,
+      category: categories?.find((cat) => cat.id === formData.categoryId),
+      tags: formData.tags || [],
+      publishedAt: formData.publishedAt,
+    };
   };
 
   return (
@@ -572,7 +601,6 @@ export default function EditBlogPage() {
                             return;
                           }
 
-                          // Validasi untuk status SCHEDULE
                           if (status === BlogStatus.SCHEDULE && date < today) {
                             toast({
                               description:
@@ -596,27 +624,56 @@ export default function EditBlogPage() {
               />
             </div>
 
-            {/* ALLOW COMMENT */}
-            <FormField
-              control={form.control}
-              name="allowComment"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-background dark:bg-background">
-                  <div className="space-y-0.5 ">
-                    <FormLabel className="text-base">
-                      Allow viewers to comment
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={!isEditing}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="flex-row md:flex space-y-4 md:space-y-0 md:space-x-4">
+              {/* ALLOW COMMENT */}
+              <FormField
+                control={form.control}
+                name="allowComment"
+                render={({ field }) => (
+                  <FormItem className="flex w-full flex-row items-center justify-between rounded-lg border p-4 bg-background dark:bg-background">
+                    <div className="space-y-0.5 ">
+                      <FormLabel className="text-base">
+                        Allow viewers to comment
+                      </FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={!isEditing}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* DRAFT AND PREVIEW */}
+              <div className="flex gap-2 flex-row items-center justify-end rounded-lg border p-2 bg-background dark:bg-background">
+                {/* SAVE TO DRAFT */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSubmitButtonClick}
+                  disabled={
+                    !form.formState.isValid || form.formState.isSubmitting
+                  }
+                  className={
+                    blogStatus === "PUBLISH" || blogStatus === "SCHEDULE"
+                      ? "hidden"
+                      : "flex"
+                  }
+                >
+                  <ClipboardList />
+                  Save To Draft
+                </Button>
+
+                {/* PRVIEW */}
+                <BlogPreviewDialog
+                  blog={blogPreview()}
+                  disabled={!form.watch("content")}
+                />
+              </div>
+            </div>
           </form>
         </Form>
       </CardContent>
@@ -641,33 +698,12 @@ export default function EditBlogPage() {
           </Button>
         ) : (
           <div className="flex justify-between w-full">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSubmitButtonClick}
-              disabled={!form.formState.isValid || form.formState.isSubmitting}
-              className={
-                blogStatus === "PUBLISH" || blogStatus === "SCHEDULE"
-                  ? "hidden"
-                  : "self-start"
-              }
-            >
-              <ClipboardList />
-              Save To Draft
-            </Button>
-
             <div className="flex gap-2 self-end">
               <Button variant="outline" onClick={handleCancelButtonClick}>
                 Cancel
               </Button>
 
-              <Button
-                type="button"
-                onClick={handleSubmitButtonClick}
-                disabled={
-                  !form.formState.isValid || form.formState.isSubmitting
-                }
-              >
+              <Button type="button" onClick={handleSubmitButtonClick}>
                 <CloudUpload />
                 Submit
               </Button>

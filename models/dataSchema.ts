@@ -117,6 +117,7 @@ export enum blogStatus {
 // DONE
 
 export interface CreateBlogData {
+  data: any;
   id: string;
   title: string;
   content: JSON;
