@@ -128,7 +128,7 @@ export const Tiptap = ({
           "prose-ul:list-disc prose-ul:pl-6", // Unordered list
           "prose-ol:list-decimal prose-ol:pl-6", // Ordered list
           "prose-blockquote:border-l-4 prose-blockquote:pl-4 prose-blockquote:italic", // Blockquote
-          "prose-img:rounded-md prose-img:shadow-sm", // Images
+          "prose-img:rounded-md prose-img:shadow-sm prose-img:p-2 prose-img:border prose-img:border-secondary prose-img:mb-4 prose-img:cursor-pointer", // Images
           "prose-table:table-auto prose-table:border prose-table:border-collapse", // Tables
           "prose-th:border prose-th:p-2 prose-th:text-left", // Table headers
           "prose-td:border prose-td:p-2", // Table cells

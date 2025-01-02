@@ -244,6 +244,7 @@ export default function CreateBlogPage() {
     }
   };
 
+  // HANDLING SAVE TO DRAFT
   const onSaveToDraft = async () => {
     // FORM VALIDATION
     const isValid = await form.trigger(["title", "content", "categoryId"]);

@@ -129,7 +129,7 @@ export default function EditBlogPage() {
 
       // SET STATUS TO PUBLISH
       if (result.status === "DRAFT") {
-        form.setValue("status", BlogStatus.PUBLISH);
+        // form.setValue("status", BlogStatus.PUBLISH);
         setBlogStatus(result.status);
       }
 
@@ -239,9 +239,17 @@ export default function EditBlogPage() {
   };
 
   // CONFIRM BUTTON AFTER ALERT DIALOG
-  const handleConfirmSubmit = () => {
-    form.handleSubmit(onSubmit)();
-    setShowConfirmDialog(false);
+  const handleConfirmSubmit = async () => {
+    console.log("click");
+
+    try {
+      await form.handleSubmit(onSubmit)();
+      setShowConfirmDialog(false);
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log("Tes");
   };
 
   // CANCEL BUTTON ALERT DIALOG
@@ -251,10 +259,13 @@ export default function EditBlogPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
+    console.log(values);
+    console.log("Onsubmit");
     try {
       // API SERVICE
       const result = await editBlogService(id, values);
 
+      console.log(result);
       // EXTRACT BLOG ID
       const blogId = result?.data?.id;
       const blogUrl = `/blogs/view/${blogId}`;
@@ -274,6 +285,8 @@ export default function EditBlogPage() {
         duration: 4000,
       });
 
+      console.log("2");
+
       // RESET FORM AND IMAGE STATES ON SUCCESS
       form.reset(defaultValues);
       form.setValue("tags", []);
@@ -288,7 +301,65 @@ export default function EditBlogPage() {
       }
 
       // REDIRECTING TO BLOG VIEW DETAIL
-      router.push(`/blogs/view/${id}`);
+    } catch (error) {
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        duration: 4000,
+      });
+    }
+  };
+
+  // HANDLING SAVE TO DRAFT
+  const onSaveToDraft = async () => {
+    // FORM VALIDATION
+    const isValid = await form.trigger([
+      "title",
+      "content",
+      "categoryId",
+      "coverImageId",
+    ]);
+
+    // TOAST MESSAGE
+    if (!isValid) {
+      toast({
+        description:
+          "Please fill in all required fields before saving to draft.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      return;
+    }
+
+    try {
+      // SETTING UP DRAFT VALUE AND CHANGE BLOG STATUS TO DRAFT ON SAVE
+      const draftValues = {
+        ...form.getValues(),
+        status: BlogStatus.DRAFT,
+      };
+
+      console.log(draftValues);
+
+      // API SERVICE
+      const result = await editBlogService(id, draftValues);
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: result.message,
+        duration: 4000,
+      });
+
+      // RESET FORM
+      router.push("/blogs");
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
@@ -555,6 +626,9 @@ export default function EditBlogPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value={BlogStatus.DRAFT}>
+                          {BlogStatus.DRAFT}
+                        </SelectItem>
                         <SelectItem value={BlogStatus.PUBLISH}>
                           {BlogStatus.PUBLISH}
                         </SelectItem>
@@ -615,7 +689,11 @@ export default function EditBlogPage() {
                         displayFormat={{ hour24: "PPP HH:mm" }}
                         locale={dateId}
                         granularity="minute"
-                        disabled={!form.getValues("status") || !isEditing}
+                        disabled={
+                          !form.getValues("status") ||
+                          form.getValues("status") === "DRAFT" ||
+                          !isEditing
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -653,15 +731,9 @@ export default function EditBlogPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={handleSubmitButtonClick}
-                  disabled={
-                    !form.formState.isValid || form.formState.isSubmitting
-                  }
-                  className={
-                    blogStatus === "PUBLISH" || blogStatus === "SCHEDULE"
-                      ? "hidden"
-                      : "flex"
-                  }
+                  onClick={onSaveToDraft}
+                  disabled={!isEditing}
+                  className={blogStatus === "DRAFT" ? "flex" : "hidden"}
                 >
                   <ClipboardList />
                   Save To Draft
@@ -697,13 +769,17 @@ export default function EditBlogPage() {
             Edit
           </Button>
         ) : (
-          <div className="flex justify-between w-full">
-            <div className="flex gap-2 self-end">
+          <div className="flex justify-end w-full">
+            <div className="flex gap-2">
               <Button variant="outline" onClick={handleCancelButtonClick}>
                 Cancel
               </Button>
 
-              <Button type="button" onClick={handleSubmitButtonClick}>
+              <Button
+                type="button"
+                onClick={handleSubmitButtonClick}
+                disabled={form.getValues("status") === "DRAFT"}
+              >
                 <CloudUpload />
                 Submit
               </Button>
@@ -715,11 +791,10 @@ export default function EditBlogPage() {
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Create Category</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Edit Blog</AlertDialogTitle>
             <AlertDialogDescription>
-              Once the category is created, you can manage it by visiting the
-              blog categories list in the menu. Use this list to edit or delete
-              categories as needed.
+              Once the blog is created, you can manage it by visiting the blog
+              list in the menu. Use this list to edit or delete blog as needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -727,7 +802,7 @@ export default function EditBlogPage() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmSubmit}>
-              Confirm Create
+              Confirm Edit
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

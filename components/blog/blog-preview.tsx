@@ -53,7 +53,7 @@ const BlogPreviewDialog = ({ blog, disabled = false }: BlogPreviewProps) => {
       {/* DIALOG CONTAINER */}
       <DialogContent
         className="max-w-4xl max-h-[80vh] overflow-y-auto w-[90vw] rounded-md p-4 md:p-6"
-        aria-describedby="preview-description"
+        aria-describedby="blog-preview-description"
       >
         {/* DIALOG HEADER */}
         <DialogHeader>
@@ -61,7 +61,7 @@ const BlogPreviewDialog = ({ blog, disabled = false }: BlogPreviewProps) => {
           <DialogTitle>Blog Preview</DialogTitle>
 
           {/* DESCRIPTION */}
-          <DialogDescription id="preview-description">
+          <DialogDescription id="blog-preview-description">
             Preview how your blog post will appear to readers. This is a draft
             view and can be edited before publishing.
           </DialogDescription>

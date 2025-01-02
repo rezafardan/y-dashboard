@@ -60,6 +60,7 @@ import { ApiErrorResponse } from "@/models/error";
 
 // ROUTING
 import { useRouter } from "next/navigation";
+import { stat } from "fs";
 
 // TABLE HEADER
 const columns: ColumnDef<BlogDataResponse>[] = [
@@ -82,9 +83,19 @@ const columns: ColumnDef<BlogDataResponse>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.getValue("status")}</Badge>
-    ),
+    cell: ({ row }) => {
+      const status = row.getValue("status");
+
+      if (status === "DRAFT") {
+        return <Badge variant="destructive">{status}</Badge>;
+      }
+
+      if (status === "PUBLISH") {
+        return <Badge variant="default">{status}</Badge>;
+      }
+
+      return <Badge variant="outline">{row.getValue("status")}</Badge>;
+    },
   },
 
   // CATEGORY NAME
@@ -121,7 +132,7 @@ const columns: ColumnDef<BlogDataResponse>[] = [
       const publishedAt = row.getValue("publishedAt");
       const status = row.getValue("status");
 
-      if (status === "draft" || !publishedAt) {
+      if (status === "DRAFT" || !publishedAt) {
         return <div>DRAFT</div>;
       }
 
