@@ -14,6 +14,8 @@ import { Toaster } from "@/components/ui/toaster";
 // PROVIDER
 import { AuthProvider } from "@/context/AuthContext";
 import ThemeProviderWrapper from "@/components/theme/theme-provider-wrapper";
+import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
+import ProgressBarProviders from "@/components/progress-bar/progress-bar-provider";
 
 // FONT
 const geistSans = localFont({
@@ -52,7 +54,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <ThemeProviderWrapper>{children}</ThemeProviderWrapper>
+          <ThemeProviderWrapper>
+            <ProgressBarProviders>{children}</ProgressBarProviders>
+          </ThemeProviderWrapper>
           <Toaster />
         </AuthProvider>
       </body>
