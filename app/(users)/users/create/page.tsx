@@ -184,7 +184,7 @@ export default function CreateUserPage() {
   const onSubmit = async (values: z.infer<typeof newUserSchema>) => {
     try {
       // ERROR IF IMAGE NOT CROPPING
-      if (!croppedFile && !isImageCropped && image) {
+      if (!croppedFile && !isImageCropped) {
         toast({
           description: "Please crop the image before submitting",
           variant: "destructive",

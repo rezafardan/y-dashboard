@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ChevronLeft, ClipboardList, CloudUpload, UserPen } from "lucide-react";
+import BlogPreviewDialog from "@/components/blog/blog-preview";
 
 // FORM HANDLER
 import { z } from "zod";
@@ -75,7 +76,6 @@ import { useAuth } from "@/context/AuthContext";
 
 // ROUTING
 import { useParams, useRouter } from "next/navigation";
-import BlogPreviewDialog from "@/components/blog/blog-preview";
 
 export default function EditBlogPage() {
   // ROUTER
@@ -239,17 +239,9 @@ export default function EditBlogPage() {
   };
 
   // CONFIRM BUTTON AFTER ALERT DIALOG
-  const handleConfirmSubmit = async () => {
-    console.log("click");
-
-    try {
-      await form.handleSubmit(onSubmit)();
-      setShowConfirmDialog(false);
-    } catch (error) {
-      console.log(error);
-    }
-
-    console.log("Tes");
+  const handleConfirmSubmit = () => {
+    form.handleSubmit(onSubmit)();
+    setShowConfirmDialog(false);
   };
 
   // CANCEL BUTTON ALERT DIALOG
@@ -259,13 +251,10 @@ export default function EditBlogPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
-    console.log(values);
-    console.log("Onsubmit");
     try {
       // API SERVICE
       const result = await editBlogService(id, values);
 
-      console.log(result);
       // EXTRACT BLOG ID
       const blogId = result?.data?.id;
       const blogUrl = `/blogs/view/${blogId}`;
@@ -284,8 +273,6 @@ export default function EditBlogPage() {
         ),
         duration: 4000,
       });
-
-      console.log("2");
 
       // RESET FORM AND IMAGE STATES ON SUCCESS
       form.reset(defaultValues);
