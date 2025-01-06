@@ -8,6 +8,8 @@ export default function middleware(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   const url = req.nextUrl;
 
+  console.log(accessToken);
+
   // Jika tidak ada accessToken dan user mencoba mengakses halaman selain /login
   if (!accessToken && !url.pathname.startsWith("/login")) {
     // Arahkan ke halaman login
