@@ -5,10 +5,17 @@ export const config = {
 };
 
 export default function middleware(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
+  const accessToken =
+    req.cookies.get("accessToken")?.value ||
+    req.headers
+      .get("cookie")
+      ?.split("; ")
+      .find((row) => row.startsWith("accessToken="))
+      ?.split("=")[1];
+
   const url = req.nextUrl;
 
-  console.log(accessToken);
+  console.log("Access Token in Middleware:", accessToken);
 
   // Jika tidak ada accessToken dan user mencoba mengakses halaman selain /login
   if (!accessToken && !url.pathname.startsWith("/login")) {
