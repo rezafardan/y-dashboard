@@ -1,19 +1,26 @@
-import { NextResponse, type NextRequest } from "next/server";
-
-export async function middleware(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
-
-  if (accessToken && req.nextUrl.pathname === "/login") {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  if (!accessToken && req.nextUrl.pathname !== "/login") {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  return NextResponse.next();
-}
+import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: ["/", "/blogs/:path*", "/users/:path*", "/profile/:path*"],
 };
+
+export default function middleware(req: NextRequest) {
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const url = req.nextUrl;
+
+  // Jika tidak ada accessToken dan user mencoba mengakses halaman selain /login
+  if (!accessToken && !url.pathname.startsWith("/login")) {
+    // Arahkan ke halaman login
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Jika ada accessToken dan user berada di halaman login, arahkan ke home
+  if (accessToken && url.pathname === "/login") {
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  // Jika token ada dan valid, lanjutkan permintaan
+  return NextResponse.next();
+}
