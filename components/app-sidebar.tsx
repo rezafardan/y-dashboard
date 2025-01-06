@@ -1,9 +1,14 @@
 "use client";
 
+import Link from "next/link";
+
+// COMPONENT
 import { Home, FileText, Users, Command } from "lucide-react";
-
 import { NavMain } from "@/components/nav-main";
-
+import { NavUser } from "./nav-user";
+import BreadcrumbResponsive from "./ui/breadcrumb-responsive";
+import { Separator } from "./ui/separator";
+import { ModeToggle } from "./ui/mode-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -12,17 +17,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
+
+// CONTEXT
 import { useAuth } from "@/context/AuthContext";
-import { Separator } from "./ui/separator";
-import BreadcrumbResponsive from "./ui/breadcrumb-responsive";
-import { ModeToggle } from "./ui/mode-toggle";
-import { NavUser } from "./nav-user";
-import { useEffect, useState } from "react";
 
 const navMain = [
   {
@@ -82,6 +82,7 @@ const navMain = [
   },
 ];
 
+// INTERFACE SIDEBAR
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   children: React.ReactNode;
 }
@@ -90,10 +91,9 @@ export function AppSidebar({ children, ...props }: AppSidebarProps) {
   const { id, role, username, profileImage } = useAuth();
   const { isMobile } = useSidebar();
 
-  // Filter menu berdasarkan role
+  // MENU FILTER BY ROLE
   const filteredNavMain = navMain
     .filter((section) => {
-      // Hapus section "Users" jika role bukan ADMINISTRATOR
       if (section.title === "Users" && role !== "ADMINISTRATOR") {
         return false;
       }
@@ -124,17 +124,15 @@ export function AppSidebar({ children, ...props }: AppSidebarProps) {
         }
 
         if (section.title === "Users") {
-          // Memastikan hanya ADMINISTRATOR yang dapat melihat seluruh section ini
           return {
             ...section,
             items: section.items.filter(() => role === "ADMINISTRATOR"),
           };
         }
       }
-      return section; // Menampilkan section tanpa perubahan jika tidak ada items
+      return section;
     });
 
-  // Fungsi untuk kapitalisasi huruf pertama nama
   const capitalizeName = (name: string | null) => {
     if (!name) return "";
     return name
@@ -149,6 +147,7 @@ export function AppSidebar({ children, ...props }: AppSidebarProps) {
 
   return (
     <>
+      {/* SIDEBAR */}
       <Sidebar variant="sidebar" side={isMobile ? "right" : "left"} {...props}>
         <SidebarHeader>
           <SidebarMenu>

@@ -1,7 +1,10 @@
 "use client";
+
+// COMPONENT
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
+// CONTEXT
 import { useAuth } from "@/context/AuthContext";
 
 export function ConditionalSidebar({
@@ -12,7 +15,6 @@ export function ConditionalSidebar({
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    // Gunakan LayoutDashboard jika user login
     return (
       <SidebarProvider>
         <AppSidebar>{children}</AppSidebar>
@@ -20,6 +22,5 @@ export function ConditionalSidebar({
     );
   }
 
-  // Render langsung tanpa LayoutDashboard jika user tidak login
   return <>{children}</>;
 }
