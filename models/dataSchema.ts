@@ -141,6 +141,11 @@ export interface editBlogData {
 
 // ================================================== //
 
+export interface Tag {
+  id: string;
+  name: string;
+  // tambahkan properti lain yang dibutuhkan
+}
 // TAGS LIST INTEFACE > FOR /TAGS
 export interface TagDataResponse {
   id: string;

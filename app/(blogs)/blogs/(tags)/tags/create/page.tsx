@@ -52,6 +52,7 @@ import { newTagSchema } from "@/models/formSchema";
 
 // ROUTING
 import { useRouter } from "next/navigation";
+import { Tag } from "@/models/dataSchema";
 
 export default function CreateTagPage() {
   // ROUTER
@@ -129,7 +130,7 @@ export default function CreateTagPage() {
 
   // ADDED STATUS DISABLED TO DATA TAGS
   const tagsDisabled = tags
-    ? tags.map((item: any) => ({
+    ? tags.map((item: Tag) => ({
         ...item,
         disable: true,
       }))
@@ -144,7 +145,7 @@ export default function CreateTagPage() {
           return;
         }
         const res =
-          tagsDisabled?.filter((tag: any) =>
+          tagsDisabled?.filter((tag: Tag) =>
             tag.name.toLowerCase().includes(value.toLowerCase())
           ) || [];
         resolve(res);

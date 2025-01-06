@@ -74,6 +74,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // ROUTING
 import { useRouter } from "next/navigation";
+import { Tag } from "@/models/dataSchema";
 
 export default function CreateBlogPage() {
   // ROUTER
@@ -187,7 +188,7 @@ export default function CreateBlogPage() {
 
     // SET VALUE FORM WITH GENERATE SLUG FUNCTION
     form.setValue("slug", slug, { shouldValidate: true });
-  }, [form.watch("title")]);
+  }, [form]);
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
@@ -325,7 +326,7 @@ export default function CreateBlogPage() {
         }
 
         const res =
-          tags?.filter((tag: any) =>
+          tags?.filter((tag: Tag) =>
             tag.name.toLowerCase().includes(value.toLowerCase())
           ) || [];
         resolve(res);

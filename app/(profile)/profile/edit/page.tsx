@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ export default function EditProfileDataPage() {
   // IMAGE CROPPER
   const [image, setImage] = useState<string | null>(null);
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
-  const [isImageCropped, setIsImageCropped] = useState<Boolean>();
+  const [isImageCropped, setIsImageCropped] = useState<boolean>();
 
   // EDIT BUTTON
   const [isEditing, setIsEditing] = useState(false);
@@ -95,7 +95,7 @@ export default function EditProfileDataPage() {
   });
 
   // FETCH USER DATA
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       // API SERVICE
       const result = await viewUserProfileService();
@@ -136,11 +136,11 @@ export default function EditProfileDataPage() {
         duration: 4000,
       });
     }
-  };
+  }, [form, toast]);
 
   useEffect(() => {
     fetchUserData();
-  }, [form]);
+  }, [fetchUserData]);
 
   // CROP IMAGE
   const handleCroppedImage = (file: File) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
@@ -85,7 +85,7 @@ export default function EditCategoryPage() {
   });
 
   // FETCH CATEGORY DATA
-  const fetchCategoryData = async () => {
+  const fetchCategoryData = useCallback(async () => {
     try {
       // API SERVICE
       const result = await getCategoryById(id);
@@ -114,11 +114,11 @@ export default function EditCategoryPage() {
         duration: 4000,
       });
     }
-  };
+  }, [form, id, toast]);
 
   useEffect(() => {
     fetchCategoryData();
-  }, [form]);
+  }, [fetchCategoryData]);
 
   // BUTTON HANDLER
   // EDIT BUTTON

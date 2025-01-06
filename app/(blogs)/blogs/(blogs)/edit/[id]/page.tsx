@@ -1,9 +1,8 @@
 "use client";
 
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 
 // COMPONENT
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -76,6 +75,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // ROUTING
 import { useParams, useRouter } from "next/navigation";
+import { Tag } from "@/models/dataSchema";
 
 export default function EditBlogPage() {
   // ROUTER
@@ -105,8 +105,28 @@ export default function EditBlogPage() {
   // STATUS BLOG
   const [blogStatus, setBlogStatus] = useState("PUBLSIH");
 
+  // FORM HANDLER
+  const defaultValues = {
+    title: "",
+    slug: "",
+    coverImageId: undefined,
+    content: "",
+    status: undefined,
+    tags: undefined,
+    categoryId: "",
+    allowComment: undefined,
+    publishedAt: undefined,
+  };
+
+  const form = useForm<z.infer<typeof newBlogSchema>>({
+    resolver: zodResolver(newBlogSchema),
+    defaultValues,
+    shouldFocusError: false,
+    mode: "onChange",
+  });
+
   // FETCH DATA BLOG
-  const fetchBlogData = async () => {
+  const fetchBlogData = useCallback(async () => {
     try {
       // API SERVICE
       const result = await getBlogByIdService(id);
@@ -126,6 +146,8 @@ export default function EditBlogPage() {
       };
 
       form.reset(blogData);
+
+      form.setValue("slug", result.slug);
 
       // SET STATUS TO PUBLISH
       if (result.status === "DRAFT") {
@@ -155,31 +177,13 @@ export default function EditBlogPage() {
         duration: 4000,
       });
     }
-  };
+  }, [id, form, toast]);
 
   useEffect(() => {
     fetchBlogData();
-  }, []);
+  }, [fetchBlogData]);
 
-  // FORM HANDLER
-  const defaultValues = {
-    title: "",
-    coverImageId: undefined,
-    content: "",
-    status: undefined,
-    tags: undefined,
-    categoryId: "",
-    allowComment: undefined,
-    publishedAt: undefined,
-  };
-
-  const form = useForm<z.infer<typeof newBlogSchema>>({
-    resolver: zodResolver(newBlogSchema),
-    defaultValues,
-    shouldFocusError: false,
-    mode: "onChange",
-  });
-
+  console.log(form.watch());
   // LISTENER IMAGE CHANGE
   const handleImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -249,28 +253,33 @@ export default function EditBlogPage() {
     setShowConfirmDialog(false);
   };
 
+  // CREATE SLUG FROM TITLE
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-");
+  };
+
+  // FORM WATCH SLUG
+  useEffect(() => {
+    const title = form.watch("title");
+    const slug = generateSlug(title);
+
+    // SET VALUE FORM WITH GENERATE SLUG FUNCTION
+    form.setValue("slug", slug, { shouldValidate: true });
+  }, [form]);
+
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     try {
       // API SERVICE
       const result = await editBlogService(id, values);
 
-      // EXTRACT BLOG ID
-      const blogId = result?.data?.id;
-      const blogUrl = `/blogs/view/${blogId}`;
-
       // TOAST MESSAGE FROM API
       toast({
-        description: (
-          <div>
-            {result.message}{" "}
-            {blogId && (
-              <Link href={blogUrl} className="underline">
-                view blog
-              </Link>
-            )}
-          </div>
-        ),
+        description: result.message,
         duration: 4000,
       });
 
@@ -288,6 +297,7 @@ export default function EditBlogPage() {
       }
 
       // REDIRECTING TO BLOG VIEW DETAIL
+      router.push(`/blogs/view/${id}`);
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
@@ -394,7 +404,7 @@ export default function EditBlogPage() {
         }
 
         const res =
-          tags?.filter((tag: any) =>
+          tags?.filter((tag: Tag) =>
             tag.name.toLowerCase().includes(value.toLowerCase())
           ) || [];
         resolve(res);
@@ -460,7 +470,7 @@ export default function EditBlogPage() {
                   <FormControl>
                     <div className="flex flex-col gap-2">
                       {coverImage ? (
-                        <div className="relative w-full aspect-video rounded-md overflow-hidden">
+                        <div className="relative w-full rounded-md overflow-hidden">
                           <img
                             loading="eager"
                             src={coverImage}
@@ -765,7 +775,11 @@ export default function EditBlogPage() {
               <Button
                 type="button"
                 onClick={handleSubmitButtonClick}
-                disabled={form.getValues("status") === "DRAFT"}
+                disabled={
+                  form.getValues("status") === "DRAFT" ||
+                  !form.formState.isValid ||
+                  form.formState.isSubmitting
+                }
               >
                 <CloudUpload />
                 Submit
@@ -780,7 +794,7 @@ export default function EditBlogPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Edit Blog</AlertDialogTitle>
             <AlertDialogDescription>
-              Once the blog is created, you can manage it by visiting the blog
+              Once the blog is edited, you can manage it by visiting the blog
               list in the menu. Use this list to edit or delete blog as needed.
             </AlertDialogDescription>
           </AlertDialogHeader>

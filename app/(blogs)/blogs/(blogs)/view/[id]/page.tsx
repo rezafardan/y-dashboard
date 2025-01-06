@@ -189,7 +189,7 @@ export default function ViewBlogPage() {
         <aside className="w-full md:w-1/3 h-auto pl-4 md:pl-2 pr-4">
           <Card className="p-4">
             {/* KOMENTAR */}
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <h3 className="text-lg font-semibold">Commentar</h3>
               <ul>
                 {blog?.comments?.map((comment: any) => (
@@ -201,7 +201,7 @@ export default function ViewBlogPage() {
                   </li>
                 )) || <p>No comments yet.</p>}
               </ul>
-            </div>
+            </div> */}
 
             {/* STATISTIC */}
             <div className="mb-4">

@@ -3,8 +3,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import type { Viewport } from "next";
 
-import React from "react";
-
 // FONT
 import localFont from "next/font/local";
 
@@ -12,10 +10,12 @@ import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/toaster";
 
 // PROVIDER
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import ThemeProviderWrapper from "@/components/theme/theme-provider-wrapper";
-import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import ProgressBarProviders from "@/components/progress-bar/progress-bar-provider";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { ConditionalSidebar } from "@/hooks/use-login";
 
 // FONT
 const geistSans = localFont({
@@ -53,12 +53,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <ThemeProviderWrapper>
-            <ProgressBarProviders>{children}</ProgressBarProviders>
-          </ThemeProviderWrapper>
-          <Toaster />
-        </AuthProvider>
+        <ProgressBarProviders>
+          <AuthProvider>
+            <ThemeProviderWrapper>
+              <ConditionalSidebar>{children}</ConditionalSidebar>
+            </ThemeProviderWrapper>
+            <Toaster />
+          </AuthProvider>
+        </ProgressBarProviders>
       </body>
     </html>
   );

@@ -8,13 +8,21 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { Separator } from "./ui/separator";
+import BreadcrumbResponsive from "./ui/breadcrumb-responsive";
+import { ModeToggle } from "./ui/mode-toggle";
+import { NavUser } from "./nav-user";
+import { useEffect, useState } from "react";
 
 const navMain = [
   {
@@ -74,8 +82,12 @@ const navMain = [
   },
 ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { role } = useAuth();
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  children: React.ReactNode;
+}
+
+export function AppSidebar({ children, ...props }: AppSidebarProps) {
+  const { id, role, username, profileImage } = useAuth();
   const { isMobile } = useSidebar();
 
   // Filter menu berdasarkan role
@@ -122,30 +134,78 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       return section; // Menampilkan section tanpa perubahan jika tidak ada items
     });
 
+  // Fungsi untuk kapitalisasi huruf pertama nama
+  const capitalizeName = (name: string | null) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+  const displayId = id ? id : "";
+  const displayUserName = username ? capitalizeName(username) : "";
+  const displayUserRole = role ? role.toUpperCase() : "";
+  const userProfileImage = profileImage || "";
+
   return (
-    <Sidebar variant="sidebar" side={isMobile ? "right" : "left"} {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    Prototype Dashboard
-                  </span>
-                  <span className="truncate text-xs">{role}</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={filteredNavMain} />
-      </SidebarContent>
-    </Sidebar>
+    <>
+      <Sidebar variant="sidebar" side={isMobile ? "right" : "left"} {...props}>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" asChild>
+                <Link href="/">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <Command className="size-4" />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      Prototype Dashboard
+                    </span>
+                    <span className="truncate text-xs">{role}</span>
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <NavMain items={filteredNavMain} />
+        </SidebarContent>
+      </Sidebar>
+
+      {/* HEADER TOP */}
+      <SidebarInset className="overflow-x-hidden transition-[margin] md:overflow-y-hidden md:pt-0 h-full">
+        <header className="flex gap-2 justify-between items-center px-4 py-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex gap-2 items-center">
+            <SidebarTrigger />
+            <Separator
+              orientation="vertical"
+              className="mr-2 h-4 hidden md:block"
+            />
+            <BreadcrumbResponsive />
+          </div>
+          <div className="flex items-center gap-2 px-4">
+            <ModeToggle />
+            <NavUser
+              user={{
+                id: displayId,
+                username: displayUserName,
+                role: displayUserRole,
+                profileImage: userProfileImage,
+              }}
+            />
+          </div>
+        </header>
+
+        <div className="mx-4">
+          <Separator />
+        </div>
+
+        <main className="flex flex-col justify-start gap-2 p-4 w-full min-h-full">
+          {children}
+        </main>
+      </SidebarInset>
+    </>
   );
 }

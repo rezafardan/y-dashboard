@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // COMPONENT
 import { Input } from "@/components/ui/input";
@@ -81,7 +81,7 @@ export default function EditTagPage() {
   });
 
   // FETCH TAG DATA
-  const fetchTagData = async () => {
+  const fetchTagData = useCallback(async () => {
     try {
       // API SERVICE
       const result = await getTagByIdService(id);
@@ -109,11 +109,11 @@ export default function EditTagPage() {
         duration: 4000,
       });
     }
-  };
+  }, [form, id, toast]);
 
   useEffect(() => {
     fetchTagData();
-  }, [form]);
+  }, [fetchTagData]);
 
   // BUTTON HANDLER
   // EDIT BUTTON

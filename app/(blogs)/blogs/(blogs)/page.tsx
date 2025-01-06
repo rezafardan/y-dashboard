@@ -60,7 +60,6 @@ import { ApiErrorResponse } from "@/models/error";
 
 // ROUTING
 import { useRouter } from "next/navigation";
-import { stat } from "fs";
 
 // TABLE HEADER
 const columns: ColumnDef<BlogDataResponse>[] = [
