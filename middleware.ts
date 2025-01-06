@@ -5,7 +5,7 @@ export const config = {
 };
 
 export default function middleware(req: NextRequest) {
-  console.log("All Cookies:", req.cookies.getAll());
+  console.log("Cookies", req.cookies);
 
   const accessToken = req.cookies.get("accessToken")?.value;
   const url = req.nextUrl;
