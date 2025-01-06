@@ -5,31 +5,18 @@ export const config = {
 };
 
 export default function middleware(req: NextRequest) {
-  const accessToken =
-    req.cookies.get("accessToken")?.value ||
-    req.headers
-      .get("cookie")
-      ?.split("; ")
-      .find((row) => row.startsWith("accessToken="))
-      ?.split("=")[1];
+  console.log("All Cookies:", req.cookies.getAll());
 
+  const accessToken = req.cookies.get("accessToken")?.value;
   const url = req.nextUrl;
 
-  console.log("Access Token in Middleware:", accessToken);
-
-  // Jika tidak ada accessToken dan user mencoba mengakses halaman selain /login
   if (!accessToken && !url.pathname.startsWith("/login")) {
-    // Arahkan ke halaman login
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Jika ada accessToken dan user berada di halaman login, arahkan ke home
   if (accessToken && url.pathname === "/login") {
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Jika token ada dan valid, lanjutkan permintaan
   return NextResponse.next();
 }
