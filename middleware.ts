@@ -7,7 +7,7 @@ export const config = {
 export default function middleware(req: NextRequest) {
   console.log("All Cookies:", req.cookies.getAll());
 
-  const accessToken = req.cookies.get("accessToken")?.value;
+  const accessToken = req.cookies.get("_vercel_jwt")?.value;
   const url = req.nextUrl;
 
   if (!accessToken && !url.pathname.startsWith("/login")) {
