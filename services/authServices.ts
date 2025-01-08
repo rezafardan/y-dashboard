@@ -18,7 +18,7 @@ export const loginService = async (credential: {
 };
 
 export const logoutService = async () => {
-  const result = await axiosInstance.post("logout", null, {
+  const result = await axiosInstance.post("logout", {
     withCredentials: true,
   });
   return result.data;

@@ -22,12 +22,23 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log("Response headers:", response.headers);
-    console.log("Cookies after request:", document.cookie);
     return response;
   },
   async (error) => {
-    console.log("Error response:", error.response);
+    const status = error.response?.status;
+    const redirect = error.response?.data?.redirect;
+
+    // Cek status 401 atau 403 untuk redirect ke login
+    if (status === 401 || status === 403) {
+      if (redirect) {
+        // Redirect ke halaman login
+        window.location.href = redirect;
+      } else {
+        // Default redirect jika `redirect` tidak tersedia
+        window.location.href = "/login";
+      }
+    }
+
     return Promise.reject(error);
   }
 );

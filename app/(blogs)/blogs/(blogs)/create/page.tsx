@@ -357,10 +357,6 @@ export default function CreateBlogPage() {
     });
   };
 
-  useEffect(() => {
-    console.log("Document cookies:", document.cookie);
-  }, []);
-
   if (isLoadingTags) return <GlobalSkeleton />;
   if (tagsError) return <p>Error loading data tags</p>;
 
