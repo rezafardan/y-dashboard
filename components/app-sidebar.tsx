@@ -158,7 +158,7 @@ export function AppSidebar({ children, ...props }: AppSidebarProps) {
   return (
     <>
       {/* SIDEBAR */}
-      <Sidebar variant="sidebar" side={isMobile ? "right" : "left"} {...props}>
+      <Sidebar variant="sidebar" side="left" {...props}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>

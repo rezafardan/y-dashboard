@@ -187,8 +187,6 @@ export default function CreateBlogPage() {
       .replace(/\s+/g, "-");
   };
 
-  console.log(form.watch());
-
   // FORM WATCH SLUG
   useEffect(() => {
     const title = form.watch("title");

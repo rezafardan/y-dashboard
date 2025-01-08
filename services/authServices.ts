@@ -10,9 +10,6 @@ export const loginService = async (credential: {
 }): Promise<LoginResponse> => {
   const result = await axiosInstance.post("login", credential, {
     withCredentials: true,
-    headers: {
-      "Content-Type": "application/json",
-    },
   });
   return result.data;
 };

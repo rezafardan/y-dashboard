@@ -91,7 +91,7 @@ export function GrowthBlogByCategoryChart() {
   return (
     <Card>
       <CardHeader className="border-b py-5">
-        <CardTitle>Blogs per Category</CardTitle>
+        <CardTitle>Total Blogs per Category</CardTitle>
         <CardDescription>Showing total blog by category</CardDescription>
       </CardHeader>
       <CardContent className="pb-0 my-10">

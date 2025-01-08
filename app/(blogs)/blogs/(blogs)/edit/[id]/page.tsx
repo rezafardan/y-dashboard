@@ -156,8 +156,6 @@ export default function EditBlogPage() {
           : undefined,
       };
 
-      console.log(result);
-
       form.reset(blogData);
 
       form.setValue("slug", result.slug);
@@ -283,8 +281,6 @@ export default function EditBlogPage() {
     form.setValue("slug", slug, { shouldValidate: true });
   }, [form.watch("title")]);
 
-  console.log(form.watch());
-
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
     setIsSubmitting(true);
@@ -361,8 +357,6 @@ export default function EditBlogPage() {
         ...form.getValues(),
         status: BlogStatus.DRAFT,
       };
-
-      console.log(draftValues);
 
       // API SERVICE
       const result = await editBlogService(id, draftValues);

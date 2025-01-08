@@ -20,12 +20,16 @@ import { ChevronLeft, UserPen } from "lucide-react";
 // SERVICE
 import { getUserByIdService } from "@/services/userServices";
 
+// TOAST
+import { useToast } from "@/hooks/use-toast";
+
 // ROUTING
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
 // MODELS
 import { UserDataResponse } from "@/models/dataSchema";
+import { ApiErrorResponse } from "@/models/error";
 
 export default function ViewUserPage() {
   // ROUTER
@@ -33,6 +37,9 @@ export default function ViewUserPage() {
 
   // GET PARAMS
   const { id } = useParams();
+
+  // TOAST
+  const { toast } = useToast();
 
   // FETCH USER DATA
   const [userData, setUserData] = useState<UserDataResponse | null>(null);
@@ -42,7 +49,20 @@ export default function ViewUserPage() {
 
       setUserData(result);
     } catch (error) {
-      console.log(error);
+      // ERROR HANDLER
+      const apiError = error as { response?: { data?: ApiErrorResponse } };
+      const errorMessage =
+        apiError.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : "An unexpected error occurred");
+
+      // TOAST MESSAGE FROM API
+      toast({
+        description: errorMessage,
+        variant: "destructive",
+        duration: 4000,
+      });
     }
   };
 

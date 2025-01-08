@@ -36,8 +36,8 @@ export function TotalBlogChart() {
   return (
     <Card>
       <CardHeader className="items-center pb-0">
-        <CardTitle>Total Visitor (Dummy Data)</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Total Visitor</CardTitle>
+        <CardDescription>October 2024 - Jan 2025</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 items-center pb-0">
         <ChartContainer

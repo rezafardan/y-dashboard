@@ -50,8 +50,6 @@ export default function ViewBlogPage() {
     isLoading,
   } = useSWR(id ? `/blogs/${id}` : null, fetcherBlog);
 
-  console.log(blog);
-
   const blogContent = useMemo(() => {
     if (!blog?.content) {
       return "<p>No content available...</p>";

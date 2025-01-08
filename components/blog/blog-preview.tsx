@@ -35,7 +35,6 @@ const BlogPreviewDialog = ({ blog, disabled = false }: BlogPreviewProps) => {
     try {
       return generateBlogHTML(blog.content);
     } catch (error) {
-      console.error("Error in preview:", error);
       return "";
     }
   }, [blog?.content]);

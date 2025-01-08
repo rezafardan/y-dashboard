@@ -53,8 +53,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const defaultValues = {
-    username: "",
-    password: "",
+    username: "demo",
+    password: "demo",
   };
 
   const form = useForm<z.infer<typeof loginSchema>>({
