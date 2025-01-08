@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const token = req.cookies.get("accessToken")?.value;
 
-  // Jika pengguna membuka root atau halaman lain selain /login, redirect ke /login
-  if (pathname === "/" || !pathname.startsWith("/login")) {
+  console.log("Access Token from Cookies:", token);
+
+  // Jika tidak ada token, redirect ke halaman login
+  if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Jika pengguna sudah di /login, teruskan request
+  // Jika token ada, teruskan request
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/:path*"], // Cocokkan semua route
+  matcher: ["/", "/blogs/:path*", "/users/:path*", "/profile/:path*"],
 };
