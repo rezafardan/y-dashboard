@@ -148,9 +148,7 @@ export default function ViewBlogPage() {
               {/* COVER IMAGE */}
               {blog?.coverImageId ? (
                 <img
-                  src={`http://localhost:3001/${
-                    blog.coverImage?.filepath || ""
-                  }`}
+                  src={`${process.env.NEXT_PUBLIC_ASSETS_URL}/${blog.coverImage?.filepath}`}
                   alt={blog.title || "Blog Image"}
                   className="w-full h-full object-cover"
                 />
