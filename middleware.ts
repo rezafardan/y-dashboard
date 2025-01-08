@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export default function middleware(req: NextRequest) {
-  console.log("Cookies received:", req.cookies.getAll());
+  // Log raw cookie header
+  console.log("Raw cookie header:", req.headers.get("cookie"));
 
-  console.log("Environment:", process.env.NODE_ENV);
-  console.log("Current URL:", req.url);
+  // Log parsed cookies
+  const cookieStore: any = req.cookies;
+  console.log("Parsed cookies:", [...cookieStore.entries()]);
 
   const cookies = req.cookies;
   console.log("All cookies:", cookies);

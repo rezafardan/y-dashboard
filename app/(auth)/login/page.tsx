@@ -72,6 +72,8 @@ export default function LoginPage() {
       sessionStorage.setItem("userData", JSON.stringify(userData));
       loginUser(userData);
 
+      console.log(response);
+
       toast({
         description: successMessage,
         action: <ToastClose />,
