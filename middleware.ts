@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get("accessToken")?.value;
+export default function middleware(req: NextRequest) {
+  const accessToken = req.cookies.get("accessToken")?.value;
+  console.log("Access token:", accessToken);
 
-  console.log("Access Token from Cookies:", token);
+  const url = req.nextUrl;
 
-  // Jika tidak ada token, redirect ke halaman login
-  if (!token) {
+  if (!accessToken && !url.pathname.startsWith("/login")) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Jika token ada, teruskan request
+  if (accessToken && url.pathname === "/login") {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return NextResponse.next();
 }
 

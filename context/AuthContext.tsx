@@ -51,7 +51,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role: UserRole;
     profileImage: string;
   }) => {
-    console.log(document.cookie);
     setId(userData.id);
     setUsername(userData.username);
     setRole(userData.role);
