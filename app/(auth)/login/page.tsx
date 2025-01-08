@@ -121,6 +121,7 @@ export default function LoginPage() {
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="grid gap-2"
+                method="POST"
               >
                 {/* USERNAME */}
                 <div className="grid gap-4">
