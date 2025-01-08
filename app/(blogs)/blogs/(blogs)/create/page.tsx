@@ -357,7 +357,11 @@ export default function CreateBlogPage() {
     });
   };
 
-  if (isLoadingTags) return <p>Loading...</p>;
+  useEffect(() => {
+    console.log("Document cookies:", document.cookie);
+  }, []);
+
+  if (isLoadingTags) return <GlobalSkeleton />;
   if (tagsError) return <p>Error loading data tags</p>;
 
   // PREVIEW BLOG DATA
