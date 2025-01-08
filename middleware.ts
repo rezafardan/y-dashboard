@@ -5,6 +5,8 @@ export const config = {
 };
 
 export default function middleware(req: NextRequest) {
+  console.log("Cookies received:", req.cookies.getAll());
+
   console.log("Environment:", process.env.NODE_ENV);
   console.log("Current URL:", req.url);
 

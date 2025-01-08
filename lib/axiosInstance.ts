@@ -19,9 +19,11 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
+    console.log("Response headers:", response.headers);
     return response;
   },
   async (error) => {
+    console.log("Error response:", error.response);
     return Promise.reject(error);
   }
 );
