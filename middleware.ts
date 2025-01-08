@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const config = {
-  matcher: ["/", "/blogs/:path*", "/users/:path*", "/profile/:path*"],
-};
-
-export default function middleware(req: NextRequest) {
+export default function middleware(req: NextRequest, res: NextResponse) {
   console.log("Cookies received:", req.cookies.getAll());
+
+  console.log("Response", res.cookies);
 
   console.log("Environment:", process.env.NODE_ENV);
   console.log("Current URL:", req.url);
@@ -30,3 +28,7 @@ export default function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/", "/blogs/:path*", "/users/:path*", "/profile/:path*"],
+};
