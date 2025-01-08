@@ -2,11 +2,7 @@
 import axiosInstance from "@/lib/axiosInstance";
 
 // MODELS
-import {
-  BlogDataResponse,
-  editBlogData,
-  CreateBlogData,
-} from "@/models/dataSchema";
+import { BlogDataResponse, CreateBlogData } from "@/models/dataSchema";
 
 // DONE
 export const getAllBlogsService = async (): Promise<BlogDataResponse[]> => {

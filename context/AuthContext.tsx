@@ -7,6 +7,8 @@ import {
   useState,
   useEffect,
 } from "react";
+
+// MODELS
 import { UserRole } from "@/models/dataSchema";
 
 interface AuthContextType {
@@ -65,7 +67,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Untuk logout, reset semua data
   const logoutUser = () => {
     sessionStorage.removeItem("userData");
     setId(null);

@@ -4,6 +4,7 @@ import React, { Fragment, useCallback, useEffect, useState } from "react";
 
 // COMPONENT
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tiptap } from "@/components/tiptap/tiptap-editor";
@@ -66,6 +67,7 @@ import { useToast } from "@/hooks/use-toast";
 // MODELS
 import { ApiErrorResponse } from "@/models/error";
 import { newBlogSchema, BlogStatus } from "@/models/formSchema";
+import { Tag } from "@/models/dataSchema";
 
 // DATE SETTER
 import { id as dateId } from "date-fns/locale";
@@ -75,7 +77,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // ROUTING
 import { useParams, useRouter } from "next/navigation";
-import { Tag } from "@/models/dataSchema";
+import GlobalSkeleton from "@/components/global-skeleton";
 
 export default function EditBlogPage() {
   // ROUTER
@@ -104,6 +106,9 @@ export default function EditBlogPage() {
 
   // STATUS BLOG
   const [blogStatus, setBlogStatus] = useState("PUBLSIH");
+
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FORM HANDLER
   const defaultValues = {
@@ -138,12 +143,20 @@ export default function EditBlogPage() {
         content: JSON.stringify(result.content) || "",
         status: result.status || "",
         categoryId: result.category?.id || "",
-        tags: result.tags || [],
+        tags:
+          result.tags.map(
+            (tagWrapper: { tag: { id: string; name: string } }) => ({
+              id: tagWrapper.tag.id,
+              name: tagWrapper.tag.name,
+            })
+          ) || [],
         allowComment: result.allowComment ?? true,
         publishedAt: result.publishedAt
           ? new Date(result.publishedAt)
           : undefined,
       };
+
+      console.log(result);
 
       form.reset(blogData);
 
@@ -183,7 +196,6 @@ export default function EditBlogPage() {
     fetchBlogData();
   }, [fetchBlogData]);
 
-  console.log(form.watch());
   // LISTENER IMAGE CHANGE
   const handleImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -269,10 +281,14 @@ export default function EditBlogPage() {
 
     // SET VALUE FORM WITH GENERATE SLUG FUNCTION
     form.setValue("slug", slug, { shouldValidate: true });
-  }, [form]);
+  }, [form.watch("title")]);
+
+  console.log(form.watch());
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
+    setIsSubmitting(true);
+
     try {
       // API SERVICE
       const result = await editBlogService(id, values);
@@ -286,7 +302,7 @@ export default function EditBlogPage() {
       // RESET FORM AND IMAGE STATES ON SUCCESS
       form.reset(defaultValues);
       form.setValue("tags", []);
-      form.setValue("status", undefined);
+      form.setValue("status", BlogStatus.PUBLISH);
       setCoverImage(null);
       setShouldResetEditor(true);
       const fileInput = document.querySelector(
@@ -313,6 +329,8 @@ export default function EditBlogPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -389,9 +407,9 @@ export default function EditBlogPage() {
     isLoading: isLoadingTags,
   } = useSWR("/tag", fetcherTags);
 
-  if (isLoadingCategories) return <p>Loading...</p>;
+  if (isLoadingCategories) return <GlobalSkeleton />;
   if (categoriesError) return <p>Error loading data categories</p>;
-  if (isLoadingTags) return <p>Loading...</p>;
+  if (isLoadingTags) return <GlobalSkeleton />;
   if (tagsError) return <p>Error loading data tags</p>;
 
   // DEBOUNCE FETCH TAGS DATA
@@ -772,8 +790,9 @@ export default function EditBlogPage() {
                 Cancel
               </Button>
 
-              <Button
+              <LoadingButton
                 type="button"
+                loading={isSubmitting}
                 onClick={handleSubmitButtonClick}
                 disabled={
                   form.getValues("status") === "DRAFT" ||
@@ -781,9 +800,9 @@ export default function EditBlogPage() {
                   form.formState.isSubmitting
                 }
               >
-                <CloudUpload />
-                Submit
-              </Button>
+                <CloudUpload className={isSubmitting ? "hidden" : ""} />
+                Save Changes
+              </LoadingButton>
             </div>
           </div>
         )}

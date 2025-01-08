@@ -1,6 +1,5 @@
-// utils/generateBlogHTML.ts
-
 import { generateHTML } from "@tiptap/html";
+
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
@@ -21,16 +20,13 @@ import Dropcursor from "@tiptap/extension-dropcursor";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 
-// Fungsi untuk menghasilkan HTML dari konten blog
 export const generateBlogHTML = (content: string) => {
   try {
-    // Parse the content if it's a string
     const parsedContent =
       typeof content === "string" ? JSON.parse(content) : content;
 
-    // Check if we have a valid Tiptap JSON structure
     if (!parsedContent || !parsedContent.type) {
-      return ""; // Return empty string for invalid content
+      return "";
     }
 
     return generateHTML(parsedContent, [
@@ -56,6 +52,6 @@ export const generateBlogHTML = (content: string) => {
     ]);
   } catch (error) {
     console.error("Error generating HTML:", error);
-    return ""; // Return empty string on error
+    return "";
   }
 };

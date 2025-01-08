@@ -53,7 +53,8 @@ import { editCategorySchema, editTagSchema } from "@/models/formSchema";
 
 // ROUTING
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Pencil } from "lucide-react";
+import { ChevronLeft, CloudUpload, Pencil } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export default function EditCategoryPage() {
   // ROUTER
@@ -70,6 +71,9 @@ export default function EditCategoryPage() {
 
   // EDIT BUTTON
   const [isEditing, setIsEditing] = useState(false);
+
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FORM HANDLER
   const defaultValues = {
@@ -150,6 +154,8 @@ export default function EditCategoryPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof editTagSchema>) => {
+    setIsSubmitting(true);
+
     try {
       // API SERVICE
       const result = await editCategoryService(id, values);
@@ -180,6 +186,8 @@ export default function EditCategoryPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -259,7 +267,13 @@ export default function EditCategoryPage() {
             <Button variant="outline" onClick={handleCancelButtonClick}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitButtonClick}>Save Changes</Button>
+            <LoadingButton
+              loading={isSubmitting}
+              onClick={handleSubmitButtonClick}
+            >
+              <CloudUpload className={isSubmitting ? "hidden" : ""} />
+              Save Changes
+            </LoadingButton>
           </div>
         )}
       </CardFooter>

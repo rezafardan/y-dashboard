@@ -1,7 +1,9 @@
 "use client";
 
-import { UserPen, LogOut } from "lucide-react";
-
+// COMPONENT
+import { useSidebar } from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
+import { ToastClose } from "./ui/toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,15 +14,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSidebar } from "@/components/ui/sidebar";
 
-import { useRouter } from "next/navigation";
+import { UserPen, LogOut } from "lucide-react";
+
+// API SERVICE
 import { logoutService } from "@/services/authServices";
+
+// TOAST
 import { useToast } from "@/hooks/use-toast";
-import { ToastClose } from "./ui/toast";
-import { Button } from "./ui/button";
+
+// CONTEXT
 import { useAuth } from "@/context/AuthContext";
+
+// MODELS
 import { ApiErrorResponse } from "@/models/error";
+
+// ROUTING
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
@@ -58,7 +68,6 @@ export function NavUser({
     } catch (error) {
       // ERROR HANDLER
       const apiError = error as { response?: { data?: ApiErrorResponse } };
-
       const errorMessage =
         apiError.response?.data?.message ||
         (error instanceof Error

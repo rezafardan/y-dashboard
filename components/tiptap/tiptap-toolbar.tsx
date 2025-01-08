@@ -14,6 +14,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  AlignJustify,
   Underline,
   Image,
   Link2,
@@ -279,6 +280,17 @@ export const Toolbar = ({ editor }: Props) => {
           title="Align Right"
         >
           <AlignRight className="h-4 w-4" />
+        </Toggle>
+
+        <Toggle
+          size="sm"
+          pressed={editor.isActive({ textAlign: "justify" })}
+          onPressedChange={() =>
+            editor.chain().focus().setTextAlign("justify").run()
+          }
+          title="Align Justify"
+        >
+          <AlignJustify className="h-4 w-4" />
         </Toggle>
 
         <Separator orientation="vertical" className="h-4" />

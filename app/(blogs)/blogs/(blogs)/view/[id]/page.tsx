@@ -27,6 +27,7 @@ import { useParams, useRouter } from "next/navigation";
 
 // UTILS PARSING JSON TO HTML
 import { generateBlogHTML } from "@/utils/generateBlogHTML";
+import GlobalSkeleton from "@/components/global-skeleton";
 
 interface Tag {
   id: string;
@@ -49,6 +50,8 @@ export default function ViewBlogPage() {
     isLoading,
   } = useSWR(id ? `/blogs/${id}` : null, fetcherBlog);
 
+  console.log(blog);
+
   const blogContent = useMemo(() => {
     if (!blog?.content) {
       return "<p>No content available...</p>";
@@ -62,15 +65,7 @@ export default function ViewBlogPage() {
     .map((word: string) => word.charAt(0).toUpperCase())
     .join("");
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent>
-          <p>Loading...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (isLoading) return <GlobalSkeleton />;
 
   if (error) {
     return (
@@ -175,9 +170,9 @@ export default function ViewBlogPage() {
 
               {/* TAG */}
               <div className="mt-8">
-                {blog?.tags?.map((tag: Tag) => (
-                  <Badge key={tag.id} className="mr-1 rounded">
-                    {tag.name}
+                {blog?.tags?.map((tage: any) => (
+                  <Badge key={tage.tag.name} className="mr-1 rounded">
+                    {tage.tag.name}
                   </Badge>
                 )) || "No Tags"}
               </div>

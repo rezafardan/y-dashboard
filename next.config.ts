@@ -1,19 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   eslint: {
-    ignoreDuringBuilds: true, // Disable ESLint during builds
+    ignoreDuringBuilds: true,
   },
   images: {
     remotePatterns: [
       {
         protocol: "http",
-        hostname: "**", // Mengizinkan semua hostname HTTP
+        hostname: "**",
       },
       {
         protocol: "https",
-        hostname: "**", // Mengizinkan semua hostname HTTPS
+        hostname: "**",
       },
     ],
   },

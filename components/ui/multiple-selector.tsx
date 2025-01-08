@@ -358,6 +358,10 @@ const MultipleSelector = React.forwardRef<
     const CreatableItem = () => {
       if (!creatable) return undefined;
 
+      if (inputValue.endsWith(" ")) {
+        return undefined;
+      }
+
       if (
         isOptionsExist(options, [{ id: inputValue, name: inputValue }]) ||
         selected.find((s) => s.name === inputValue)
@@ -384,7 +388,7 @@ const MultipleSelector = React.forwardRef<
             onChange?.(newOptions);
           }}
         >
-          {`Create new tag:  "${inputValue}"`}
+          {`Create new tag:  ${inputValue}`}
         </CommandItem>
       );
 

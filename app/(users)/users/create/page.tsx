@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from "react";
 // COMPONENT
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Separator } from "@/components/ui/separator";
 import {
   Form,
@@ -86,6 +87,9 @@ export default function CreateUserPage() {
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const [isImageCropped, setIsImageCropped] = useState<Boolean>();
 
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // FORM HANDLER
   const defaultValues = {
     username: "",
@@ -166,6 +170,15 @@ export default function CreateUserPage() {
 
   // SUBMIT FORM BUTTON
   const handleSubmitButtonClick = () => {
+    if (isImageCropped === false) {
+      toast({
+        description: "Please crop the selected image before submitting.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      return;
+    }
+
     setShowConfirmDialog(true);
   };
 
@@ -182,16 +195,9 @@ export default function CreateUserPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newUserSchema>) => {
-    try {
-      // ERROR IF IMAGE NOT CROPPING
-      if (!croppedFile && !isImageCropped) {
-        toast({
-          description: "Please crop the image before submitting",
-          variant: "destructive",
-        });
-        return;
-      }
+    setIsSubmitting(true);
 
+    try {
       // SETTING UP FORMDATA
       const formData = new FormData();
 
@@ -237,6 +243,8 @@ export default function CreateUserPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -419,14 +427,15 @@ export default function CreateUserPage() {
           <ChevronLeft />
           Back
         </Button>
-        <Button
+        <LoadingButton
           type="button"
+          loading={isSubmitting}
           onClick={handleSubmitButtonClick}
           disabled={!form.formState.isValid || form.formState.isSubmitting}
         >
-          <CloudUpload />
+          <CloudUpload className={isSubmitting ? "hidden" : ""} />
           Submit
-        </Button>
+        </LoadingButton>
       </CardFooter>
 
       {/* ALERT DIALOG */}

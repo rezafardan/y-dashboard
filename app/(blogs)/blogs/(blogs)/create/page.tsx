@@ -75,6 +75,8 @@ import { useAuth } from "@/context/AuthContext";
 // ROUTING
 import { useRouter } from "next/navigation";
 import { Tag } from "@/models/dataSchema";
+import { LoadingButton } from "@/components/ui/loading-button";
+import GlobalSkeleton from "@/components/global-skeleton";
 
 export default function CreateBlogPage() {
   // ROUTER
@@ -95,6 +97,10 @@ export default function CreateBlogPage() {
   // COVER IMAGE STATES
   const [coverImage, setCoverImage] = useState<string | null>(null);
 
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaveToDraft, setIsSaveToDraft] = useState(false);
+
   // FORM HANDLER
   const defaultValues = {
     title: "",
@@ -104,7 +110,7 @@ export default function CreateBlogPage() {
     status: undefined,
     tags: undefined,
     categoryId: undefined,
-    allowComment: true,
+    allowComment: undefined,
     publishedAt: undefined,
   };
 
@@ -181,6 +187,8 @@ export default function CreateBlogPage() {
       .replace(/\s+/g, "-");
   };
 
+  console.log(form.watch());
+
   // FORM WATCH SLUG
   useEffect(() => {
     const title = form.watch("title");
@@ -188,10 +196,12 @@ export default function CreateBlogPage() {
 
     // SET VALUE FORM WITH GENERATE SLUG FUNCTION
     form.setValue("slug", slug, { shouldValidate: true });
-  }, [form]);
+  }, [form.watch("title")]);
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newBlogSchema>) => {
+    setIsSubmitting(true);
+
     try {
       // API SERVICE
       const result = await createBlogService(values);
@@ -218,7 +228,7 @@ export default function CreateBlogPage() {
       // RESET FORM AND IMAGE STATES ON SUCCESS
       form.reset(defaultValues);
       form.setValue("tags", []);
-      form.setValue("status", undefined);
+      form.setValue("status", "" as any);
       setCoverImage(null);
       setShouldResetEditor(true);
       const fileInput = document.querySelector(
@@ -242,13 +252,22 @@ export default function CreateBlogPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // HANDLING SAVE TO DRAFT
   const onSaveToDraft = async () => {
+    setIsSaveToDraft(true);
+
     // FORM VALIDATION
-    const isValid = await form.trigger(["title", "content", "categoryId"]);
+    const isValid = await form.trigger([
+      "title",
+      "content",
+      "categoryId",
+      "allowComment",
+    ]);
 
     // TOAST MESSAGE
     if (!isValid) {
@@ -258,6 +277,8 @@ export default function CreateBlogPage() {
         variant: "destructive",
         duration: 4000,
       });
+
+      setIsSaveToDraft(false);
       return;
     }
 
@@ -294,6 +315,8 @@ export default function CreateBlogPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSaveToDraft(false);
     }
   };
 
@@ -311,9 +334,9 @@ export default function CreateBlogPage() {
     isLoading: isLoadingTags,
   } = useSWR("/tag", fetcherTags);
 
-  if (isLoadingCategories) return <p>Loading...</p>;
+  if (isLoadingCategories) return <GlobalSkeleton />;
   if (categoriesError) return <p>Error loading data categories</p>;
-  if (isLoadingTags) return <p>Loading...</p>;
+  if (isLoadingTags) return <GlobalSkeleton />;
   if (tagsError) return <p>Error loading data tags</p>;
 
   // DEBOUNCE FETCH TAGS DATA
@@ -400,7 +423,7 @@ export default function CreateBlogPage() {
                             loading="eager"
                             src={coverImage}
                             alt="Cover image preview"
-                            className="w-full h-full"
+                            className="w-full h-full object-cover"
                             fill
                           />
                         </div>
@@ -635,10 +658,11 @@ export default function CreateBlogPage() {
               {/* DRAFT AND PREVIEW */}
               <div className="flex gap-2 flex-row items-center justify-end rounded-lg border p-2 bg-background dark:bg-background">
                 {/* SAVE TO DRAFT */}
-                <Button
+                <LoadingButton
+                  type="button"
+                  loading={isSaveToDraft}
                   variant="secondary"
                   onClick={onSaveToDraft}
-                  type="button"
                   disabled={
                     form.watch("title").trim() === "" ||
                     form.watch("content").trim() === "" ||
@@ -646,9 +670,9 @@ export default function CreateBlogPage() {
                   }
                   className="flex"
                 >
-                  <ClipboardList />
+                  <ClipboardList className={isSaveToDraft ? "hidden" : ""} />
                   Save To Draft
-                </Button>
+                </LoadingButton>
 
                 {/* PRVIEW */}
                 <BlogPreviewDialog
@@ -672,14 +696,15 @@ export default function CreateBlogPage() {
           Back
         </Button>
 
-        <Button
+        <LoadingButton
           type="button"
+          loading={isSubmitting}
           onClick={handleSubmitButtonClick}
           disabled={!form.formState.isValid || form.formState.isSubmitting}
         >
-          <CloudUpload />
+          <CloudUpload className={isSubmitting ? "hidden" : ""} />
           Submit
-        </Button>
+        </LoadingButton>
       </CardFooter>
 
       {/* ALERT DIALOG SUBMIT*/}

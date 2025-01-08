@@ -4,7 +4,6 @@ import axiosInstance from "@/lib/axiosInstance";
 // MODELS
 import {
   CategoriesDataResponse,
-  editCategoryData,
   CreateCategoryData,
 } from "@/models/dataSchema";
 

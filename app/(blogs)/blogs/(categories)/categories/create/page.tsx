@@ -5,6 +5,7 @@ import React, { useState } from "react";
 // COMPONENT
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
@@ -62,6 +63,9 @@ export default function CreateCategoryPage() {
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // FORM HANDLER
   const defaultValues = {
     name: "",
@@ -93,6 +97,8 @@ export default function CreateCategoryPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newCategorySchema>) => {
+    setIsSubmitting(true);
+
     try {
       // SEND TO API
       const result = await createCategoryService(values);
@@ -120,6 +126,8 @@ export default function CreateCategoryPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -182,14 +190,15 @@ export default function CreateCategoryPage() {
           <ChevronLeft />
           Back
         </Button>
-        <Button
+        <LoadingButton
           type="button"
+          loading={isSubmitting}
           onClick={handleSubmitButtonClick}
           disabled={!form.formState.isValid || form.formState.isSubmitting}
         >
-          <CloudUpload />
+          <CloudUpload className={isSubmitting ? "hidden" : ""} />
           Submit
-        </Button>
+        </LoadingButton>
       </CardFooter>
 
       {/* ALERT DIALOG  */}

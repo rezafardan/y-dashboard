@@ -3,7 +3,14 @@
 import Link from "next/link";
 
 // COMPONENT
-import { Home, FileText, Users, Command } from "lucide-react";
+import {
+  Home,
+  FileText,
+  Users,
+  Command,
+  BookOpen,
+  Settings2,
+} from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "./nav-user";
 import BreadcrumbResponsive from "./ui/breadcrumb-responsive";
@@ -12,6 +19,7 @@ import { ModeToggle } from "./ui/mode-toggle";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -23,7 +31,9 @@ import {
 
 // CONTEXT
 import { useAuth } from "@/context/AuthContext";
+import { VersionSwitcher } from "./ui/version-switcher";
 
+const docData = { versions: ["1.0.0-beta"] };
 const navMain = [
   {
     title: "Home",
@@ -171,6 +181,13 @@ export function AppSidebar({ children, ...props }: AppSidebarProps) {
         <SidebarContent>
           <NavMain items={filteredNavMain} />
         </SidebarContent>
+        <SidebarFooter>
+          <VersionSwitcher
+            versions={docData.versions}
+            defaultVersion={docData.versions[0]}
+            href="/docs"
+          />
+        </SidebarFooter>
       </Sidebar>
 
       {/* HEADER TOP */}

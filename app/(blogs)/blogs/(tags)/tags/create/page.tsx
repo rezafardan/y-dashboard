@@ -53,6 +53,8 @@ import { newTagSchema } from "@/models/formSchema";
 // ROUTING
 import { useRouter } from "next/navigation";
 import { Tag } from "@/models/dataSchema";
+import { LoadingButton } from "@/components/ui/loading-button";
+import GlobalSkeleton from "@/components/global-skeleton";
 
 export default function CreateTagPage() {
   // ROUTER
@@ -63,6 +65,9 @@ export default function CreateTagPage() {
 
   // ALERT DIALOG
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FORM HANDLER
   const defaultValues = {
@@ -94,6 +99,8 @@ export default function CreateTagPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof newTagSchema>) => {
+    setIsSubmitting(true);
+
     try {
       // SEND TO API
       const result = await createTagService(values);
@@ -121,6 +128,8 @@ export default function CreateTagPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -153,7 +162,7 @@ export default function CreateTagPage() {
     });
   };
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <GlobalSkeleton />;
   if (tagsError) return <p>Error loading data tags</p>;
 
   return (
@@ -219,14 +228,15 @@ export default function CreateTagPage() {
           <ChevronLeft />
           Back
         </Button>
-        <Button
+        <LoadingButton
           type="button"
+          loading={isSubmitting}
           onClick={handleSubmitButtonClick}
           disabled={!form.formState.isValid || form.formState.isSubmitting}
         >
-          <CloudUpload />
+          <CloudUpload className={isSubmitting ? "hidden" : ""} />
           Submit
-        </Button>
+        </LoadingButton>
       </CardFooter>
 
       {/* ALERT DIALOG */}

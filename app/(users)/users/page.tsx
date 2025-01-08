@@ -68,6 +68,7 @@ import { ApiErrorResponse } from "@/models/error";
 
 // ROUTING
 import { useRouter } from "next/navigation";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // TABLE HEADER
 const columns: ColumnDef<UserDataResponse>[] = [
@@ -311,10 +312,10 @@ const UserActionCell = ({ user }: { user: UserDataResponse }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0 border">
+        <LoadingButton variant="ghost" className="h-8 w-8 p-0 border">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal />
-        </Button>
+        </LoadingButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -454,7 +455,7 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* DATA TABLE */}
+      {/* MAIN TABLE */}
       <MainTable table={table} columns={columns.length} />
 
       {/* PAGINATION */}

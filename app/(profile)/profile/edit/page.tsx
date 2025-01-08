@@ -57,6 +57,7 @@ import { editProfileSchema } from "@/models/formSchema";
 
 // ROUTING
 import { useRouter } from "next/navigation";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export default function EditProfileDataPage() {
   // ROUTER
@@ -75,6 +76,9 @@ export default function EditProfileDataPage() {
 
   // EDIT BUTTON
   const [isEditing, setIsEditing] = useState(false);
+
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FORM HANDLER
   const defaultValues = {
@@ -165,6 +169,15 @@ export default function EditProfileDataPage() {
 
   // SUBMIT FORM BUTTON
   const handleSubmitButtonClick = () => {
+    if (isImageCropped === false) {
+      toast({
+        description: "Please crop the selected image before submitting.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      return;
+    }
+
     setShowConfirmDialog(true);
   };
 
@@ -181,6 +194,8 @@ export default function EditProfileDataPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof editProfileSchema>) => {
+    setIsSubmitting(true);
+
     try {
       // GET CURRENT DATA
       const currentValues = await viewUserProfileService();
@@ -200,15 +215,6 @@ export default function EditProfileDataPage() {
           description: "No data has been changed.",
           variant: "destructive",
           duration: 4000,
-        });
-        return;
-      }
-
-      // NOT CROPPING IMAGE, SHOW TOAST
-      if (croppedFile && !isImageCropped) {
-        toast({
-          description: "Please crop the image before submit.",
-          variant: "destructive",
         });
         return;
       }
@@ -274,6 +280,8 @@ export default function EditProfileDataPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -458,10 +466,13 @@ export default function EditProfileDataPage() {
               <Button variant="outline" onClick={handleCancelButtonClick}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmitButtonClick}>
-                <UserCheck />
+              <LoadingButton
+                loading={isSubmitting}
+                onClick={handleSubmitButtonClick}
+              >
+                <UserCheck className={isSubmitting ? "hidden" : ""} />
                 Save Changes
-              </Button>
+              </LoadingButton>
             </div>
           )}
         </CardFooter>

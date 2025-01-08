@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 // COMPONENT
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
@@ -67,6 +68,9 @@ export default function EditTagPage() {
 
   // EDIT BUTTON
   const [isEditing, setIsEditing] = useState(false);
+
+  // SEND TO API
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FORM HANDLER
   const defaultValues = {
@@ -145,6 +149,8 @@ export default function EditTagPage() {
 
   // HANDLING SUBMIT FORM
   const onSubmit = async (values: z.infer<typeof editTagSchema>) => {
+    setIsSubmitting(true);
+
     try {
       // API SERVICE
       const result = await editTagService(id, values);
@@ -175,6 +181,8 @@ export default function EditTagPage() {
         variant: "destructive",
         duration: 4000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -234,7 +242,13 @@ export default function EditTagPage() {
             <Button variant="outline" onClick={handleCancelButtonClick}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitButtonClick}>Save Changes</Button>
+            <LoadingButton
+              loading={isSubmitting}
+              onClick={handleSubmitButtonClick}
+              disabled={form.watch("name").endsWith(" ")}
+            >
+              Save Changes
+            </LoadingButton>
           </div>
         )}
       </CardFooter>
