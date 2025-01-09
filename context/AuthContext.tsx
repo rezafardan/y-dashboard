@@ -10,11 +10,13 @@ import {
 
 // MODELS
 import { UserRole } from "@/models/dataSchema";
+import { authCheck } from "@/services/authServices";
 
 interface AuthContextType {
   id: string | null;
   role: UserRole | null;
   setRole: (role: UserRole | null) => void;
+  isLoading: boolean;
   username: string;
   profileImage: string | null;
   isAuthenticated: boolean;
@@ -44,6 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [username, setUsername] = useState<string>("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loginUser = (userData: {
     id: string;
@@ -76,12 +79,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
   };
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setIsLoading(true);
+
+        // First check sessionStorage
+        const savedUser = sessionStorage.getItem("userData");
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+
+          // Verify with backend that session is still valid
+          const response = await authCheck();
+
+          if (response.ok) {
+            // Session is valid, restore user data
+            loginUser(parsedUser);
+          } else {
+            // Session is invalid, clear stored data
+            sessionStorage.removeItem("userData");
+            setIsAuthenticated(false);
+          }
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        sessionStorage.removeItem("userData");
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Optional: Refresh auth check periodically
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await authCheck();
+
+        if (!response.ok) {
+          logoutUser();
+        }
+      } catch (error) {
+        console.error("Auth refresh error:", error);
+        logoutUser();
+      }
+    }, 5 * 60 * 1000); // Check every 5 minutes
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or your custom loading component
+  }
+
   return (
     <AuthContext.Provider
       value={{
         id,
         role,
         setRole,
+        isLoading,
         isAuthenticated,
         setIsAuthenticated,
         username,

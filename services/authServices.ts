@@ -20,3 +20,10 @@ export const logoutService = async () => {
   });
   return result.data;
 };
+
+export const authCheck = async () => {
+  const result = await axiosInstance.post("auth/check", {
+    withCredentials: true,
+  });
+  return result.data;
+};

@@ -3,14 +3,7 @@
 import Link from "next/link";
 
 // COMPONENT
-import {
-  Home,
-  FileText,
-  Users,
-  Command,
-  BookOpen,
-  Settings2,
-} from "lucide-react";
+import { Home, FileText, Users, Command } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "./nav-user";
 import BreadcrumbResponsive from "./ui/breadcrumb-responsive";
@@ -26,12 +19,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
-  useSidebar,
 } from "@/components/ui/sidebar";
+import { VersionSwitcher } from "./ui/version-switcher";
 
 // CONTEXT
 import { useAuth } from "@/context/AuthContext";
-import { VersionSwitcher } from "./ui/version-switcher";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authCheck } from "@/services/authServices";
 
 const docData = { versions: ["1.0.0-beta"] };
 const navMain = [
@@ -98,8 +93,37 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ children, ...props }: AppSidebarProps) {
-  const { id, role, username, profileImage } = useAuth();
-  const { isMobile } = useSidebar();
+  const router = useRouter();
+  const { id, role, username, profileImage, isAuthenticated, isLoading } =
+    useAuth();
+
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const response = await authCheck();
+        if (!response.ok) {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        router.push("/login");
+      }
+    };
+
+    if (!isLoading && !isAuthenticated) {
+      checkAuthentication();
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // Tampilkan loading state
+  if (isLoading) {
+    return <div>Loading...</div>; // Atau komponen loading yang lebih bagus
+  }
+
+  // Jika tidak terautentikasi, tidak perlu render apapun karena useEffect akan handle redirect
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // MENU FILTER BY ROLE
   const filteredNavMain = navMain
