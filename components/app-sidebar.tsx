@@ -24,9 +24,6 @@ import { VersionSwitcher } from "./ui/version-switcher";
 
 // CONTEXT
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { authCheck } from "@/services/authServices";
 
 const docData = { versions: ["1.0.0-beta"] };
 const navMain = [
@@ -93,37 +90,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ children, ...props }: AppSidebarProps) {
-  const router = useRouter();
-  const { id, role, username, profileImage, isAuthenticated, isLoading } =
-    useAuth();
-
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        const response = await authCheck();
-        if (!response.ok) {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    if (!isLoading && !isAuthenticated) {
-      checkAuthentication();
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  // Tampilkan loading state
-  if (isLoading) {
-    return <div>Loading...</div>; // Atau komponen loading yang lebih bagus
-  }
-
-  // Jika tidak terautentikasi, tidak perlu render apapun karena useEffect akan handle redirect
-  if (!isAuthenticated) {
-    return null;
-  }
+  const { id, role, username, profileImage } = useAuth();
 
   // MENU FILTER BY ROLE
   const filteredNavMain = navMain

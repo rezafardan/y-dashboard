@@ -11,6 +11,8 @@ import {
 // MODELS
 import { UserRole } from "@/models/dataSchema";
 import { authCheck } from "@/services/authServices";
+import GlobalSkeleton from "@/components/global-skeleton";
+import { usePathname } from "next/navigation";
 
 interface AuthContextType {
   id: string | null;
@@ -42,11 +44,12 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [id, setId] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
 
   const loginUser = (userData: {
     id: string;
@@ -54,21 +57,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role: UserRole;
     profileImage: string;
   }) => {
+    console.log("Login");
     setId(userData.id);
     setUsername(userData.username);
     setRole(userData.role);
     setProfileImage(userData.profileImage);
     setIsAuthenticated(true);
+
+    sessionStorage.setItem("userData", JSON.stringify(userData));
   };
-
-  useEffect(() => {
-    const savedUser = sessionStorage.getItem("userData");
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-
-      loginUser(parsedUser);
-    }
-  }, []);
 
   const logoutUser = () => {
     sessionStorage.removeItem("userData");
@@ -84,34 +81,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         setIsLoading(true);
 
-        // First check sessionStorage
         const savedUser = sessionStorage.getItem("userData");
-        if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
+        if (!savedUser) {
+          // Pastikan hanya mengecek autentikasi di halaman selain login
+          if (pathname !== "/login") {
+            const response = await authCheck();
 
-          // Verify with backend that session is still valid
-          const response = await authCheck();
-
-          if (response.ok) {
-            // Session is valid, restore user data
-            loginUser(parsedUser);
-          } else {
-            // Session is invalid, clear stored data
-            sessionStorage.removeItem("userData");
-            setIsAuthenticated(false);
+            if (response?.user) {
+              loginUser(response.user);
+            } else {
+              logoutUser();
+            }
           }
+        } else {
+          const parsedUser = JSON.parse(savedUser);
+          loginUser(parsedUser);
         }
       } catch (error) {
         console.error("Auth check error:", error);
-        sessionStorage.removeItem("userData");
-        setIsAuthenticated(false);
+        logoutUser();
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAuth();
-  }, []);
+  }, [pathname]);
 
   // Optional: Refresh auth check periodically
   useEffect(() => {
@@ -121,7 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await authCheck();
 
-        if (!response.ok) {
+        if (!response?.user) {
           logoutUser();
         }
       } catch (error) {
@@ -134,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [isAuthenticated]);
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or your custom loading component
+    return <GlobalSkeleton />; // Or your custom loading component
   }
 
   return (

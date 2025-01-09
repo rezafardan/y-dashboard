@@ -22,7 +22,7 @@ export const logoutService = async () => {
 };
 
 export const authCheck = async () => {
-  const result = await axiosInstance.post("auth/check", {
+  const result = await axiosInstance.get("auth/check", {
     withCredentials: true,
   });
   return result.data;
