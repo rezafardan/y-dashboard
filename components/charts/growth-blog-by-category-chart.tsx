@@ -23,6 +23,7 @@ import {
   getCategoriesWithBlogCount,
 } from "@/services/categoryServices";
 import { useEffect, useState } from "react";
+import GlobalSkeleton from "../global-skeleton";
 
 // const chartData = [
 //   { category: "SPORT", blogs: 186 },
@@ -42,29 +43,39 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function GrowthBlogByCategoryChart() {
-  const [chartData, setChartData] = useState<
-    { category: string; blogs: number }[]
-  >([]);
-
   // Fetch data from API
-  const fetchData = async () => {
-    const result = await getCategoriesWithBlogCount();
-    if (result && result.data) {
-      // Filter out categories that have no blogs
-      const data = result.data
-        .filter((category: any) => category._count.Blogs > 0) // filter out categories with 0 blogs
-        .map((category: any) => ({
-          category: category.name,
-          blogs: category._count.Blogs,
-        }));
-      setChartData(data);
-    }
-  };
+  const { data, error, isLoading } = useSWR(
+    "/api/category",
+    getCategoriesWithBlogCount
+  );
 
-  // UseEffect to fetch data when component mounts
-  useEffect(() => {
-    fetchData();
-  }, []);
+  if (error) return <div>Error loading data.</div>;
+  if (isLoading) return <GlobalSkeleton />;
+  if (!data) return <GlobalSkeleton />;
+
+  const chartData =
+    data && data.data
+      ? data.data
+          .filter((category: any) => category._count.Blogs > 0)
+          .map((category: any) => ({
+            category: category.name,
+            blogs: category._count.Blogs,
+          }))
+      : [];
+
+  const totalBlogs = chartData.reduce(
+    (sum: any, item: any) => sum + item.blogs,
+    0
+  );
+  const highestCategory =
+    chartData.length > 0
+      ? chartData.reduce((prev: any, curr: any) =>
+          prev.blogs > curr.blogs ? prev : curr
+        ).category
+      : "No Data"; // Nilai default jika array kosong
+
+  // Placeholder: Anda bisa menghitung tren berdasarkan data historis
+  const trending = "5.2%";
 
   // const chartData = categories.reduce((acc, blog) => {
   //   // Mengambil tanggal posting dalam format yyyy-mm-dd
@@ -89,9 +100,9 @@ export function GrowthBlogByCategoryChart() {
   // );
 
   return (
-    <Card>
-      <CardHeader className="border-b py-5">
-        <CardTitle>Total Blogs per Category</CardTitle>
+    <Card className="w-full xl:w-2/6 2xl:w-1/4">
+      <CardHeader className="border-b py-5 flex items-center">
+        <CardTitle className="text-center">Total Blogs per Category</CardTitle>
         <CardDescription>Showing total blog by category</CardDescription>
       </CardHeader>
       <CardContent className="pb-0 my-10">
@@ -106,7 +117,7 @@ export function GrowthBlogByCategoryChart() {
             <Radar
               dataKey="blogs"
               fill="var(--color-desktop)"
-              fillOpacity={0.6}
+              fillOpacity={0.5}
               dot={{
                 r: 4,
                 fillOpacity: 1,
@@ -115,14 +126,15 @@ export function GrowthBlogByCategoryChart() {
           </RadarChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col gap-2 text-sm">
+      <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          {`Highest Category: ${highestCategory}`}{" "}
+          <TrendingUp className="h-4 w-4" />
         </div>
         <div className="flex items-center gap-2 leading-none text-muted-foreground">
-          January - June 2024
+          {`Total Blogs: ${totalBlogs} | Trending: ${trending}`}
         </div>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 }

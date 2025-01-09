@@ -12,17 +12,23 @@ export default function Dashboard() {
     <div className="flex flex-col gap-4">
       <div>
         <Card>
-          <CardHeader className="flex items-center justify-center font-bold text-center">
+          <CardHeader className="flex items-center justify-center font-bold text-center text-red-500">
             This is a demo page with fake data, explore and try several features
             wisely, because the production uses free services, some features
             cannot be used, for example uploading images
           </CardHeader>
         </Card>
       </div>
-      <VisitorChart />
-      <GrowthBlogByCategoryChart />
-      <TotalBlogChart />
-      <GrowthBlogChart />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <VisitorChart />
+          <GrowthBlogByCategoryChart />
+        </div>
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <TotalBlogChart />
+          <GrowthBlogChart />
+        </div>
+      </div>
     </div>
   );
 }

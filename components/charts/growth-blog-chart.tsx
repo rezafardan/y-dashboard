@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/chart";
 import { getAllBlogsService } from "@/services/blogServices";
 import useSWR from "swr";
+import GlobalSkeleton from "../global-skeleton";
 // const chartData = [
 //   { month: "January", desktop: 186, posts: 80 },
 //   { month: "February", desktop: 305, posts: 200 },
@@ -35,11 +36,26 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+function calculateTrend(data: { date: string; posts: number }[]) {
+  if (data.length < 2) return 0;
+
+  const first = data[0].posts;
+  const last = data[data.length - 1].posts;
+
+  const trend = ((last - first) / first) * 100; // Rumus perubahan persen
+  return trend.toFixed(2);
+}
+
 export function GrowthBlogChart() {
-  const { data: blogs, error } = useSWR("/api/blog", getAllBlogsService);
+  const {
+    data: blogs,
+    error,
+    isLoading,
+  } = useSWR("/api/blog", getAllBlogsService);
 
   if (error) return <div>Error loading data.</div>;
-  if (!blogs) return <div>Loading...</div>;
+  if (isLoading) return <GlobalSkeleton />;
+  if (!blogs) return <GlobalSkeleton />;
 
   // Format data untuk chart (mengelompokkan berdasarkan hari)
   const chartData = blogs.reduce((acc, blog) => {
@@ -64,9 +80,13 @@ export function GrowthBlogChart() {
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
+  const totalPosts = chartData.reduce((sum, day) => sum + day.posts, 0);
+  const averagePosts = (totalPosts / chartData.length).toFixed(2);
+  const trending = calculateTrend(chartData);
+
   return (
-    <Card>
-      <CardHeader>
+    <Card className="w-full xl:w-3/4">
+      <CardHeader className="flex items-center md:items-start">
         <CardTitle>New Blog Growth</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
@@ -76,16 +96,16 @@ export function GrowthBlogChart() {
             accessibilityLayer
             data={chartData}
             margin={{
-              top: 10,
-              left: 12,
+              top: 20,
+              left: 20,
               right: 20,
             }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="date"
-              tickLine={false}
-              axisLine={false}
+              tickLine={true}
+              axisLine={true}
               tickMargin={10}
               tickFormatter={(value) => {
                 const date = new Date(value);
@@ -114,7 +134,7 @@ export function GrowthBlogChart() {
             >
               <LabelList
                 position="top"
-                offset={12}
+                offset={10}
                 className="fill-foreground"
                 fontSize={12}
               />
@@ -122,14 +142,15 @@ export function GrowthBlogChart() {
           </LineChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col items-start gap-2 text-sm">
+      <CardFooter className="flex-col items-center gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          Trending up by {trending}% this month{" "}
+          <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
+          Total Posts: {totalPosts} | Average Posts/Day: {averagePosts}
         </div>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 }

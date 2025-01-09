@@ -34,7 +34,7 @@ export function TotalBlogChart() {
   const totalVisitors = chartData[0].desktop + chartData[0].mobile;
 
   return (
-    <Card>
+    <Card className="w-full xl:w-1/4">
       <CardHeader className="items-center pb-0">
         <CardTitle>Total Visitor</CardTitle>
         <CardDescription>October 2024 - Jan 2025</CardDescription>
@@ -97,14 +97,14 @@ export function TotalBlogChart() {
           </RadialBarChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col gap-2 text-sm">
+      <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
           Showing total visitors for the last 6 months
         </div>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 }
