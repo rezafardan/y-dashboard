@@ -20,14 +20,6 @@ import {
 import { getAllBlogsService } from "@/services/blogServices";
 import useSWR from "swr";
 import GlobalSkeleton from "../global-skeleton";
-// const chartData = [
-//   { month: "January", desktop: 186, posts: 80 },
-//   { month: "February", desktop: 305, posts: 200 },
-//   { month: "March", desktop: 237, posts: 120 },
-//   { month: "April", desktop: 73, posts: 190 },
-//   { month: "May", desktop: 209, posts: 130 },
-//   { month: "June", desktop: 214, posts: 140 },
-// ];
 
 const chartConfig = {
   posts: {

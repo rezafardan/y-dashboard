@@ -10,11 +10,9 @@ import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/toaster";
 
 // PROVIDER
-import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
 import ThemeProviderWrapper from "@/components/theme/theme-provider-wrapper";
 import ProgressBarProviders from "@/components/progress-bar/progress-bar-provider";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { ConditionalSidebar } from "@/hooks/use-login";
 
 // FONT
@@ -31,8 +29,9 @@ const geistMono = localFont({
 
 // HEAD
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Dashboard for Yukti ID Blogpage",
+  title: "Yukti ID Dashboard Panel",
+  description:
+    "Dashboard Panel Content Management System for Yukti ID Blogpage",
 };
 export const viewport: Viewport = {
   width: "device-width",

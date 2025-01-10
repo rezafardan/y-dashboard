@@ -20,7 +20,7 @@ export const getBlogByIdService = async (id: any) => {
 };
 
 export const createImageContent = async (data: FormData) => {
-  const result = await axiosInstance.post("blog/content", data, {
+  const result = await axiosInstance.post("blog/contentimage", data, {
     withCredentials: true,
   });
   return result.data;

@@ -18,22 +18,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import useSWR from "swr";
-import {
-  getAllCategoriesService,
-  getCategoriesWithBlogCount,
-} from "@/services/categoryServices";
-import { useEffect, useState } from "react";
-import GlobalSkeleton from "../global-skeleton";
+import { getCategoriesWithBlogCount } from "@/services/categoryServices";
 
-// const chartData = [
-//   { category: "SPORT", blogs: 186 },
-//   { category: "POLITIC", blogs: 305 },
-//   { category: "MUSIC", blogs: 237 },
-//   { category: "CULTURE", blogs: 273 },
-//   { category: "FOOD", blogs: 209 },
-//   { category: "EDUCATION", blogs: 214 },
-//   { category: "KIDS", blogs: 494 },
-// ];
+import GlobalSkeleton from "../global-skeleton";
 
 const chartConfig = {
   desktop: {
@@ -74,8 +61,13 @@ export function GrowthBlogByCategoryChart() {
         ).category
       : "No Data"; // Nilai default jika array kosong
 
+  const highestBlogCount = chartData[0]?.blogs || 0;
+
   // Placeholder: Anda bisa menghitung tren berdasarkan data historis
-  const trending = "5.2%";
+  const trending =
+    highestBlogCount > 0
+      ? Math.round((highestBlogCount / totalBlogs) * 100 * 10) / 10
+      : 0;
 
   // const chartData = categories.reduce((acc, blog) => {
   //   // Mengambil tanggal posting dalam format yyyy-mm-dd
@@ -132,7 +124,7 @@ export function GrowthBlogByCategoryChart() {
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="flex items-center gap-2 leading-none text-muted-foreground">
-          {`Total Blogs: ${totalBlogs} | Trending: ${trending}`}
+          {`Total Blogs: ${totalBlogs} | Trending: ${trending}%`}
         </div>
       </CardFooter>
     </Card>

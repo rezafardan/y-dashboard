@@ -110,7 +110,7 @@ export default function LoginPage() {
           <ModeToggle />
         </div>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Login (Demo Page)</CardTitle>
           <CardDescription>
             Enter your username and password below to login to your account
           </CardDescription>
@@ -171,7 +171,7 @@ export default function LoginPage() {
 
                   {/* FORGOT PASSWORD */}
                   <Link
-                    href="#"
+                    href="https://api.whatsapp.com/send/?phone=6281233627055&text&type=phone_number&app_absent=0"
                     className="ml-auto inline-block text-sm underline"
                   >
                     Forgot your password?
@@ -188,7 +188,10 @@ export default function LoginPage() {
 
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account ? Please contact{" "}
-            <Link href="#" className="underline">
+            <Link
+              href="https://api.whatsapp.com/send/?phone=6281233627055&text&type=phone_number&app_absent=0"
+              className="underline"
+            >
               administrator
             </Link>
           </div>

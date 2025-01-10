@@ -1,6 +1,4 @@
 .bg-gradient-blur {
-  position: absolute;
-  inset: 0;
   background: radial-gradient(
       circle at 0% 0%,
       rgba(8, 51, 68, 0.5),
